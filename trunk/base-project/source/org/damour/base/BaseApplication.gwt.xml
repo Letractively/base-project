@@ -1,0 +1,25 @@
+<module>
+
+	<!-- Inherit the core Web Toolkit stuff.                  -->
+	<inherits name='com.google.gwt.user.User'/>
+	<inherits name='com.google.gwt.xml.XML'/>
+	<inherits name='com.google.gwt.i18n.I18N' />
+	<inherits name='com.google.gwt.http.HTTP' />
+	<inherits name='com.thapar.gwt.user.ui.SimpleDatePicker' />
+
+	<!-- supported locales (beyond english defaults) -->
+	<extend-property name="locale" values="en"/>
+
+	<stylesheet src="base.css"/>
+
+	<!-- Specify the app entry point class.                   -->
+	<entry-point class='org.damour.base.client.service.BaseServiceStartup'/>
+
+	<servlet path="/servlet/LoginService" class="org.damour.base.server.LoginService" />
+	<servlet path="/servlet/BaseService" class="org.damour.base.server.BaseServiceImpl" />
+	<servlet path="/servlet/FileUploadService" class="org.damour.base.server.FileUploadService" />
+	<servlet path="/servlet/FileUploadStatusService" class="org.damour.base.server.FileUploadStatusService" />
+	<servlet path="/servlet/GetFileService" class="org.damour.base.server.GetFileService" />
+	<servlet path="/servlet/LoadFilesTest" class="org.damour.base.server.LoadFilesTest" />
+	
+</module>
