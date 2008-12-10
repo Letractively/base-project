@@ -1,0 +1,166 @@
+package org.damour.base.server.hibernate;
+
+import org.damour.base.client.objects.File;
+import org.damour.base.client.objects.FileComment;
+import org.damour.base.client.objects.FileUserAdvisory;
+import org.damour.base.client.objects.FileUserRating;
+import org.damour.base.client.objects.Folder;
+import org.damour.base.client.objects.GroupMembership;
+import org.damour.base.client.objects.PendingGroupMembership;
+import org.damour.base.client.objects.Permission;
+import org.damour.base.client.objects.RepositoryTreeNode;
+import org.damour.base.client.objects.User;
+import org.damour.base.client.objects.UserGroup;
+import org.damour.base.server.hibernate.helpers.RepositoryHelper;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+public class RepositoryTest {
+
+  @Test
+  public void test() {
+    Session session = HibernateUtil.getInstance().getSession();
+
+    Transaction tx = session.beginTransaction();
+    User user = new User();
+    user.setUsername("mdamour1976");
+    session.save(user);
+
+    // create 100 files which have global read = true
+    for (int i = 0; i < 1; i++) {
+      Folder parent = new Folder();
+      parent.setName("globalRead:true " + i);
+      parent.setOwner(user);
+      parent.setGlobalRead(true);
+      session.save(parent);
+
+      for (int k = 0; k < 5; k++) {
+        Folder folder = new Folder();
+        folder.setName("globalRead:true " + i);
+        folder.setOwner(user);
+        folder.setGlobalRead(true);
+        folder.setParentFolder(parent);
+        session.save(folder);
+
+        for (int z = 0; z < 5; z++) {
+          File file = new File();
+          file.setName("globalRead:true " + z);
+          file.setOwner(user);
+          file.setGlobalRead(true);
+          file.setParentFolder(folder);
+          session.save(file);
+        }
+      }
+    }
+
+    User user2 = new User();
+    user2.setUsername("nobody");
+    session.save(user2);
+
+    for (int j = 0; j < 1; j++) {
+      File file = new File();
+      file.setName("HAS PERM " + j);
+      file.setOwner(user);
+      session.save(file);
+
+      Permission perm = new Permission();
+      perm.readPerm = true;
+      perm.setSecurityPrincipal(user2);
+      perm.setPermissibleObject(file);
+      session.save(perm);
+    }
+
+    for (int j = 0; j < 1; j++) {
+      Folder folder = new Folder();
+      folder.setName("HAS PERM " + j);
+      folder.setOwner(user);
+      session.save(folder);
+
+      Permission perm = new Permission();
+      perm.readPerm = true;
+      perm.setSecurityPrincipal(user2);
+      perm.setPermissibleObject(folder);
+      session.save(perm);
+    }
+
+    for (int j = 0; j < 1; j++) {
+      Folder folder = new Folder();
+      folder.setName("user owns, but does not have perm");
+      folder.setOwner(user2);
+      session.save(folder);
+
+      Permission perm = new Permission();
+      perm.setReadPerm(true);
+      perm.setSecurityPrincipal(user);
+      perm.setPermissibleObject(folder);
+      session.save(perm);
+    }    
+
+    UserGroup group = new UserGroup();
+    group.setName("blah");
+    session.save(group);
+    GroupMembership membership = new GroupMembership();
+    membership.setUser(user2);
+    membership.setUserGroup(group);
+    session.save(membership);
+    
+    File groupPermFile = new File();
+    groupPermFile.setName("not owner:  group perm file");
+    groupPermFile.setOwner(user);
+    session.save(groupPermFile);
+
+    Permission perm = new Permission();
+    perm.setReadPerm(true);
+    perm.setSecurityPrincipal(group);
+    perm.setPermissibleObject(groupPermFile);
+    session.save(perm);
+    
+    tx.commit();
+    session.close();
+
+    for (int i = 0; i < 5; i++) {
+      System.out.println("Starting dump");
+      session = HibernateUtil.getInstance().getSession();
+      // as user, get files i can see
+      RepositoryTreeNode root = new RepositoryTreeNode();
+      RepositoryHelper.buildRepositoryTreeNode(session, user2, root, null);
+      RepositoryHelper.dumpTreeNode(root, 0);
+      session.close();
+      System.out.println("End dump");
+    }
+
+  }
+
+  @Before
+  public void before() {
+    System.out.println("*********** before begin ***********");
+    HibernateUtil.getInstance().setShowSQL(true);
+    HibernateUtil.getInstance().setHbm2ddlMode("create-drop");
+    HibernateUtil.getInstance().setTablePrefix("test_");
+    HibernateUtil.getInstance().setColumnPrefix("test_");
+    HibernateUtil.getInstance().resetHibernate();
+    HibernateUtil.getInstance().generateHibernateMapping(User.class);
+    HibernateUtil.getInstance().generateHibernateMapping(UserGroup.class);
+    HibernateUtil.getInstance().generateHibernateMapping(GroupMembership.class);
+    HibernateUtil.getInstance().generateHibernateMapping(PendingGroupMembership.class);
+    HibernateUtil.getInstance().generateHibernateMapping(File.class);
+    HibernateUtil.getInstance().generateHibernateMapping(FileComment.class);
+    HibernateUtil.getInstance().generateHibernateMapping(FileUserRating.class);
+    HibernateUtil.getInstance().generateHibernateMapping(FileUserAdvisory.class);
+    HibernateUtil.getInstance().generateHibernateMapping(Folder.class);
+    HibernateUtil.getInstance().generateHibernateMapping(Permission.class);
+    System.out.println("*********** before end ***********");
+  }
+
+  @After
+  public void after() {
+    System.out.println("*********** after begin ***********");
+    HibernateUtil.getInstance().getSessionFactory().close();
+    HibernateUtil.getInstance().resetHibernate();
+    System.out.println("*********** after end ***********");
+  }
+
+}
