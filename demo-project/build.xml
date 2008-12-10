@@ -4,7 +4,7 @@
 <project name="base-project" default="compile-gwt">
 	<description>build process..</description>
 
-	<property file="override.properties" />
+	<property file="build_override.properties" />
 	<property file="build.properties" />
 
 	<propertyfile file="version.properties">
