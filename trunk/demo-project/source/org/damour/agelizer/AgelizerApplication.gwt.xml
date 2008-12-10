@@ -1,0 +1,21 @@
+<module>
+    
+	<!-- Inherit the core Web Toolkit stuff.                  -->
+	<inherits name='com.google.gwt.user.User'/>
+	<inherits name='com.google.gwt.xml.XML'/>
+	<inherits name='com.google.gwt.i18n.I18N' />
+	<inherits name='com.google.gwt.http.HTTP' />
+	<inherits name='org.damour.base.BaseApplication' />
+
+	<!-- supported locales (beyond english defaults) -->
+	<extend-property name="locale" values="en"/>
+	
+	<!-- 
+	<stylesheet src="agelizer.css"/>
+	 -->
+	
+	<!-- Specify the app entry point class.                   -->
+	<entry-point class='org.damour.agelizer.client.AgelizerApplication'/>
+	
+	<servlet path="/servlet/AgelizerServiceImpl" class="org.damour.agelizer.server.AgelizerServiceImpl" />
+</module>

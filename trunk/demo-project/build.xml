@@ -1,0 +1,114 @@
+<!-- ======================================================================
+     description: main build file
+     ====================================================================== -->
+<project name="base-project" default="compile-gwt">
+	<description>build process..</description>
+
+	<property file="override.properties" />
+	<property file="build.properties" />
+
+	<propertyfile file="version.properties">
+		<entry key="release.build.number" type="int" operation="+" value="1" />
+	</propertyfile>
+
+	<property file="version.properties" />
+
+	<path id="classpath">
+		<fileset dir="lib" includes="**/*.jar, **/*.zip" />
+		<fileset dir="dist" includes="${project.name}-${release.major.number}.${release.minor.number}.${release.milestone.number}.jar" />
+		<fileset dir="../base-project/lib" includes="**/*.jar, **/*.zip" />
+	</path>
+
+	<!-- ===================================================================
+        target: clean              
+       =================================================================== -->
+	<target name="clean" depends="">
+		<delete dir="dist" />
+		<delete dir="${gwt.output.dir}" />
+	</target>
+
+	<!-- ===================================================================
+        target: init              
+       =================================================================== -->
+	<target name="init">
+		<mkdir dir="dist" />
+		<mkdir dir="dist/source" />
+		<mkdir dir="dist/bin" />
+	</target>
+
+	<target name="copy-replace-source" depends="init">
+		<mkdir dir="dist/source" />
+		<copy todir="dist/source" overwrite="true">
+			<fileset dir="source" includes="**/*" />
+			<fileset dir="../base-project/source" includes="**/*" />
+		</copy>
+		<replace dir="dist/source" includes="**/*" token="DEBUG = true" value="DEBUG = false"></replace>
+		<replace dir="dist/source" includes="**/*" token="%username%" value="${username}"></replace>
+		<replace dir="dist/source" includes="**/*" token="%password%" value="${password}"></replace>
+		<replace dir="dist/source" includes="**/*" token="%connectString%" value="${connectString}"></replace>
+		<replace dir="dist/source" includes="**/*" token="tablePrefix = &quot;&quot;" value="tablePrefix = &quot;${tableNamePrefix}&quot;"></replace>
+		<replace dir="dist/source" includes="**/*" token="columnPrefix = &quot;&quot;" value="columnPrefix = &quot;${columnNamePrefix}&quot;"></replace>
+		<replace dir="dist/source" includes="**/*" token="showSQL = true" value="showSQL = false"></replace>
+		<replace dir="dist/source" includes="**/*" token="%domain%" value="${domain}"></replace>
+		<replace dir="dist/source" includes="**/*" token="%dbserver%" value="${dbserver}"></replace>
+		<replace dir="dist/source" includes="**/*" token="%dbname%" value="${dbname}"></replace>
+	</target>
+	
+	<target name="compile" depends="copy-replace-source">
+		<javac destdir="dist/bin" debug="${debug}" optimize="${optimize}" deprecation="${deprecation}" compiler="modern" source="1.5" target="1.5" fork="true">
+			<src path="dist/source" />
+			<classpath refid="classpath" />
+		</javac>
+	</target>
+
+	<target name="compile-gwt" depends="compile">
+		<java classname="com.google.gwt.dev.GWTCompiler" fork="true" maxmemory="1024M">
+			<classpath>
+				<path refid="classpath" />
+				<pathelement location="dist/source" />
+			</classpath>
+			<arg value="-out" />
+			<arg value="&quot;${gwt.output.dir}&quot;" />
+			<arg value="%*" />
+			<arg value="${gwt.app}" />
+		</java>
+	</target>
+	
+	<target name="clean-war">
+		<delete dir="${target.webapp.path}/${target.webapp.name}" />
+	</target>
+
+	<target name="clean-dist" depends="clean">
+		<delete dir="dist" />
+	</target>
+			
+	<target name="dist" depends="clean, compile-gwt">
+		<jar basedir="dist/bin" destfile="dist/${project.name}-${release.major.number}.${release.minor.number}.${release.milestone.number}.jar" />
+		<copy todir="dist/${target.webapp.name}" overwrite="true">
+			<fileset dir="${webapp.path}" includes="**/*" />
+		</copy>
+		<copy todir="dist/${target.webapp.name}">
+			<fileset dir="${gwt.output.dir}/${gwt.app}" includes="**/*" />
+		</copy>
+		<unzip dest="dist/${target.webapp.name}/WEB-INF/classes">
+			<fileset dir="dist" includes="${project.name}*.jar" />
+			<fileset dir="lib" includes="*.zip, *.jar" excludes="**/*gwt-dev-windows.jar, **/*gwt-user.jar, **/*googlemaps*.jar, **/gwtchismes*" />
+			<fileset dir="../base-project/lib" includes="**/*.zip, **/*.jar" excludes="**/*gwt-dev-windows.jar, **/*gwt-user.jar, **/*googlemaps*.jar, **/gwtchismes*" />
+		</unzip>
+		<copy todir="dist/${target.webapp.name}/servlet">
+			<fileset dir="dist/bin" includes="*Service*" />
+		</copy>
+		<zip destfile="dist/${project.name}.war" basedir="dist/${target.webapp.name}" />
+		<delete dir="dist/${target.webapp.name}" />
+	</target>
+	
+	<target name="ftp-dist" depends="dist">
+	  <ftp server="ftp.damourfamily.com"
+	       remotedir="/domains/sometests.com"
+	       userid="mdamour1976"
+	       password="Mdd2008gD">
+	    <fileset dir="dist/${project.name}.war"/>
+	  </ftp>
+	</target>
+	
+</project>

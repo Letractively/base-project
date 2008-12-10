@@ -1,0 +1,9 @@
+http://cooltext.com/Logo-Design?LogoID=445676913&Font=1082
+text size: 30
+text color: #ffffff
+shadow: soft
+shape: rounded
+effect: gel
+button color: #3fcbe6
+shadow: drop
+mouse over: glow
