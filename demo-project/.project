@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>agelizer</name>
-	<comment>strongpassword project</comment>
+	<name>base-project-demo</name>
+	<comment>base-project demo</comment>
 	<projects>
 	</projects>
 	<buildSpec>

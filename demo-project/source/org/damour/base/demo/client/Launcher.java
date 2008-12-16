@@ -1,8 +1,8 @@
-package org.damour.agelizer.client;
+package org.damour.base.demo.client;
 
-import org.damour.agelizer.client.images.AgelizerImageBundle;
 import org.damour.base.client.objects.User;
 import org.damour.base.client.ui.authentication.CreateNewAccountCommand;
+import org.damour.base.demo.client.images.AgelizerImageBundle;
 
 import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.HorizontalPanel;

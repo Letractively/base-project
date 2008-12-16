@@ -15,7 +15,7 @@
 	 -->
 	
 	<!-- Specify the app entry point class.                   -->
-	<entry-point class='org.damour.agelizer.client.AgelizerApplication'/>
+	<entry-point class='org.damour.base.demo.client.AgelizerApplication'/>
 	
-	<servlet path="/servlet/AgelizerServiceImpl" class="org.damour.agelizer.server.AgelizerServiceImpl" />
+	<servlet path="/servlet/AgelizerServiceImpl" class="org.damour.base.demo.server.AgelizerServiceImpl" />
 </module>

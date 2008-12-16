@@ -1,4 +1,4 @@
-package org.damour.agelizer.client.images;
+package org.damour.base.demo.client.images;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;

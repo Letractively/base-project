@@ -1,4 +1,4 @@
-package org.damour.agelizer.client.service;
+package org.damour.base.demo.client.service;
 
 import org.damour.base.client.service.Utility;
 

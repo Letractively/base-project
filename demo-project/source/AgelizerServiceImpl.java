@@ -1,2 +1,2 @@
-public class AgelizerServiceImpl extends org.damour.agelizer.server.AgelizerServiceImpl {
+public class AgelizerServiceImpl extends org.damour.base.demo.server.AgelizerServiceImpl {
 }
