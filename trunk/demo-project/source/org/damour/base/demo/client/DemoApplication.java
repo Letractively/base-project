@@ -1,4 +1,4 @@
-package org.damour.agelizer.client;
+package org.damour.base.demo.client;
 
 import java.util.Date;
 
@@ -40,7 +40,7 @@ import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-public class AgelizerApplication implements EntryPoint, IAuthenticationListener {
+public class DemoApplication implements EntryPoint, IAuthenticationListener {
 
   public static final String domain = "%domain%";
 
