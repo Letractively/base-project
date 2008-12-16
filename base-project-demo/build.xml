@@ -1,7 +1,7 @@
 <!-- ======================================================================
      description: main build file
      ====================================================================== -->
-<project name="base-project" default="compile-gwt">
+<project name="base-project-demo" default="compile-gwt">
 	<description>build process..</description>
 
 	<property file="build_override.properties" />
@@ -100,15 +100,6 @@
 		</copy>
 		<zip destfile="dist/${project.name}.war" basedir="dist/${target.webapp.name}" />
 		<delete dir="dist/${target.webapp.name}" />
-	</target>
-	
-	<target name="ftp-dist" depends="dist">
-	  <ftp server="ftp.damourfamily.com"
-	       remotedir="/domains/sometests.com"
-	       userid="mdamour1976"
-	       password="Mdd2008gD">
-	    <fileset dir="dist/${project.name}.war"/>
-	  </ftp>
 	</target>
 	
 </project>

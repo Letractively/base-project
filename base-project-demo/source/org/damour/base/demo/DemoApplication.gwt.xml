@@ -11,11 +11,11 @@
 	<extend-property name="locale" values="en"/>
 	
 	<!-- 
-	<stylesheet src="agelizer.css"/>
+	<stylesheet src="demo.css"/>
 	 -->
 	
 	<!-- Specify the app entry point class.                   -->
-	<entry-point class='org.damour.base.demo.client.AgelizerApplication'/>
+	<entry-point class='org.damour.base.demo.client.DemoApplication'/>
 	
-	<servlet path="/servlet/AgelizerServiceImpl" class="org.damour.base.demo.server.AgelizerServiceImpl" />
+	<servlet path="/servlet/.DemoServiceImpl" class="org.damour.base.demo.server.DemoServiceImpl" />
 </module>
