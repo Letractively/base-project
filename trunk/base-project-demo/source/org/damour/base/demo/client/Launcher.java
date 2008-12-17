@@ -2,7 +2,7 @@ package org.damour.base.demo.client;
 
 import org.damour.base.client.objects.User;
 import org.damour.base.client.ui.authentication.CreateNewAccountCommand;
-import org.damour.base.demo.client.images.AgelizerImageBundle;
+import org.damour.base.demo.client.images.DemoImageBundle;
 
 import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -22,9 +22,9 @@ public class Launcher extends VerticalPanel {
 
     final Image createAccountImage = new Image();
     if (user != null) {
-      AgelizerImageBundle.images.createAccount_disabled_212x89().applyTo(createAccountImage);
+      DemoImageBundle.images.createAccount_disabled_212x89().applyTo(createAccountImage);
     } else {
-      AgelizerImageBundle.images.createAccount_212x89().applyTo(createAccountImage);
+      DemoImageBundle.images.createAccount_212x89().applyTo(createAccountImage);
       createAccountImage.setTitle("Create an Account");
       createAccountImage.setStyleName("genericImageButton");
       createAccountImage.addMouseListener(new MouseListener() {
@@ -32,18 +32,18 @@ public class Launcher extends VerticalPanel {
         }
 
         public void onMouseEnter(Widget sender) {
-          AgelizerImageBundle.images.createAccount_hover_212x89().applyTo(createAccountImage);
+          DemoImageBundle.images.createAccount_hover_212x89().applyTo(createAccountImage);
         }
 
         public void onMouseLeave(Widget sender) {
-          AgelizerImageBundle.images.createAccount_212x89().applyTo(createAccountImage);
+          DemoImageBundle.images.createAccount_212x89().applyTo(createAccountImage);
         }
 
         public void onMouseMove(Widget sender, int x, int y) {
         }
 
         public void onMouseUp(Widget sender, int x, int y) {
-          AgelizerImageBundle.images.createAccount_212x89().applyTo(createAccountImage);
+          DemoImageBundle.images.createAccount_212x89().applyTo(createAccountImage);
         }
       });
       createAccountImage.addClickListener(new ClickListener() {
@@ -56,9 +56,9 @@ public class Launcher extends VerticalPanel {
 
     final Image uploadPhotosImage = new Image();
     if (user == null) {
-      AgelizerImageBundle.images.uploadPhotos_disabled_189x89().applyTo(uploadPhotosImage);
+      DemoImageBundle.images.uploadPhotos_disabled_189x89().applyTo(uploadPhotosImage);
     } else {
-      AgelizerImageBundle.images.uploadPhotos_189x89().applyTo(uploadPhotosImage);
+      DemoImageBundle.images.uploadPhotos_189x89().applyTo(uploadPhotosImage);
       uploadPhotosImage.setTitle("Upload Photos");
       uploadPhotosImage.setStyleName("genericImageButton");
       uploadPhotosImage.addMouseListener(new MouseListener() {
@@ -66,24 +66,24 @@ public class Launcher extends VerticalPanel {
         }
 
         public void onMouseEnter(Widget sender) {
-          AgelizerImageBundle.images.uploadPhotos_hover_189x89().applyTo(uploadPhotosImage);
+          DemoImageBundle.images.uploadPhotos_hover_189x89().applyTo(uploadPhotosImage);
         }
 
         public void onMouseLeave(Widget sender) {
-          AgelizerImageBundle.images.uploadPhotos_189x89().applyTo(uploadPhotosImage);
+          DemoImageBundle.images.uploadPhotos_189x89().applyTo(uploadPhotosImage);
         }
 
         public void onMouseMove(Widget sender, int x, int y) {
         }
 
         public void onMouseUp(Widget sender, int x, int y) {
-          AgelizerImageBundle.images.uploadPhotos_189x89().applyTo(uploadPhotosImage);
+          DemoImageBundle.images.uploadPhotos_189x89().applyTo(uploadPhotosImage);
         }
       });
     }
 
     final Image ratePhotosImage = new Image();
-    AgelizerImageBundle.images.ratePhotos_172x89().applyTo(ratePhotosImage);
+    DemoImageBundle.images.ratePhotos_172x89().applyTo(ratePhotosImage);
     ratePhotosImage.setTitle("Rate Photos");
     ratePhotosImage.setStyleName("genericImageButton");
     ratePhotosImage.addMouseListener(new MouseListener() {
@@ -91,18 +91,18 @@ public class Launcher extends VerticalPanel {
       }
 
       public void onMouseEnter(Widget sender) {
-        AgelizerImageBundle.images.ratePhotos_hover_172x89().applyTo(ratePhotosImage);
+        DemoImageBundle.images.ratePhotos_hover_172x89().applyTo(ratePhotosImage);
       }
 
       public void onMouseLeave(Widget sender) {
-        AgelizerImageBundle.images.ratePhotos_172x89().applyTo(ratePhotosImage);
+        DemoImageBundle.images.ratePhotos_172x89().applyTo(ratePhotosImage);
       }
 
       public void onMouseMove(Widget sender, int x, int y) {
       }
 
       public void onMouseUp(Widget sender, int x, int y) {
-        AgelizerImageBundle.images.ratePhotos_172x89().applyTo(ratePhotosImage);
+        DemoImageBundle.images.ratePhotos_172x89().applyTo(ratePhotosImage);
       }
     });
 
