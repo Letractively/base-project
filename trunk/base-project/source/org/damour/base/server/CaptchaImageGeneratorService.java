@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.andrewtimberlake.captcha.Captcha;
 
-public class CaptchaImageGeneratorServlet extends HttpServlet {
+public class CaptchaImageGeneratorService extends HttpServlet {
   private static DateFormat RFC822_FORMAT = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z");
 
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
