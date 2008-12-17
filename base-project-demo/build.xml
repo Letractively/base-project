@@ -89,7 +89,7 @@
 			<fileset dir="../base-project/lib" includes="**/*.zip, **/*.jar" excludes="**/*gwt-dev-windows.jar, **/*gwt-user.jar, **/*googlemaps*.jar, **/gwtchismes*" />
 		</unzip>
 		<copy todir="dist/${target.webapp.name}/servlet">
-			<fileset dir="dist/bin" includes="*Service*" />
+			<fileset dir="dist/bin" includes="*Service*,*Servlet*" />
 		</copy>
 		<zip destfile="dist/${project.name}.war" basedir="dist/${target.webapp.name}" />
 		<delete dir="dist/${target.webapp.name}" />
