@@ -15,7 +15,7 @@
 	<!-- Specify the app entry point class.                   -->
 	<entry-point class='org.damour.base.client.service.BaseServiceStartup'/>
 
-	<servlet path="/servlet/CaptchaImageGeneratorServlet" class="org.damour.base.server.CaptchaImageGeneratorServlet" />
+	<servlet path="/servlet/CaptchaImageGeneratorServlet" class="org.damour.base.server.CaptchaImageGeneratorService" />
 	<servlet path="/servlet/LoginService" class="org.damour.base.server.LoginService" />
 	<servlet path="/servlet/BaseService" class="org.damour.base.server.BaseServiceImpl" />
 	<servlet path="/servlet/FileUploadService" class="org.damour.base.server.FileUploadService" />

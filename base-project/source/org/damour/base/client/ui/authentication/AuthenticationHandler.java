@@ -349,7 +349,7 @@ public class AuthenticationHandler {
   }
 
   private void createCaptchaImage() {
-      captchaValidationImage.setUrl("/servlet/CaptchaImageGeneratorServlet?attempt=" + System.currentTimeMillis());
+      captchaValidationImage.setUrl("/servlet/CaptchaImageGeneratorService?attempt=" + System.currentTimeMillis());
   }
 
   public void showEditAccountDialog(final User user) {
