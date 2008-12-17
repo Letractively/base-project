@@ -7,6 +7,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Set;
 
 import org.damour.base.client.Logger;
@@ -42,42 +43,57 @@ public class HibernateUtil {
   private boolean showSQL = true;
   private String hbm2ddlMode = "update";
 
-  public HibernateUtil() {
-    if (DEBUG) {
-      // test
-      setUsername("root");
-      setPassword("t@k30ff");
-      setConnectString("jdbc:mysql://localhost/agedicator?autoReconnect=true&blobSendChunkSize=256000");
+  private HibernateUtil() {
+    ResourceBundle rb = ResourceBundle.getBundle("connection");
+    setUsername(rb.getString("username"));
+    setPassword(rb.getString("password"));
+    setConnectString(rb.getString("connectString"));
+    setTablePrefix(rb.getString("tablePrefix"));
+    setColumnPrefix(rb.getString("columnPrefix"));
 
-      Runnable r = new Runnable() {
-        public void run() {
-          while (true) {
-            System.gc();
-            long total = Runtime.getRuntime().totalMemory();
-            long free = Runtime.getRuntime().freeMemory();
-            System.out.println(DecimalFormat.getNumberInstance().format(total) + " allocated " + DecimalFormat.getNumberInstance().format(total - free) + " used " + DecimalFormat.getNumberInstance().format(free) + " free");
-            try {
-              Thread.sleep(30000);
-            } catch (Exception e) {
-            }
-          }
-        }
-      };
-      Thread t = new Thread(r);
-      t.setDaemon(true);
-      t.start();
+    try {
+      ResourceBundle override = ResourceBundle.getBundle("connection_override");
+      setUsername(getResource(override, "username", getUsername()));
+      setPassword(getResource(override, "password", getPassword()));
+      setConnectString(getResource(override, "connectString", getConnectString()));
+      setTablePrefix(getResource(override, "tablePrefix", getTablePrefix()));
+      setColumnPrefix(getResource(override, "columnPrefix", getColumnPrefix()));
+    } catch (Exception e) {
+      // these are overrides, don't prevent startup by blowing out
+      Logger.log(e);
+    }
+  }
 
-    } else {
-      // production
-      setUsername("%username%");
-      setPassword("%password%");
-      setConnectString("%connectString%");
+  private String getResource(ResourceBundle bundle, String key, String defaultValue) {
+    try {
+      return bundle.getString(key);
+    } catch (Throwable t) {
+      return defaultValue;
     }
   }
 
   public static HibernateUtil getInstance() {
     if (instance == null) {
       instance = new HibernateUtil();
+      if (DEBUG) {
+        Runnable r = new Runnable() {
+          public void run() {
+            while (true) {
+              System.gc();
+              long total = Runtime.getRuntime().totalMemory();
+              long free = Runtime.getRuntime().freeMemory();
+              System.out.println(DecimalFormat.getNumberInstance().format(total) + " allocated " + DecimalFormat.getNumberInstance().format(total - free) + " used " + DecimalFormat.getNumberInstance().format(free) + " free");
+              try {
+                Thread.sleep(30000);
+              } catch (Exception e) {
+              }
+            }
+          }
+        };
+        Thread t = new Thread(r);
+        t.setDaemon(true);
+        t.start();
+      }
     }
     return instance;
   }
@@ -126,7 +142,7 @@ public class HibernateUtil {
         sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.cache.use_structured_entries").setText("true");
         sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.cache.use_query_cache").setText("true");
         sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.show_sql").setText("" + showSQL);
-        //sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.format_sql").setText("" + showSQL);
+        // sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.format_sql").setText("" + showSQL);
         sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.jdbc.use_streams_for_binary").setText("true");
 
         // setup out provider for ehcache

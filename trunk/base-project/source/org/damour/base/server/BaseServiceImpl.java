@@ -60,6 +60,7 @@ import org.hibernate.Transaction;
 import org.hibernate.stat.SecondLevelCacheStatistics;
 import org.hibernate.stat.Statistics;
 
+import com.andrewtimberlake.captcha.Captcha;
 import com.twmacinta.util.MD5;
 
 public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.base.client.service.BaseService {
@@ -68,10 +69,9 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
   public static final int COOKIE_TIMEOUT = 31556926; // 1 year in seconds
   public static String smtpHost = "relay-hosting.secureserver.net";
   public static String domainName = null;
-  
+
   private Session session = null;
 
-  
   static {
     bootstrap();
   }
@@ -271,7 +271,7 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
       session.close();
     }
   }
-  
+
   public User login(String username, String password) throws Exception {
     org.hibernate.Session session = HibernateUtil.getInstance().getSession();
     try {
@@ -364,7 +364,7 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
   }
 
   // create or edit account
-  public User createOrEditAccount(User inUser, String password, String captchaText, String captchaHash) throws Exception {
+  public User createOrEditAccount(User inUser, String password, String captchaText) throws Exception {
     org.hibernate.Session session = HibernateUtil.getInstance().getSession();
     Transaction tx = session.beginTransaction();
     try {
@@ -383,11 +383,9 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
       if (dbUser == null) {
         // new account, it did NOT exist
         // validate captcha first
-        if (captchaText != null && captchaHash != null) {
-          MD5 md5 = new MD5();
-          md5.Update(captchaText.toLowerCase());
-          String userValidationKeyHash = md5.asHex();
-          if (!captchaHash.equals(userValidationKeyHash)) {
+        if (captchaText != null && !"".equals(captchaText)) {
+          Captcha captcha = (Captcha)getThreadLocalRequest().getSession().getAttribute("captcha");
+          if (!captcha.isValid(captchaText)) {
             throw new RuntimeException("Could not create account: validation failed.");
           }
         }
@@ -1427,7 +1425,7 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
         try {
           Object obj = field.get(hibPermissibleObject);
           if (obj instanceof PermissibleObject) {
-            PermissibleObject childObj = (PermissibleObject)obj;
+            PermissibleObject childObj = (PermissibleObject) obj;
             childObj.setGlobalRead(hibPermissibleObject.isGlobalRead());
             childObj.setGlobalWrite(hibPermissibleObject.isGlobalWrite());
             childObj.setGlobalExecute(hibPermissibleObject.isGlobalExecute());
@@ -1436,8 +1434,8 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
         } catch (Exception e) {
           e.printStackTrace();
         }
-      }            
-      
+      }
+
       // save it
       session.save(hibPermissibleObject);
       tx.commit();
@@ -1484,7 +1482,7 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
         try {
           Object obj = field.get(permissibleObject);
           if (obj instanceof PermissibleObject) {
-            PermissibleObject childObj = (PermissibleObject)obj;
+            PermissibleObject childObj = (PermissibleObject) obj;
             childObj.setGlobalRead(permissibleObject.isGlobalRead());
             childObj.setGlobalWrite(permissibleObject.isGlobalWrite());
             childObj.setGlobalExecute(permissibleObject.isGlobalExecute());
@@ -1502,7 +1500,7 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
         } catch (Exception e) {
           e.printStackTrace();
         }
-      }      
+      }
       tx.commit();
     } catch (Throwable t) {
       t.printStackTrace();
@@ -1538,7 +1536,7 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
 
   public void createCategory(String categoryName, String categoryDescription, Category parentCategory) throws Exception {
   }
-  
+
   public void deleteCategory(Category category) throws Exception {
   }
 
@@ -1555,6 +1553,5 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
 
   public void removeFromCategory(Category category, PermissibleObject permissibleObject) throws Exception {
   }
-  
-  
+
 }

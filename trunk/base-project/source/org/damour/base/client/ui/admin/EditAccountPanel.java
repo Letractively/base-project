@@ -73,7 +73,7 @@ public class EditAccountPanel extends FlexTable {
           };
         };
 
-        BaseServiceAsync.service.createOrEditAccount(user, passwordTextBox.getText(), null, null, loginCallback);
+        BaseServiceAsync.service.createOrEditAccount(user, passwordTextBox.getText(), null, loginCallback);
       }
     });
     applyButton.setTitle("Apply Changes");
