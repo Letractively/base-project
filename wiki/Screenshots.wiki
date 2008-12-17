@@ -1,0 +1,13 @@
+#summary Screenshots for the base-project-demo
+
+= Launch Panel =
+
+http://base-project.googlecode.com/files/base-project-demo.png
+
+= Login Dialog =
+
+http://base-project.googlecode.com/files/base-project-demo-login.png
+
+= Account/Signup Dialog w/CAPTCHA =
+
+http://base-project.googlecode.com/files/base-project-demo-account.png
