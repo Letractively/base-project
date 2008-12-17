@@ -43,15 +43,8 @@
 			<fileset dir="../base-project/source" includes="**/*" />
 		</copy>
 		<replace dir="dist/source" includes="**/*" token="DEBUG = true" value="DEBUG = false"></replace>
-		<replace dir="dist/source" includes="**/*" token="%username%" value="${username}"></replace>
-		<replace dir="dist/source" includes="**/*" token="%password%" value="${password}"></replace>
-		<replace dir="dist/source" includes="**/*" token="%connectString%" value="${connectString}"></replace>
-		<replace dir="dist/source" includes="**/*" token="tablePrefix = &quot;&quot;" value="tablePrefix = &quot;${tableNamePrefix}&quot;"></replace>
-		<replace dir="dist/source" includes="**/*" token="columnPrefix = &quot;&quot;" value="columnPrefix = &quot;${columnNamePrefix}&quot;"></replace>
 		<replace dir="dist/source" includes="**/*" token="showSQL = true" value="showSQL = false"></replace>
 		<replace dir="dist/source" includes="**/*" token="%domain%" value="${domain}"></replace>
-		<replace dir="dist/source" includes="**/*" token="%dbserver%" value="${dbserver}"></replace>
-		<replace dir="dist/source" includes="**/*" token="%dbname%" value="${dbname}"></replace>
 	</target>
 	
 	<target name="compile" depends="copy-replace-source">

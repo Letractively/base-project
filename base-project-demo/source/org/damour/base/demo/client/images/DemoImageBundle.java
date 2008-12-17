@@ -4,8 +4,8 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.ImageBundle;
 
-public interface AgelizerImageBundle extends ImageBundle {
-  public static final AgelizerImageBundle images = (AgelizerImageBundle) GWT.create(AgelizerImageBundle.class);
+public interface DemoImageBundle extends ImageBundle {
+  public static final DemoImageBundle images = (DemoImageBundle) GWT.create(DemoImageBundle.class);
 
   AbstractImagePrototype createAccount_212x89();
   AbstractImagePrototype createAccount_hover_212x89();
