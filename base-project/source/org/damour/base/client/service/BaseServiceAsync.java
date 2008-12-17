@@ -29,7 +29,7 @@ public interface BaseServiceAsync {
   public static final BaseServiceAsync service = (BaseServiceAsync) GWT.create(BaseService.class);
   
   public void getAuthenticatedUser(AsyncCallback<User> callback);
-  public void createOrEditAccount(User user, String password, String captchaText, String captchaHash, AsyncCallback<User> callback);
+  public void createOrEditAccount(User user, String password, String captchaText, AsyncCallback<User> callback);
   public void login(String username, String password, AsyncCallback<User> callback);
   public void logout(AsyncCallback<Void> callback);
   public void getLoginHint(String username, AsyncCallback<String> callback);

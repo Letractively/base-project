@@ -26,7 +26,7 @@ import com.google.gwt.user.client.rpc.RemoteService;
 
 public interface BaseService extends RemoteService {
   public User getAuthenticatedUser() throws Exception;
-  public User createOrEditAccount(User user, String password, String captchaText, String captchaHash) throws Exception;
+  public User createOrEditAccount(User user, String password, String captchaText) throws Exception;
   public User login(String username, String password) throws Exception;
   public void logout() throws Exception;
   public String getLoginHint(String username) throws Exception;

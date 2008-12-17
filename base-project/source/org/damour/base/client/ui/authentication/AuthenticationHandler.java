@@ -12,11 +12,6 @@ import org.damour.base.client.ui.dialogs.IDialogValidatorCallback;
 import org.damour.base.client.ui.dialogs.MessageDialogBox;
 import org.damour.base.client.ui.dialogs.PromptDialogBox;
 
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.http.client.Request;
-import com.google.gwt.http.client.RequestBuilder;
-import com.google.gwt.http.client.RequestCallback;
-import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
@@ -27,7 +22,6 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.LoadListener;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
@@ -60,7 +54,6 @@ public class AuthenticationHandler {
 
   Image captchaValidationImage = new Image();
   TextBox captchaValidationTextBox = new TextBox();
-  String captchaHash = "";
 
   private static AuthenticationHandler instance;
 
@@ -190,33 +183,7 @@ public class AuthenticationHandler {
         createCaptchaImage();
       }
     });
-    captchaValidationImage.addLoadListener(new LoadListener() {
-      public void onError(Widget sender) {
-      }
-
-      public void onLoad(Widget sender) {
-        RequestBuilder builder = null;
-        if (GWT.isScript()) {
-          builder = new RequestBuilder(RequestBuilder.GET, "/captcha/getcaptcha.php?attempt=" + System.currentTimeMillis());
-        } else {
-          builder = new RequestBuilder(RequestBuilder.GET, "http://localhost/getcaptcha.php?attempt=" + System.currentTimeMillis());
-        }
-        builder.setCallback(new RequestCallback() {
-          public void onError(Request request, Throwable exception) {
-          }
-
-          public void onResponseReceived(Request request, Response response) {
-            captchaHash = response.getText().trim();
-          }
-        });
-        try {
-          builder.send();
-        } catch (Exception e) {
-        }
-      }
-    });
   }
-
   public void showLoginDialog(boolean forceRecenter) {
     username.setReadOnly(false);
     // present login dialog
@@ -382,11 +349,7 @@ public class AuthenticationHandler {
   }
 
   private void createCaptchaImage() {
-    if (GWT.isScript()) {
-      captchaValidationImage.setUrl("/captcha/captcha.php?attempt=" + System.currentTimeMillis());
-    } else {
-      captchaValidationImage.setUrl("http://localhost/captcha.php?attempt=" + System.currentTimeMillis());
-    }
+      captchaValidationImage.setUrl("/servlet/CaptchaImageGeneratorServlet?attempt=" + System.currentTimeMillis());
   }
 
   public void showEditAccountDialog(final User user) {
@@ -554,7 +517,7 @@ public class AuthenticationHandler {
     user.setPasswordHint(passwordHint);
     user.setEmail(email);
     user.setBirthday(birthday);
-    BaseServiceAsync.service.createOrEditAccount(user, password, captchaValidationTextBox.getText().toUpperCase(), captchaHash, loginCallback);
+    BaseServiceAsync.service.createOrEditAccount(user, password, captchaValidationTextBox.getText().toUpperCase(), loginCallback);
   }
 
   public void editAccount(User user, String password) {
@@ -584,7 +547,7 @@ public class AuthenticationHandler {
       };
     };
 
-    BaseServiceAsync.service.createOrEditAccount(user, password, null, null, loginCallback);
+    BaseServiceAsync.service.createOrEditAccount(user, password, null, loginCallback);
   }
 
   public void logout() {
