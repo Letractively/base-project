@@ -12,3 +12,19 @@ http://base-project.googlecode.com/files/base-project-demo-login.png
 = Account/Signup Dialog w/CAPTCHA =
 
 http://base-project.googlecode.com/files/base-project-demo-account.png
+
+= File Manager =
+
+http://base-project.googlecode.com/files/base-project-demo-filemanager.png
+
+= File Properties =
+
+http://base-project.googlecode.com/files/base-project-demo-fileprops.png
+
+= Star Rating =
+
+http://base-project.googlecode.com/files/base-project-demo-star-rating.png
+
+= Advisory Rating System =
+
+http://base-project.googlecode.com/files/base-project-demo-advisory.png
