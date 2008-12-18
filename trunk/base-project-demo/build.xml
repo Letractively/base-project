@@ -42,8 +42,6 @@
 			<fileset dir="source" includes="**/*" />
 			<fileset dir="../base-project/source" includes="**/*" />
 		</copy>
-		<replace dir="dist/source" includes="**/*" token="DEBUG = true" value="DEBUG = false"></replace>
-		<replace dir="dist/source" includes="**/*" token="showSQL = true" value="showSQL = false"></replace>
 		<replace dir="dist/source" includes="**/*" token="%domain%" value="${domain}"></replace>
 	</target>
 	
@@ -76,6 +74,9 @@
 	</target>
 			
 	<target name="dist" depends="clean, compile-gwt">
+		<copy todir="dist/bin" overwrite="true">
+			<fileset dir="dist/source" includes="**/*" />
+		</copy>
 		<jar basedir="dist/bin" destfile="dist/${project.name}-${release.major.number}.${release.minor.number}.${release.milestone.number}.jar" />
 		<copy todir="dist/${target.webapp.name}" overwrite="true">
 			<fileset dir="${webapp.path}" includes="**/*" />
