@@ -25,10 +25,10 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
 public class HibernateUtil {
-  public static final boolean DEBUG = true;
-  public static final long startupDate = System.currentTimeMillis();
+  private static boolean DEBUG = true;
+  private static final long startupDate = System.currentTimeMillis();
 
-  protected static HibernateUtil instance = null;
+  private static HibernateUtil instance = null;
 
   private SessionFactory sessionFactory = null;
   private String username;
@@ -44,20 +44,24 @@ public class HibernateUtil {
   private String hbm2ddlMode = "update";
 
   private HibernateUtil() {
-    ResourceBundle rb = ResourceBundle.getBundle("connection");
+    ResourceBundle rb = ResourceBundle.getBundle("settings");
     setUsername(rb.getString("username"));
     setPassword(rb.getString("password"));
     setConnectString(rb.getString("connectString"));
     setTablePrefix(rb.getString("tablePrefix"));
     setColumnPrefix(rb.getString("columnPrefix"));
+    showSQL = "true".equalsIgnoreCase(getResource(rb, "showSQL", "" + showSQL));
+    DEBUG = "true".equalsIgnoreCase(getResource(rb, "debug", "" + DEBUG));
 
     try {
-      ResourceBundle override = ResourceBundle.getBundle("connection_override");
+      ResourceBundle override = ResourceBundle.getBundle("settings_override");
       setUsername(getResource(override, "username", getUsername()));
       setPassword(getResource(override, "password", getPassword()));
       setConnectString(getResource(override, "connectString", getConnectString()));
       setTablePrefix(getResource(override, "tablePrefix", getTablePrefix()));
       setColumnPrefix(getResource(override, "columnPrefix", getColumnPrefix()));
+      showSQL = "true".equalsIgnoreCase(getResource(override, "showSQL", "" + showSQL));
+      DEBUG = "true".equalsIgnoreCase(getResource(override, "debug", "" + DEBUG));
     } catch (Exception e) {
       // these are overrides, don't prevent startup by blowing out
       Logger.log(e);
