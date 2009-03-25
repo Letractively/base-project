@@ -8,7 +8,8 @@ This document will outline and describe the steps needed to get the base-project
   * Java 5 or higher
   * Eclipse http://www.eclipse.org
   * Subclipse http://subclipse.tigris.org/
-  * MySQL http://www.mysql.com
+  * MySQL http://dev.mysql.com/downloads/mysql/5.1.html
+  * MySQL GUI Tools http://dev.mysql.com/downloads/gui-tools/5.0.html
 
 == Installation Steps ==
   # Download MySQL and perform a typical installation
