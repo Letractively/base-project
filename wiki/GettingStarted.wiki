@@ -5,7 +5,7 @@
 This document will outline and describe the steps needed to get the base-project & base-project-demo up and running in debug/development mode.
 
 == Prerequisites ==
-  * Java 5 or higher
+  * Java 5 or higher http://java.sun.com
   * Eclipse http://www.eclipse.org
   * Subclipse http://subclipse.tigris.org/
   * MySQL http://dev.mysql.com/downloads/mysql/5.1.html
