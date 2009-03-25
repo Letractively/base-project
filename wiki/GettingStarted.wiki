@@ -4,9 +4,6 @@
 
 This document will outline and describe the steps needed to get the base-project & base-project-demo up and running in debug/development mode.
 
-
-= Details =
-
 == Prerequisites ==
   * Java 5 or higher
   * Eclipse http://www.eclipse.org
