@@ -1,0 +1,31 @@
+#summary Getting started.
+
+= Introduction =
+
+This document will outline and describe the steps needed to get the base-project & base-project-demo up and running in debug/development mode.
+
+
+= Details =
+
+== Prerequisites ==
+  * Java 5 or higher
+  * Eclipse http://www.eclipse.org
+  * Subclipse http://subclipse.tigris.org/
+  * MySQL http://www.mysql.com
+
+== Installation Steps ==
+  # Download MySQL and perform a typical installation
+  # Download mysql-gui-tools
+  # Using MySQL Administrator create a new catalog for the base-project
+  # Using the Administrator, create a base-project user for mysql and give the user all available privileges (Schema Privileges tab under User Administration)
+  # Download Eclipse (for Java) and run it, create a new workspace if desired
+  # Install the subversion plugin for Eclipse
+  # Checkout the base-project SVN project:
+    # New->Project->SVN->Checkout Projects from SVN
+    # Create a new repository location (http://base-project.googlecode.com/svn/trunk/)
+    # Checkout base-project & base-project-demo (highlight both and hit finish)
+  # After the checkout, Eclipse will initialize and compile the projects, there should be no errors in either of the projects
+  # Edit base-project-demo/source/settings_override.properties
+    # Enter the mysql base-project username/password you created
+    # Enter the mysql jdbc connect string, default is jdbc:mysql://localhost/baseproject?autoReconnect=true focus on the baseproject part if you created a different schema
+    # If you would like table or column prefixes to be added to all tables/columns that are created (for example, if you are reusing an existing database/catalog and want to be sure table names do not collide), then edit the tablePrefix or columnPrefix settings
