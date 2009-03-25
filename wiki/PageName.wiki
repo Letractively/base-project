@@ -1,0 +1,14 @@
+#summary Getting started.
+#labels Featured,Phase-Implementation,Phase-Deploy
+
+= Introduction =
+
+This document will outline and describe the steps needed to get the base-project & base-project-demo up and running in debug/development mode.
+
+
+= Details =
+
+Add your content here.  Format your content with:
+  * Text in *bold* or _italic_
+  * Headings, paragraphs, and lists
+  * Automatic links to other wiki pages
