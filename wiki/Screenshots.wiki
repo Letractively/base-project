@@ -28,3 +28,7 @@ http://base-project.googlecode.com/files/base-project-demo-star-rating.png
 = Advisory Rating System =
 
 http://base-project.googlecode.com/files/base-project-demo-advisory.png
+
+= Comment Widget =
+
+http://base-project.googlecode.com/files/base-project-comment-widget.png
