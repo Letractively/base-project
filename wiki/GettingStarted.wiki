@@ -1,3 +1,4 @@
+#summary Getting Started Guide for base-project/demo
 #labels Featured,Phase-Implementation,Phase-Deploy
 
 = Introduction =
