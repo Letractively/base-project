@@ -1,0 +1,7 @@
+RewriteEngine on
+
+RewriteRule ^(.*)\.cache\.(.*)$ /resourcecache.jsp?filename=$1.cache.$2
+RewriteRule ^images/(.*)$ /resourcecache.jsp?filename=/images/$1
+
+AddHandler x-httpd-php5 .php
+AddHandler x-httpd-php .php4
