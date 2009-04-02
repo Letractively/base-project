@@ -1,9 +1,9 @@
 package org.damour.base.client.ui.rating;
 
 import org.damour.base.client.images.BaseImageBundle;
-import org.damour.base.client.objects.File;
-import org.damour.base.client.objects.FileUserRating;
-import org.damour.base.client.service.BaseServiceAsync;
+import org.damour.base.client.objects.PermissibleObject;
+import org.damour.base.client.objects.UserRating;
+import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.dialogs.MessageDialogBox;
 
 import com.google.gwt.i18n.client.NumberFormat;
@@ -23,8 +23,8 @@ public class RatingWidget extends VerticalPanel {
   Label statsLabel = null;
   boolean showStatsLabel = true;
   HorizontalPanel starPanel = new HorizontalPanel();
-  File file;
-  FileUserRating fileRating;
+  PermissibleObject permissibleObject;
+  UserRating fileRating;
   Image star1 = new Image();
   Image star2 = new Image();
   Image star3 = new Image();
@@ -48,7 +48,7 @@ public class RatingWidget extends VerticalPanel {
         } else if (sender == star5) {
           vote = 5;
         }
-        setFileRating(file, vote);
+        setUserRating(permissibleObject, vote);
       }
     }
   };
@@ -66,6 +66,7 @@ public class RatingWidget extends VerticalPanel {
     }
 
     public void onMouseLeave(Widget sender) {
+      DOM.setStyleAttribute(sender.getElement(), "cursor", "default");
       setStars();
     }
 
@@ -77,9 +78,9 @@ public class RatingWidget extends VerticalPanel {
     }
   };
 
-  public RatingWidget(File file, FileUserRating fileRating, boolean showStatsLabel) {
+  public RatingWidget(PermissibleObject permissibleObject, UserRating fileRating, boolean showStatsLabel) {
     this.showStatsLabel = showStatsLabel;
-    this.file = file;
+    this.permissibleObject = permissibleObject;
     this.fileRating = fileRating;
     setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 
@@ -90,13 +91,14 @@ public class RatingWidget extends VerticalPanel {
     setupStar(star5);
 
     add(starPanel);
-    statsLabel = new Label(NumberFormat.getFormat("#.#").format(file.getAverageRating()) + " rating from " + file.getNumRatingVotes() + " users", false);
+    statsLabel = new Label(NumberFormat.getFormat("#.#").format(permissibleObject.getAverageRating()) + " rating from " + permissibleObject.getNumRatingVotes()
+        + " users", false);
     DOM.setStyleAttribute(statsLabel.getElement(), "fontSize", "8pt");
     if (showStatsLabel) {
       add(statsLabel);
     }
     if (fileRating == null) {
-      getFileUserRating(file);
+      getUserRating(permissibleObject);
     }
     setStars();
   }
@@ -151,16 +153,17 @@ public class RatingWidget extends VerticalPanel {
   }
 
   public void setStars() {
-    String statText = NumberFormat.getFormat("#.#").format(file.getAverageRating()) + " rating from " + file.getNumRatingVotes() + " users";
+    String statText = NumberFormat.getFormat("#.#").format(permissibleObject.getAverageRating()) + " rating from " + permissibleObject.getNumRatingVotes()
+        + " users";
     statsLabel.setText(statText);
-    if (file.getNumRatingVotes() == 0) {
+    if (permissibleObject.getNumRatingVotes() == 0) {
       BaseImageBundle.images.starNoVotes().applyTo(star1);
       BaseImageBundle.images.starNoVotes().applyTo(star2);
       BaseImageBundle.images.starNoVotes().applyTo(star3);
       BaseImageBundle.images.starNoVotes().applyTo(star4);
       BaseImageBundle.images.starNoVotes().applyTo(star5);
     } else {
-      float rating = file.getAverageRating();
+      float rating = permissibleObject.getAverageRating();
       if (rating < .25) {
         // 0
         BaseImageBundle.images.starEmpty().applyTo(star1);
@@ -257,14 +260,14 @@ public class RatingWidget extends VerticalPanel {
     }
   }
 
-  public void setFileRating(final File file, int rating) {
-    AsyncCallback<FileUserRating> callback = new AsyncCallback<FileUserRating>() {
+  public void setUserRating(final PermissibleObject permissibleObject, int rating) {
+    AsyncCallback<UserRating> callback = new AsyncCallback<UserRating>() {
 
-      public void onSuccess(FileUserRating userFileRating) {
+      public void onSuccess(UserRating userFileRating) {
         if (userFileRating != null) {
           RatingWidget.this.fileRating = userFileRating;
-          if (userFileRating.getFile() != null) {
-            RatingWidget.this.file = userFileRating.getFile();
+          if (userFileRating.getPermissibleObject() != null) {
+            RatingWidget.this.permissibleObject = userFileRating.getPermissibleObject();
           }
         }
         setStars();
@@ -275,17 +278,17 @@ public class RatingWidget extends VerticalPanel {
         dialog.center();
       }
     };
-    BaseServiceAsync.service.setFileUserRating(file, rating, callback);
+    BaseServiceCache.getService().setUserRating(permissibleObject, rating, callback);
   }
 
-  public void getFileUserRating(final File file) {
-    AsyncCallback<FileUserRating> callback = new AsyncCallback<FileUserRating>() {
+  public void getUserRating(final PermissibleObject permissibleObject) {
+    AsyncCallback<UserRating> callback = new AsyncCallback<UserRating>() {
 
-      public void onSuccess(FileUserRating userFileRating) {
+      public void onSuccess(UserRating userFileRating) {
         if (userFileRating != null) {
           RatingWidget.this.fileRating = userFileRating;
-          if (userFileRating.getFile() != null) {
-            RatingWidget.this.file = userFileRating.getFile();
+          if (userFileRating.getPermissibleObject() != null) {
+            RatingWidget.this.permissibleObject = userFileRating.getPermissibleObject();
           }
         }
         setStars();
@@ -297,6 +300,6 @@ public class RatingWidget extends VerticalPanel {
         clear();
       }
     };
-    BaseServiceAsync.service.getFileUserRating(file, callback);
+    BaseServiceCache.getService().getUserRating(permissibleObject, callback);
   }
 }

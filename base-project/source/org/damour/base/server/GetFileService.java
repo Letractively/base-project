@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
-import org.damour.base.client.Logger;
 import org.damour.base.client.objects.File;
 import org.damour.base.client.objects.Permission;
 import org.damour.base.client.objects.User;
@@ -21,7 +20,7 @@ import org.hibernate.Session;
 
 public class GetFileService extends HttpServlet {
 
-  private static BaseServiceImpl baseService = new BaseServiceImpl();
+  private static BaseService baseService = new BaseService();
 
   public GetFileService() {
     super();
@@ -102,7 +101,7 @@ public class GetFileService extends HttpServlet {
       response.setContentLength((int) file.getSize());
       IOUtils.copy(inputStream, outStream);
     } catch (Throwable t) {
-      baseService.logException(t);
+      Logger.log(t);
       try {
         response.sendError(HttpServletResponse.SC_NOT_FOUND);
         response.setStatus(HttpServletResponse.SC_NOT_FOUND);

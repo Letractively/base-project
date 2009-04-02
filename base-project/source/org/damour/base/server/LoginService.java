@@ -11,7 +11,7 @@ import org.damour.base.client.objects.User;
 
 public class LoginService extends HttpServlet {
 
-  private static BaseServiceImpl baseService = new BaseServiceImpl();
+  private static BaseService baseService = new BaseService();
 
   public LoginService() {
     super();

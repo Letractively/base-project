@@ -6,7 +6,7 @@ import java.util.Properties;
 
 import net.sf.ehcache.CacheManager;
 
-import org.damour.base.client.Logger;
+import org.damour.base.server.Logger;
 import org.hibernate.cache.Cache;
 import org.hibernate.cache.CacheException;
 import org.hibernate.cache.EhCache;

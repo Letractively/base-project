@@ -9,6 +9,9 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -31,12 +34,11 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.multipart.ByteArrayPartSource;
 import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
-import org.damour.base.client.Logger;
 import org.damour.base.client.objects.File;
+import org.damour.base.client.objects.FileData;
 import org.damour.base.client.objects.FileUploadStatus;
 import org.damour.base.client.objects.Folder;
 import org.damour.base.client.objects.Photo;
@@ -50,7 +52,7 @@ import org.hibernate.Transaction;
 
 public class FileUploadService extends HttpServlet {
 
-  private static BaseServiceImpl baseService = new BaseServiceImpl();
+  private static BaseService baseService = new BaseService();
 
   public FileUploadService() {
     super();
@@ -72,10 +74,10 @@ public class FileUploadService extends HttpServlet {
     try {
       fileItems = getFileItems(request, owner);
     } catch (Throwable t) {
-      baseService.logException(t);
+      Logger.log(t);
       return;
     }
-    final FileUploadStatus status = BaseServiceImpl.fileUploadStatusMap.get(owner);
+    final FileUploadStatus status = BaseService.fileUploadStatusMap.get(owner);
     status.setStatus(FileUploadStatus.CREATING_FILE);
 
     Transaction tx = session.beginTransaction();
@@ -107,7 +109,7 @@ public class FileUploadService extends HttpServlet {
             return;
           }
         }
-        fileObject.setParentFolder(parentFolder);
+        fileObject.setParent(parentFolder);
 
         fileObject.setContentType(item.getContentType());
         String name = item.getName();
@@ -123,7 +125,7 @@ public class FileUploadService extends HttpServlet {
         session.save(fileObject);
 
         status.setStatus(FileUploadStatus.WRITING_FILE);
-        java.io.File outputPath = new java.io.File(java.io.File.separatorChar + "tmp" + java.io.File.separatorChar + baseService.getDomainName(request));
+        java.io.File outputPath = new java.io.File(java.io.File.separatorChar + "tmp" + java.io.File.separatorChar + BaseSystem.getDomainName(request));
         java.io.File outputFile = new java.io.File(outputPath, fileObject.getId() + "_" + fileObject.getName());
         outputPath.mkdirs();
         item.write(outputFile);
@@ -156,7 +158,7 @@ public class FileUploadService extends HttpServlet {
             PhotoThumbnail thumbFile = new PhotoThumbnail();
             thumbFile.setHidden(true);
             thumbFile.setOwner(owner);
-            thumbFile.setParentFolder(parentFolder);
+            thumbFile.setParent(parentFolder);
             thumbFile.setName(createFileName("", name, "_thumb"));
             thumbFile.setDescription("Thumbnail for " + name);
             session.save(thumbFile);
@@ -164,7 +166,7 @@ public class FileUploadService extends HttpServlet {
             PhotoThumbnail slideFile = new PhotoThumbnail();
             slideFile.setHidden(true);
             slideFile.setOwner(owner);
-            slideFile.setParentFolder(parentFolder);
+            slideFile.setParent(parentFolder);
             slideFile.setName(createFileName("", name, "_slide"));
             slideFile.setDescription("Medium image for " + name);
             session.save(slideFile);
@@ -223,15 +225,15 @@ public class FileUploadService extends HttpServlet {
           status.setStatus(FileUploadStatus.FINISHED);
           Logger.log("Wrote to database: " + fileObject.getName());
         } catch (Throwable t) {
-          baseService.logException(t);
+          Logger.log(t);
         }
         Cookie cookie = new Cookie(item.getFieldName(), fileObject.getId().toString());
         cookie.setPath("/");
-        cookie.setMaxAge(BaseServiceImpl.COOKIE_TIMEOUT);
+        cookie.setMaxAge(BaseService.COOKIE_TIMEOUT);
         response.addCookie(cookie);
       }
     } catch (Throwable t) {
-      baseService.logException(t);
+      Logger.log(t);
       try {
         tx.rollback();
       } catch (Exception e2) {
@@ -264,16 +266,38 @@ public class FileUploadService extends HttpServlet {
   }
 
   protected void saveData(String name, byte[] data, HttpServletRequest request) {
+    ByteArrayInputStream bais = new ByteArrayInputStream(data);
+    PreparedStatement ps = null;
     try {
-      PostMethod filePost = new PostMethod("http://" + request.getServerName() + "/test.php");
-      ArrayList<Part> parts = new ArrayList<Part>();
-      parts.add(new FilePart(name, new ByteArrayPartSource(name, data)));// NON-NLS
-      filePost.setRequestEntity(new MultipartRequestEntity(parts.toArray(new Part[parts.size()]), filePost.getParams()));
-      HttpClient client = new HttpClient();
-      int status = client.executeMethod(filePost);
+      Connection conn = DriverManager.getConnection(HibernateUtil.getInstance().getConnectString(), HibernateUtil.getInstance().getUsername(), HibernateUtil
+          .getInstance().getPassword());
+      String INSERT_PICTURE = "insert into " + FileData.class.getSimpleName() + " (id, permissibleObject, data) values (?, ?, ?)";
+      conn.setAutoCommit(false);
+      ps = conn.prepareStatement(INSERT_PICTURE);
+      ps.setString(1, "001");
+      ps.setString(2, "name");
+      ps.setBinaryStream(3, bais, (int) data.length);
+      ps.executeUpdate();
+      conn.commit();
     } catch (Throwable t) {
-      t.printStackTrace();
+    } finally {
+      try {
+        ps.close();
+        bais.close();
+      } catch (Throwable t) {
+      }
     }
+
+    // try {
+    // PostMethod filePost = new PostMethod("http://" + request.getServerName() + "/test.php");
+    // ArrayList<Part> parts = new ArrayList<Part>();
+    // parts.add(new FilePart(name, new ByteArrayPartSource(name, data)));// NON-NLS
+    // filePost.setRequestEntity(new MultipartRequestEntity(parts.toArray(new Part[parts.size()]), filePost.getParams()));
+    // HttpClient client = new HttpClient();
+    // int status = client.executeMethod(filePost);
+    // } catch (Throwable t) {
+    // t.printStackTrace();
+    // }
   }
 
   protected String createFileName(String prefix, String name, String postfix) {
@@ -343,7 +367,8 @@ public class FileUploadService extends HttpServlet {
   protected List<FileItem> getFileItems(final HttpServletRequest request, final User user) throws FileUploadException {
     // half a meg and it stays in memory, over it goes to disk
     int sizeThreshold = 524288;
-    java.io.File repository = new java.io.File(java.io.File.separatorChar + "tmp" + java.io.File.separatorChar + baseService.getDomainName(request) + java.io.File.separatorChar + "uploads");
+    java.io.File repository = new java.io.File(java.io.File.separatorChar + "tmp" + java.io.File.separatorChar + BaseSystem.getDomainName(request)
+        + java.io.File.separatorChar + "uploads");
     repository.mkdirs();
 
     DiskFileItemFactory fileFactory = new DiskFileItemFactory(sizeThreshold, repository);
@@ -358,7 +383,7 @@ public class FileUploadService extends HttpServlet {
           status.setBytesRead(bytesRead);
           status.setContentLength(contentLength);
           status.setStatus(FileUploadStatus.UPLOADING);
-          BaseServiceImpl.fileUploadStatusMap.put(user, status);
+          BaseService.fileUploadStatusMap.put(user, status);
         } catch (Exception e) {
           e.printStackTrace();
         }

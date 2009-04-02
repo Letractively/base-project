@@ -2,10 +2,7 @@ package org.damour.base.server.hibernate.helpers;
 
 import java.util.List;
 
-import org.damour.base.client.objects.FileComment;
 import org.hibernate.HibernateException;
-import org.hibernate.Query;
-import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 
 public class GenericPage<T> {

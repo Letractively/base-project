@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.damour.base.client.objects.User;
 import org.damour.base.client.objects.UserGroup;
-import org.damour.base.client.service.BaseServiceAsync;
+import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.TabWidget;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -69,10 +69,10 @@ public class AdministratorPanel extends VerticalPanel implements IAdminCallback 
 
       public void onSuccess(List<User> users) {
         AdministratorPanel.this.users = users;
-        BaseServiceAsync.service.getGroups(groupsCallback);
+        BaseServiceCache.getService().getGroups(groupsCallback);
       };
     };
-    BaseServiceAsync.service.getUsers(callback);
+    BaseServiceCache.getService().getUsers(callback);
 
   }
 

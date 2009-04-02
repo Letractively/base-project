@@ -6,9 +6,8 @@ import java.util.List;
 import org.damour.base.client.objects.PermissibleObject;
 import org.damour.base.client.objects.Permission;
 import org.damour.base.client.service.BaseServiceAsync;
+import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.TabWidget;
-import org.damour.base.client.ui.dialogs.IDialogCallback;
-import org.damour.base.client.ui.dialogs.MessageDialogBox;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.TabPanel;
@@ -87,7 +86,7 @@ public class PropertiesPanel extends VerticalPanel {
         populateUI();
       }
     };
-    BaseServiceAsync.service.getPermissions(permissibleObject, callback);
+    BaseServiceCache.getService().getPermissions(permissibleObject, callback);
   }
 
   public void apply(AsyncCallback<Void> callback) {

@@ -5,11 +5,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.damour.base.client.objects.Category;
+import org.damour.base.client.objects.Comment;
 import org.damour.base.client.objects.File;
-import org.damour.base.client.objects.FileComment;
 import org.damour.base.client.objects.FileUploadStatus;
-import org.damour.base.client.objects.FileUserAdvisory;
-import org.damour.base.client.objects.FileUserRating;
 import org.damour.base.client.objects.Folder;
 import org.damour.base.client.objects.GroupMembership;
 import org.damour.base.client.objects.HibernateStat;
@@ -20,7 +18,9 @@ import org.damour.base.client.objects.PermissibleObject;
 import org.damour.base.client.objects.Permission;
 import org.damour.base.client.objects.RepositoryTreeNode;
 import org.damour.base.client.objects.User;
+import org.damour.base.client.objects.UserAdvisory;
 import org.damour.base.client.objects.UserGroup;
+import org.damour.base.client.objects.UserRating;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 
@@ -75,15 +75,15 @@ public interface BaseService extends RemoteService {
   public void addToCategory(Category category, PermissibleObject permissibleObject) throws Exception;
   
   // content rating & advisory
-  public FileUserRating getFileUserRating(File file) throws Exception;
-  public FileUserRating setFileUserRating(File file, int rating) throws Exception;
-  public FileUserAdvisory getFileUserAdvisory(File file) throws Exception;
-  public FileUserAdvisory setFileUserAdvisory(File file, int advisory) throws Exception;
+  public UserRating getUserRating(PermissibleObject permissibleObject) throws Exception;
+  public UserRating setUserRating(PermissibleObject permissibleObject, int rating) throws Exception;
+  public UserAdvisory getUserAdvisory(PermissibleObject permissibleObject) throws Exception;
+  public UserAdvisory setUserAdvisory(PermissibleObject permissibleObject, int advisory) throws Exception;
 
   // file comments
-  public Page<FileComment> getCommentPage(File file, boolean sortDescending, int pageNumber, int pageSize) throws Exception;
-  public List<FileComment> getComments(File file) throws Exception;
-  public Boolean submitComment(FileComment comment) throws Exception;
-  public Boolean approveComment(FileComment comment) throws Exception;
-  public Boolean deleteComment(FileComment comment) throws Exception;
+  public Page<Comment> getCommentPage(PermissibleObject permissibleObject, boolean sortDescending, int pageNumber, int pageSize) throws Exception;
+  public List<Comment> getComments(PermissibleObject permissibleObject) throws Exception;
+  public Boolean submitComment(Comment comment) throws Exception;
+  public Boolean approveComment(Comment comment) throws Exception;
+  public Boolean deleteComment(Comment comment) throws Exception;
 }

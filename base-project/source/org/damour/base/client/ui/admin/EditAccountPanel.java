@@ -3,9 +3,10 @@ package org.damour.base.client.ui.admin;
 import java.util.Date;
 
 import org.damour.base.client.objects.User;
-import org.damour.base.client.service.BaseServiceAsync;
+import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.IGenericCallback;
 import org.damour.base.client.ui.buttons.Button;
+import org.damour.base.client.ui.datepicker.SimpleDatePicker;
 import org.damour.base.client.ui.dialogs.MessageDialogBox;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -16,7 +17,6 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
-import com.thapar.gwt.user.ui.client.widget.simpledatepicker.SimpleDatePicker;
 
 public class EditAccountPanel extends FlexTable {
 
@@ -73,7 +73,7 @@ public class EditAccountPanel extends FlexTable {
           };
         };
 
-        BaseServiceAsync.service.createOrEditAccount(user, passwordTextBox.getText(), null, loginCallback);
+        BaseServiceCache.getService().createOrEditAccount(user, passwordTextBox.getText(), null, loginCallback);
       }
     });
     applyButton.setTitle("Apply Changes");

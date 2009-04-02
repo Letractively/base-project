@@ -3,7 +3,7 @@ package org.damour.base.client.ui.repository;
 import org.damour.base.client.objects.File;
 import org.damour.base.client.objects.Folder;
 import org.damour.base.client.objects.PermissibleObject;
-import org.damour.base.client.service.BaseServiceAsync;
+import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.dialogs.IDialogCallback;
 import org.damour.base.client.ui.dialogs.IDialogValidatorCallback;
 import org.damour.base.client.ui.dialogs.MessageDialogBox;
@@ -45,11 +45,11 @@ public class RenameObjectCommand implements Command {
         if (permissibleObject instanceof File) {
           File file = (File) permissibleObject;
           file.setName(nameTextBox.getText());
-          BaseServiceAsync.service.renameFile(file, renameCallback);
+          BaseServiceCache.getService().renameFile(file, renameCallback);
         } else if (permissibleObject instanceof Folder) {
           Folder folder = (Folder) permissibleObject;
           folder.setName(nameTextBox.getText());
-          BaseServiceAsync.service.renameFolder(folder, renameCallback);
+          BaseServiceCache.getService().renameFolder(folder, renameCallback);
         }
       }
 

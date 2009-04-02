@@ -2,16 +2,16 @@ package org.damour.base.client.objects;
 
 import java.io.Serializable;
 
-public class FileUserRating implements Serializable, IHibernateFriendly {
+public class UserRating implements Serializable, IHibernateFriendly {
 
   public Long id;
   public User voter;
-  public File file;
+  public PermissibleObject permissibleObject;
   public String voterIP;
   public int rating = 0; // 0-5
   public long ratingDate = System.currentTimeMillis();
 
-  public FileUserRating() {
+  public UserRating() {
   }
 
   public boolean isLazy() {
@@ -48,12 +48,12 @@ public class FileUserRating implements Serializable, IHibernateFriendly {
     this.voter = voter;
   }
 
-  public File getFile() {
-    return file;
+  public PermissibleObject getPermissibleObject() {
+    return permissibleObject;
   }
 
-  public void setFile(File file) {
-    this.file = file;
+  public void setPermissibleObject(PermissibleObject permissibleObject) {
+    this.permissibleObject = permissibleObject;
   }
 
   public long getRatingDate() {
@@ -98,7 +98,7 @@ public class FileUserRating implements Serializable, IHibernateFriendly {
       return false;
     if (getClass() != obj.getClass())
       return false;
-    FileUserRating other = (FileUserRating) obj;
+    UserRating other = (UserRating) obj;
     if (id == null) {
       if (other.id != null)
         return false;

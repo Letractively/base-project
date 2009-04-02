@@ -1,6 +1,5 @@
 package org.damour.base.client.ui.admin;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -8,7 +7,7 @@ import java.util.Set;
 
 import org.damour.base.client.objects.PendingGroupMembership;
 import org.damour.base.client.objects.User;
-import org.damour.base.client.service.BaseServiceAsync;
+import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.buttons.Button;
 import org.damour.base.client.ui.dialogs.MessageDialogBox;
 
@@ -171,7 +170,7 @@ public class ManagePendingGroupMembershipsPanel extends VerticalPanel {
         populateUI(newPendingList);
       };
     };
-    BaseServiceAsync.service.getPendingGroupMemberships(user, approveCallback);
+    BaseServiceCache.getService().getPendingGroupMemberships(user, approveCallback);
   }
 
   public void submitPendingGroupMembershipApproval(Set<PendingGroupMembership> members, boolean approve) {
@@ -186,7 +185,7 @@ public class ManagePendingGroupMembershipsPanel extends VerticalPanel {
         populateUI(newPendingList);
       };
     };
-    BaseServiceAsync.service.submitPendingGroupMembershipApproval(user, members, approve, approveCallback);
+    BaseServiceCache.getService().submitPendingGroupMembershipApproval(user, members, approve, approveCallback);
   }
 
 }

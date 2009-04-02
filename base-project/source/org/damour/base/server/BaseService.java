@@ -1,8 +1,5 @@
 package org.damour.base.server;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
@@ -15,19 +12,14 @@ import javax.mail.Message;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.damour.base.client.Logger;
 import org.damour.base.client.objects.Category;
-import org.damour.base.client.objects.CategoryMembership;
+import org.damour.base.client.objects.Comment;
 import org.damour.base.client.objects.File;
-import org.damour.base.client.objects.FileComment;
 import org.damour.base.client.objects.FileUploadStatus;
-import org.damour.base.client.objects.FileUserAdvisory;
-import org.damour.base.client.objects.FileUserRating;
 import org.damour.base.client.objects.Folder;
 import org.damour.base.client.objects.GroupMembership;
 import org.damour.base.client.objects.HibernateStat;
@@ -36,21 +28,22 @@ import org.damour.base.client.objects.Page;
 import org.damour.base.client.objects.PendingGroupMembership;
 import org.damour.base.client.objects.PermissibleObject;
 import org.damour.base.client.objects.Permission;
-import org.damour.base.client.objects.Photo;
-import org.damour.base.client.objects.PhotoThumbnail;
 import org.damour.base.client.objects.RepositoryTreeNode;
 import org.damour.base.client.objects.User;
+import org.damour.base.client.objects.UserAdvisory;
 import org.damour.base.client.objects.UserGroup;
+import org.damour.base.client.objects.UserRating;
 import org.damour.base.client.objects.Permission.PERM;
 import org.damour.base.server.gwt.RemoteServiceServlet;
 import org.damour.base.server.hibernate.HibernateUtil;
+import org.damour.base.server.hibernate.ReflectionCache;
+import org.damour.base.server.hibernate.helpers.AdvisoryHelper;
 import org.damour.base.server.hibernate.helpers.DefaultData;
-import org.damour.base.server.hibernate.helpers.FileAdvisoryHelper;
-import org.damour.base.server.hibernate.helpers.FileCommentHelper;
+import org.damour.base.server.hibernate.helpers.CommentHelper;
 import org.damour.base.server.hibernate.helpers.FileObjectHelper;
-import org.damour.base.server.hibernate.helpers.FileRatingHelper;
 import org.damour.base.server.hibernate.helpers.FolderHelper;
 import org.damour.base.server.hibernate.helpers.GenericPage;
+import org.damour.base.server.hibernate.helpers.RatingHelper;
 import org.damour.base.server.hibernate.helpers.RepositoryHelper;
 import org.damour.base.server.hibernate.helpers.SecurityHelper;
 import org.damour.base.server.hibernate.helpers.UserHelper;
@@ -63,12 +56,11 @@ import org.hibernate.stat.Statistics;
 import com.andrewtimberlake.captcha.Captcha;
 import com.twmacinta.util.MD5;
 
-public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.base.client.service.BaseService {
+public class BaseService extends RemoteServiceServlet implements org.damour.base.client.service.BaseService {
 
   public static HashMap<User, FileUploadStatus> fileUploadStatusMap = new HashMap<User, FileUploadStatus>();
   public static final int COOKIE_TIMEOUT = 31556926; // 1 year in seconds
   public static String smtpHost = "relay-hosting.secureserver.net";
-  public static String domainName = null;
 
   private Session session = null;
 
@@ -78,22 +70,6 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
 
   public static void bootstrap() {
     try {
-      HibernateUtil.getInstance().generateHibernateMapping(User.class);
-      HibernateUtil.getInstance().generateHibernateMapping(UserGroup.class);
-      HibernateUtil.getInstance().generateHibernateMapping(GroupMembership.class);
-      HibernateUtil.getInstance().generateHibernateMapping(PendingGroupMembership.class);
-      HibernateUtil.getInstance().generateHibernateMapping(File.class);
-      HibernateUtil.getInstance().generateHibernateMapping(FileComment.class);
-      HibernateUtil.getInstance().generateHibernateMapping(FileUserRating.class);
-      HibernateUtil.getInstance().generateHibernateMapping(FileUserAdvisory.class);
-      HibernateUtil.getInstance().generateHibernateMapping(Folder.class);
-      HibernateUtil.getInstance().generateHibernateMapping(Permission.class);
-      HibernateUtil.getInstance().generateHibernateMapping(Photo.class);
-      HibernateUtil.getInstance().generateHibernateMapping(PhotoThumbnail.class);
-      HibernateUtil.getInstance().generateHibernateMapping(Category.class);
-      HibernateUtil.getInstance().generateHibernateMapping(CategoryMembership.class);
-
-      // consider populating defaults
       org.hibernate.Session session = HibernateUtil.getInstance().getSession();
       Transaction tx = session.beginTransaction();
       try {
@@ -109,14 +85,14 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
         }
       }
     } catch (Throwable t) {
-      BaseServiceImpl impl = new BaseServiceImpl();
-      BaseServiceImpl.domainName = "sometests.com";
-      impl.logException(t);
+      BaseSystem.setDomainName("sometests.com");
+      Logger.log(t);
     }
   }
 
   protected void onBeforeRequestDeserialized(String serializedRequest) {
     session = HibernateUtil.getInstance().getSession();
+    Logger.log(serializedRequest);
   }
 
   protected void onAfterResponseSerialized(String serializedResponse) {
@@ -132,7 +108,7 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
       session.close();
     } catch (Throwable t) {
     }
-    logException(e);
+    Logger.log(e);
     super.doUnexpectedFailure(e);
   }
 
@@ -176,96 +152,63 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
     smtpHost = inSmtpHost;
   }
 
-  protected void logException(Throwable t) {
-    try {
-      if (Logger.DEBUG) {
-        t.printStackTrace();
-      }
-      StringWriter sw = new StringWriter();
-      PrintWriter outWriter = new PrintWriter(sw);
-      t.printStackTrace(outWriter);
-      String trace = sw.toString().replaceAll("\n", "<BR/>").replaceAll("\t", "&nbsp;&nbsp;&nbsp;&nbsp;");
-      String from = "admin@" + getDomainName();
-      String to = from;
-      String subject = "A critical server error has occurred.";
-      String message = "<BR/>" + t.getMessage() + "<BR/>" + trace;
-      sendMessage(smtpHost, from, from, to, subject, message);
-    } catch (Throwable neverFail) {
-    }
-  }
-
-  public String getDomainName(HttpServletRequest request) {
-    if (domainName == null) {
-      domainName = request.getServerName();
-      if (domainName.lastIndexOf(".") > domainName.indexOf(".")) {
-        // remove subdomain
-        domainName = domainName.substring(domainName.indexOf(".") + 1);
-      }
-    }
-    return domainName;
-  }
-
   protected String getDomainName() {
-    return getDomainName(getThreadLocalRequest());
+    return BaseSystem.getDomainName(getThreadLocalRequest());
   }
 
-  protected void emailException(Throwable t) {
-    StringWriter sw = new StringWriter();
-    PrintWriter outWriter = new PrintWriter(sw);
-    t.printStackTrace(outWriter);
-    String trace = sw.toString().replaceAll("\n", "<BR/>").replaceAll("\t", "&nbsp;&nbsp;&nbsp;&nbsp;");
-    String from = "admin@" + getDomainName();
-    String to = from;
-    String subject = "A critical server error has occurred.";
-    String message = "<BR/>" + t.getMessage() + "<BR/>" + trace;
-    sendMessage(smtpHost, from, from, to, subject, message);
-  }
+//  protected void emailException(Throwable t) {
+//    String trace = Logger.convertThrowableToHTML(t);
+//    String from = "admin@" + getDomainName();
+//    String to = from;
+//    String subject = "A critical server error has occurred.";
+//    String message = "<BR/>" + t.getMessage() + "<BR/>" + trace;
+//    sendMessage(smtpHost, from, from, to, subject, message);
+//  }
 
-  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-    String method = req.getParameter("method");
-    if (method.equalsIgnoreCase("doesUserHavePermission")) {
-      org.hibernate.Session session = HibernateUtil.getInstance().getSession();
-      try {
-        String username = req.getParameter("user");
-        String permissionStr = req.getParameter("permission");
-        Long permissibleObjectId = Long.valueOf(req.getParameter("permissibleObjectId"));
-        User user = UserHelper.getUser(session, username);
-        PermissibleObject permissibleObject = (PermissibleObject) session.load(PermissibleObject.class, permissibleObjectId);
-        PERM permission = PERM.valueOf(permissionStr);
-        resp.setContentType("text/xml");
-        resp.getWriter().write("<result>");
-        resp.getWriter().write("" + SecurityHelper.doesUserHavePermission(session, user, permissibleObject, permission));
-        resp.getWriter().write("</result>");
-      } catch (Throwable t) {
-        t.printStackTrace();
-        logException(t);
-        throw new RuntimeException("Invalid doGet request");
-      } finally {
-        session.close();
-      }
-    } else if (method.equals("evictFile")) {
-      org.hibernate.Session session = HibernateUtil.getInstance().getSession();
-      try {
-        Long id = Long.valueOf(req.getParameter("id"));
-        File file = (File) session.load(File.class, id);
-        session.evict(file);
-        session.getSessionFactory().evict(File.class, id);
-      } catch (Throwable t) {
-        logException(t);
-        throw new RuntimeException("Invalid doGet request");
-      } finally {
-        session.close();
-      }
-    }
-  }
+//  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+//    String method = req.getParameter("method");
+//    if (method.equalsIgnoreCase("doesUserHavePermission")) {
+//      org.hibernate.Session session = HibernateUtil.getInstance().getSession();
+//      try {
+//        String username = req.getParameter("user");
+//        String permissionStr = req.getParameter("permission");
+//        Long permissibleObjectId = Long.valueOf(req.getParameter("permissibleObjectId"));
+//        User user = UserHelper.getUser(session, username);
+//        PermissibleObject permissibleObject = (PermissibleObject) session.load(PermissibleObject.class, permissibleObjectId);
+//        PERM permission = PERM.valueOf(permissionStr);
+//        resp.setContentType("text/xml");
+//        resp.getWriter().write("<result>");
+//        resp.getWriter().write("" + SecurityHelper.doesUserHavePermission(session, user, permissibleObject, permission));
+//        resp.getWriter().write("</result>");
+//      } catch (Throwable t) {
+//        t.printStackTrace();
+//        logException(t);
+//        throw new RuntimeException("Invalid doGet request");
+//      } finally {
+//        session.close();
+//      }
+//    } else if (method.equals("evictFile")) {
+//      org.hibernate.Session session = HibernateUtil.getInstance().getSession();
+//      try {
+//        Long id = Long.valueOf(req.getParameter("id"));
+//        File file = (File) session.load(File.class, id);
+//        session.evict(file);
+//        session.getSessionFactory().evict(File.class, id);
+//      } catch (Throwable t) {
+//        logException(t);
+//        throw new RuntimeException("Invalid doGet request");
+//      } finally {
+//        session.close();
+//      }
+//    }
+//  }
 
   public User login(HttpServletRequest request, HttpServletResponse response, String username, String password) {
     org.hibernate.Session session = HibernateUtil.getInstance().getSession();
     try {
       return login(session, request, response, username, password, false);
     } catch (Throwable t) {
-      t.printStackTrace();
-      logException(t);
+      Logger.log(t);
       throw new RuntimeException("Could not login.  Invalid username or password.");
     } finally {
       session.close();
@@ -277,8 +220,7 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
     try {
       return login(session, getThreadLocalRequest(), getThreadLocalResponse(), username, password, false);
     } catch (Throwable t) {
-      t.printStackTrace();
-      logException(t);
+      Logger.log(t);
       throw new RuntimeException("Could not login.  Invalid username or password.");
     } finally {
       session.close();
@@ -330,7 +272,6 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
       }
     }
     if (userCookie == null || userAuthCookie == null) {
-      // destroyCookies(response);
       return null;
     }
     String username = userCookie.getValue().toLowerCase();
@@ -346,6 +287,19 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
   }
 
   public User getAuthenticatedUser() throws Exception {
+    Cookie cookies[] = getThreadLocalRequest().getCookies();
+    Cookie userCookie = null;
+    Cookie userAuthCookie = null;
+    for (int i = 0; cookies != null && i < cookies.length; i++) {
+      if (cookies[i].getName().equals("user") && !cookies[i].getValue().equals("")) {
+        userCookie = cookies[i];
+      } else if (cookies[i].getName().equals("auth") && !cookies[i].getValue().equals("")) {
+        userAuthCookie = cookies[i];
+      }
+    }
+    if (userCookie == null || userAuthCookie == null) {
+      throw new RuntimeException("Could not get authenticated user.");
+    }
     org.hibernate.Session session = HibernateUtil.getInstance().getSession();
     try {
       User user = getAuthenticatedUser(session);
@@ -452,7 +406,6 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
 
         // if we are editing our own account, then re-authenticate
         if (authUser.getId().equals(dbUser.getId())) {
-          Logger.log("Logging in...");
           destroyCookies(getThreadLocalResponse());
           if (login(session, getThreadLocalRequest(), getThreadLocalResponse(), dbUser.getUsername(), dbUser.getPasswordHash(), true) != null) {
             return dbUser;
@@ -482,7 +435,7 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
       }
       return user.getPasswordHint();
     } finally {
-      session.clear();
+      session.close();
     }
   }
 
@@ -892,19 +845,19 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
     return new Date(HibernateUtil.getInstance().getStartupDate());
   }
 
-  public FileUserRating getFileUserRating(File file) throws Exception {
-    if (file == null) {
-      throw new RuntimeException("File not supplied.");
+  public UserRating getUserRating(PermissibleObject permissibleObject) throws Exception {
+    if (permissibleObject == null) {
+      throw new RuntimeException("PermissibleObject not supplied.");
     }
     org.hibernate.Session session = HibernateUtil.getInstance().getSession();
     User authUser = getAuthenticatedUser(session);
     try {
-      file = (File) session.load(File.class, file.getId());
-      if (!SecurityHelper.doesUserHavePermission(session, authUser, file, PERM.READ)) {
+      permissibleObject = (PermissibleObject) session.load(PermissibleObject.class, permissibleObject.getId());
+      if (!SecurityHelper.doesUserHavePermission(session, authUser, permissibleObject, PERM.READ)) {
         throw new RuntimeException("User is not authorized to get rating on this content.");
       }
       // find rating based on remote address if needed
-      return FileRatingHelper.getFileUserRating(session, file, authUser, getThreadLocalRequest().getRemoteAddr());
+      return RatingHelper.getUserRating(session, permissibleObject, authUser, getThreadLocalRequest().getRemoteAddr());
     } catch (Throwable t) {
       t.printStackTrace();
       throw new RuntimeException(t.getMessage());
@@ -913,36 +866,36 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
     }
   }
 
-  public FileUserRating setFileUserRating(File file, int rating) throws Exception {
-    if (file == null) {
-      throw new RuntimeException("File not supplied.");
+  public UserRating setUserRating(PermissibleObject permissibleObject, int rating) throws Exception {
+    if (permissibleObject == null) {
+      throw new RuntimeException("PermissibleObject not supplied.");
     }
     org.hibernate.Session session = HibernateUtil.getInstance().getSession();
     User authUser = getAuthenticatedUser(session);
     Transaction tx = session.beginTransaction();
     try {
-      file = (File) session.load(File.class, file.getId());
+      permissibleObject = (PermissibleObject) session.load(PermissibleObject.class, permissibleObject.getId());
 
-      if (!SecurityHelper.doesUserHavePermission(session, authUser, file, PERM.READ)) {
+      if (!SecurityHelper.doesUserHavePermission(session, authUser, permissibleObject, PERM.READ)) {
         throw new RuntimeException("User is not authorized to set rating on this content.");
       }
 
-      float totalRating = (float) file.getNumRatingVotes() * file.getAverageRating();
+      float totalRating = (float) permissibleObject.getNumRatingVotes() * permissibleObject.getAverageRating();
       totalRating += rating;
-      file.setNumRatingVotes(file.getNumRatingVotes() + 1);
-      float newAvg = totalRating / (float) file.getNumRatingVotes();
-      file.setAverageRating(newAvg);
-      session.save(file);
+      permissibleObject.setNumRatingVotes(permissibleObject.getNumRatingVotes() + 1);
+      float newAvg = totalRating / (float) permissibleObject.getNumRatingVotes();
+      permissibleObject.setAverageRating(newAvg);
+      session.save(permissibleObject);
 
-      FileUserRating userRating = FileRatingHelper.getFileUserRating(session, file, authUser, getThreadLocalRequest().getRemoteAddr());
+      UserRating userRating = RatingHelper.getUserRating(session, permissibleObject, authUser, getThreadLocalRequest().getRemoteAddr());
 
       if (userRating != null) {
         throw new RuntimeException("Already voted.");
       }
 
       // check if rating already exists
-      userRating = new FileUserRating();
-      userRating.setFile(file);
+      userRating = new UserRating();
+      userRating.setPermissibleObject(permissibleObject);
       userRating.setRating(rating);
       userRating.setVoter(authUser);
       userRating.setVoterIP(getThreadLocalRequest().getRemoteAddr());
@@ -962,20 +915,20 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
     }
   }
 
-  public FileUserAdvisory getFileUserAdvisory(File file) throws Exception {
-    if (file == null) {
-      throw new RuntimeException("File not supplied.");
+  public UserAdvisory getUserAdvisory(PermissibleObject permissibleObject) throws Exception {
+    if (permissibleObject == null) {
+      throw new RuntimeException("PermissibleObject not supplied.");
     }
     org.hibernate.Session session = HibernateUtil.getInstance().getSession();
     User authUser = getAuthenticatedUser(session);
     try {
-      file = (File) session.load(File.class, file.getId());
+      permissibleObject = (PermissibleObject) session.load(PermissibleObject.class, permissibleObject.getId());
 
-      if (!SecurityHelper.doesUserHavePermission(session, authUser, file, PERM.READ)) {
+      if (!SecurityHelper.doesUserHavePermission(session, authUser, permissibleObject, PERM.READ)) {
         throw new RuntimeException("User is not authorized to get advisory on this content.");
       }
       // find rating based on remote address if needed
-      return FileAdvisoryHelper.getFileUserAdvisory(session, file, authUser, getThreadLocalRequest().getRemoteAddr());
+      return AdvisoryHelper.getUserAdvisory(session, permissibleObject, authUser, getThreadLocalRequest().getRemoteAddr());
     } catch (Throwable t) {
       t.printStackTrace();
       throw new RuntimeException(t.getMessage());
@@ -984,36 +937,36 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
     }
   }
 
-  public FileUserAdvisory setFileUserAdvisory(File file, int advisory) throws Exception {
-    if (file == null) {
-      throw new RuntimeException("File not supplied.");
+  public UserAdvisory setUserAdvisory(PermissibleObject permissibleObject, int advisory) throws Exception {
+    if (permissibleObject == null) {
+      throw new RuntimeException("PermissibleObject not supplied.");
     }
     org.hibernate.Session session = HibernateUtil.getInstance().getSession();
     User authUser = getAuthenticatedUser(session);
     Transaction tx = session.beginTransaction();
     try {
-      file = (File) session.load(File.class, file.getId());
+      permissibleObject = (PermissibleObject) session.load(PermissibleObject.class, permissibleObject.getId());
 
-      if (!SecurityHelper.doesUserHavePermission(session, authUser, file, PERM.READ)) {
+      if (!SecurityHelper.doesUserHavePermission(session, authUser, permissibleObject, PERM.READ)) {
         throw new RuntimeException("User is not authorized to set advisory on this content.");
       }
 
-      float totalAdvisory = (float) file.getNumAdvisoryVotes() * file.getAverageAdvisory();
+      float totalAdvisory = (float) permissibleObject.getNumAdvisoryVotes() * permissibleObject.getAverageAdvisory();
       totalAdvisory += advisory;
-      file.setNumAdvisoryVotes(file.getNumAdvisoryVotes() + 1);
-      float newAvg = totalAdvisory / (float) file.getNumAdvisoryVotes();
-      file.setAverageAdvisory(newAvg);
-      session.save(file);
+      permissibleObject.setNumAdvisoryVotes(permissibleObject.getNumAdvisoryVotes() + 1);
+      float newAvg = totalAdvisory / (float) permissibleObject.getNumAdvisoryVotes();
+      permissibleObject.setAverageAdvisory(newAvg);
+      session.save(permissibleObject);
 
-      FileUserAdvisory userAdvisory = FileAdvisoryHelper.getFileUserAdvisory(session, file, authUser, getThreadLocalRequest().getRemoteAddr());
+      UserAdvisory userAdvisory = AdvisoryHelper.getUserAdvisory(session, permissibleObject, authUser, getThreadLocalRequest().getRemoteAddr());
 
       if (userAdvisory != null) {
         throw new RuntimeException("Already voted.");
       }
 
       // check if rating already exists
-      userAdvisory = new FileUserAdvisory();
-      userAdvisory.setFile(file);
+      userAdvisory = new UserAdvisory();
+      userAdvisory.setPermissibleObject(permissibleObject);
       userAdvisory.setRating(advisory);
       userAdvisory.setVoter(authUser);
       userAdvisory.setVoterIP(getThreadLocalRequest().getRemoteAddr());
@@ -1033,18 +986,18 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
     }
   }
 
-  public List<FileComment> getComments(File file) throws Exception {
-    if (file == null) {
+  public List<Comment> getComments(PermissibleObject permissibleObject) throws Exception {
+    if (permissibleObject == null) {
       throw new RuntimeException("File not supplied.");
     }
     org.hibernate.Session session = HibernateUtil.getInstance().getSession();
     User authUser = getAuthenticatedUser(session);
     try {
-      file = ((File) session.load(File.class, file.getId()));
-      if (!SecurityHelper.doesUserHavePermission(session, authUser, file, PERM.READ)) {
+      permissibleObject = ((PermissibleObject) session.load(File.class, permissibleObject.getId()));
+      if (!SecurityHelper.doesUserHavePermission(session, authUser, permissibleObject, PERM.READ)) {
         throw new RuntimeException("User is not authorized to get comments on this content.");
       }
-      return FileCommentHelper.getComments(session, file);
+      return CommentHelper.getComments(session, permissibleObject);
     } catch (Throwable t) {
       t.printStackTrace();
       throw new RuntimeException(t.getMessage());
@@ -1053,19 +1006,19 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
     }
   }
 
-  public Page<FileComment> getCommentPage(File file, boolean sortDescending, int pageNumber, int pageSize) throws Exception {
-    if (file == null) {
+  public Page<Comment> getCommentPage(PermissibleObject permissibleObject, boolean sortDescending, int pageNumber, int pageSize) throws Exception {
+    if (permissibleObject == null) {
       throw new RuntimeException("File not supplied.");
     }
     org.hibernate.Session session = HibernateUtil.getInstance().getSession();
     User authUser = getAuthenticatedUser(session);
     try {
-      file = ((File) session.load(File.class, file.getId()));
-      if (!SecurityHelper.doesUserHavePermission(session, authUser, file, PERM.READ)) {
+      permissibleObject = ((PermissibleObject) session.load(File.class, permissibleObject.getId()));
+      if (!SecurityHelper.doesUserHavePermission(session, authUser, permissibleObject, PERM.READ)) {
         throw new RuntimeException("User is not authorized to get comments on this content.");
       }
-      GenericPage<FileComment> gPage = new GenericPage<FileComment>(session, "from " + FileComment.class.getSimpleName() + " where file.id = " + file.getId() + " order by id " + (sortDescending ? "desc" : "asc"), pageNumber, pageSize);
-      return new Page<FileComment>(gPage.getList(), pageNumber, gPage.getLastPageNumber(), gPage.getRowCount());
+      GenericPage<Comment> gPage = new GenericPage<Comment>(session, "from " + Comment.class.getSimpleName() + " where permissibleObject.id = " + permissibleObject.getId() + " order by id " + (sortDescending ? "desc" : "asc"), pageNumber, pageSize);
+      return new Page<Comment>(gPage.getList(), pageNumber, gPage.getLastPageNumber(), gPage.getRowCount());
     } catch (Throwable t) {
       t.printStackTrace();
       throw new RuntimeException(t.getMessage());
@@ -1074,26 +1027,26 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
     }
   }
 
-  public Boolean submitComment(FileComment comment) throws Exception {
+  public Boolean submitComment(Comment comment) throws Exception {
     if (comment == null) {
       throw new RuntimeException("Comment not supplied.");
     }
-    if (comment.getFile() == null) {
-      throw new RuntimeException("File not supplied with comment.");
+    if (comment.getPermissibleObject() == null) {
+      throw new RuntimeException("PermissibleObject not supplied with comment.");
     }
     org.hibernate.Session session = HibernateUtil.getInstance().getSession();
     User authUser = getAuthenticatedUser(session);
     Transaction tx = session.beginTransaction();
     try {
-      comment.setFile((File) session.load(File.class, comment.getFile().getId()));
-      if (!SecurityHelper.doesUserHavePermission(session, authUser, comment.getFile(), PERM.READ)) {
+      comment.setPermissibleObject((PermissibleObject) session.load(PermissibleObject.class, comment.getPermissibleObject().getId()));
+      if (!SecurityHelper.doesUserHavePermission(session, authUser, comment.getPermissibleObject(), PERM.READ)) {
         throw new RuntimeException("User is not authorized to make comments on this content.");
       }
-      if (!comment.file.isAllowComments()) {
+      if (!comment.permissibleObject.isAllowComments()) {
         throw new RuntimeException("Comments are not allowed on this content.");
       }
       // the comment is approved if we are not moderating or if the commenter is the file owner
-      comment.setApproved(!comment.file.isModerateComments() || comment.getFile().getOwner().equals(authUser));
+      comment.setApproved(!comment.permissibleObject.isModerateComments() || comment.getPermissibleObject().getOwner().equals(authUser));
       session.save(comment);
       tx.commit();
       return true;
@@ -1109,7 +1062,7 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
     }
   }
 
-  public Boolean approveComment(FileComment comment) throws Exception {
+  public Boolean approveComment(Comment comment) throws Exception {
     if (comment == null) {
       throw new RuntimeException("Comment not supplied.");
     }
@@ -1120,8 +1073,8 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
     }
     Transaction tx = session.beginTransaction();
     try {
-      comment = ((FileComment) session.load(FileComment.class, comment.getId()));
-      if (!SecurityHelper.doesUserHavePermission(session, authUser, comment.getFile(), PERM.WRITE)) {
+      comment = ((Comment) session.load(Comment.class, comment.getId()));
+      if (!SecurityHelper.doesUserHavePermission(session, authUser, comment.getPermissibleObject(), PERM.WRITE)) {
         throw new RuntimeException("User is not authorized to approve comments for this content.");
       }
       comment.setApproved(true);
@@ -1140,7 +1093,7 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
     }
   }
 
-  public Boolean deleteComment(FileComment comment) throws Exception {
+  public Boolean deleteComment(Comment comment) throws Exception {
     if (comment == null) {
       throw new RuntimeException("Comment not supplied.");
     }
@@ -1151,12 +1104,12 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
     }
     Transaction tx = session.beginTransaction();
     try {
-      comment = ((FileComment) session.load(FileComment.class, comment.getId()));
-      if (!comment.getAuthor().equals(authUser) && !SecurityHelper.doesUserHavePermission(session, authUser, comment.getFile(), PERM.WRITE)) {
+      comment = ((Comment) session.load(Comment.class, comment.getId()));
+      if (!comment.getAuthor().equals(authUser) && !SecurityHelper.doesUserHavePermission(session, authUser, comment.getPermissibleObject(), PERM.WRITE)) {
         throw new RuntimeException("User is not authorized to delete comments for this content.");
       }
       // we can't delete this comment until we delete all the child comments
-      FileCommentHelper.deleteComment(session, comment);
+      CommentHelper.deleteComment(session, comment);
       tx.commit();
       return true;
     } catch (Throwable t) {
@@ -1220,10 +1173,10 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
     }
     Transaction tx = session.beginTransaction();
     try {
-      if (newFolder.getParentFolder() != null) {
-        newFolder.setParentFolder((Folder) session.load(Folder.class, newFolder.getParentFolder().getId()));
+      if (newFolder.getParent() != null) {
+        newFolder.setParent((PermissibleObject) session.load(PermissibleObject.class, newFolder.getParent().getId()));
       }
-      if (!SecurityHelper.doesUserHavePermission(session, authUser, newFolder.getParentFolder(), PERM.WRITE)) {
+      if (!SecurityHelper.doesUserHavePermission(session, authUser, newFolder.getParent(), PERM.WRITE)) {
         throw new RuntimeException("User is not authorized to create a new folder here.");
       }
       if (newFolder.getId() != null) {
@@ -1234,7 +1187,7 @@ public class BaseServiceImpl extends RemoteServiceServlet implements org.damour.
           }
           hibNewFolder.setName(newFolder.getName());
           hibNewFolder.setDescription(newFolder.getDescription());
-          hibNewFolder.setParentFolder(newFolder.getParentFolder());
+          hibNewFolder.setParent(newFolder.getParent());
           newFolder = hibNewFolder;
         }
       }

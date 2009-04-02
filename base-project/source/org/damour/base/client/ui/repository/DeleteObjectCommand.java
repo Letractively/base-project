@@ -3,7 +3,7 @@ package org.damour.base.client.ui.repository;
 import org.damour.base.client.objects.File;
 import org.damour.base.client.objects.Folder;
 import org.damour.base.client.objects.PermissibleObject;
-import org.damour.base.client.service.BaseServiceAsync;
+import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.dialogs.IDialogCallback;
 import org.damour.base.client.ui.dialogs.MessageDialogBox;
 import org.damour.base.client.ui.dialogs.PromptDialogBox;
@@ -39,9 +39,9 @@ public class DeleteObjectCommand implements Command {
         };
 
         if (permissibleObject != null && permissibleObject instanceof File) {
-          BaseServiceAsync.service.deleteFile((File) permissibleObject, deleteCallback);
+          BaseServiceCache.getService().deleteFile((File) permissibleObject, deleteCallback);
         } else if (permissibleObject != null && permissibleObject instanceof Folder) {
-          BaseServiceAsync.service.deleteFolder((Folder) permissibleObject, deleteCallback);
+          BaseServiceCache.getService().deleteFolder((Folder) permissibleObject, deleteCallback);
         }
       }
 

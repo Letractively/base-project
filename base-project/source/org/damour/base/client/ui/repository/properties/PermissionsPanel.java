@@ -9,6 +9,7 @@ import org.damour.base.client.objects.SecurityPrincipal;
 import org.damour.base.client.objects.User;
 import org.damour.base.client.objects.UserGroup;
 import org.damour.base.client.service.BaseServiceAsync;
+import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.authentication.AuthenticationHandler;
 import org.damour.base.client.ui.buttons.Button;
 import org.damour.base.client.ui.dialogs.IDialogCallback;
@@ -79,7 +80,7 @@ public class PermissionsPanel extends VerticalPanel {
               }
             }
           };
-          BaseServiceAsync.service.getUsers(getUsersCallback);
+          BaseServiceCache.getService().getUsers(getUsersCallback);
         }
         if (showGroupPerms) {
           AsyncCallback<List<UserGroup>> getGroupsCallback = new AsyncCallback<List<UserGroup>>() {
@@ -95,7 +96,7 @@ public class PermissionsPanel extends VerticalPanel {
               }
             }
           };
-          BaseServiceAsync.service.getGroups(AuthenticationHandler.getInstance().getUser(), getGroupsCallback);
+          BaseServiceCache.getService().getGroups(AuthenticationHandler.getInstance().getUser(), getGroupsCallback);
         }
 
         PromptDialogBox dialog = new PromptDialogBox("Add New Permission", "OK", null, "Cancel", false, true);
@@ -263,7 +264,7 @@ public class PermissionsPanel extends VerticalPanel {
         public void onSuccess(Void nothing) {
         }
       };
-      BaseServiceAsync.service.setPermissions(permissibleObject, permissions, setPermCallback);
+      BaseServiceCache.getService().setPermissions(permissibleObject, permissions, setPermCallback);
     }
   }
 

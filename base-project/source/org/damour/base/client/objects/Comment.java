@@ -2,13 +2,13 @@ package org.damour.base.client.objects;
 
 import java.io.Serializable;
 
-public class FileComment implements Serializable, IHibernateFriendly {
+public class Comment implements Serializable, IHibernateFriendly {
 
   public Long id;
   public User author;
-  public File file;
+  public PermissibleObject permissibleObject;
   public String comment;
-  public FileComment parentComment;
+  public Comment parentComment;
   //
   // if there is no user, we will store the users other info: like email/ip address
   // so that we can notify them if they would like to get updates when someone
@@ -18,7 +18,7 @@ public class FileComment implements Serializable, IHibernateFriendly {
   public long commentDate = System.currentTimeMillis();
   public boolean approved = false;
 
-  public FileComment() {
+  public Comment() {
   }
 
   public boolean isFieldUnique(String fieldName) {
@@ -72,18 +72,18 @@ public class FileComment implements Serializable, IHibernateFriendly {
   }
 
   /**
-   * @return the file
+   * @return the permissibleObject
    */
-  public File getFile() {
-    return file;
+  public PermissibleObject getPermissibleObject() {
+    return permissibleObject;
   }
 
   /**
-   * @param file
-   *          the file to set
+   * @param permissibleObject
+   *          the permissibleObject to set
    */
-  public void setFile(File file) {
-    this.file = file;
+  public void setPermissibleObject(PermissibleObject permissibleObject) {
+    this.permissibleObject = permissibleObject;
   }
 
   /**
@@ -161,14 +161,14 @@ public class FileComment implements Serializable, IHibernateFriendly {
   /**
    * @return the parentComment
    */
-  public FileComment getParentComment() {
+  public Comment getParentComment() {
     return parentComment;
   }
 
   /**
    * @param parentComment the parentComment to set
    */
-  public void setParentComment(FileComment parentComment) {
+  public void setParentComment(Comment parentComment) {
     this.parentComment = parentComment;
   }
 
@@ -188,7 +188,7 @@ public class FileComment implements Serializable, IHibernateFriendly {
       return false;
     if (getClass() != obj.getClass())
       return false;
-    FileComment other = (FileComment) obj;
+    Comment other = (Comment) obj;
     if (id == null) {
       if (other.id != null)
         return false;

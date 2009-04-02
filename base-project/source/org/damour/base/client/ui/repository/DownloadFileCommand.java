@@ -18,7 +18,7 @@ public class DownloadFileCommand implements Command {
   }
 
   public void execute() {
-    String url = "/servlet/GetFileService?file=" + object.getId() + "&name=" + object.getName() + "&download=true";
+    String url = "/servlet/org.damour.base.server.GetFileService?file=" + object.getId() + "&name=" + object.getName() + "&download=true";
     if (!GWT.isScript()) {
       url = "http://localhost/files/" + object.getNameOnDisk() + "?download=true";
     }

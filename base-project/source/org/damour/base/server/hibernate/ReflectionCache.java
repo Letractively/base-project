@@ -1,4 +1,4 @@
-package org.damour.base.server;
+package org.damour.base.server.hibernate;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;

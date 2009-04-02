@@ -10,6 +10,8 @@ import org.damour.base.client.objects.File;
 import org.damour.base.client.objects.Folder;
 import org.damour.base.client.objects.PermissibleObject;
 import org.damour.base.client.service.BaseServiceAsync;
+import org.damour.base.client.service.BaseServiceCache;
+import org.damour.base.client.utils.StringUtils;
 
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -151,10 +153,10 @@ public class GeneralPanel extends FlexTable {
 
   private String getLocation() {
     List<String> parentFolders = new ArrayList<String>();
-    Folder parentFolder = permissibleObject.getParentFolder();
+    PermissibleObject parentFolder = permissibleObject.getParent();
     while (parentFolder != null) {
       parentFolders.add(parentFolder.getName());
-      parentFolder = parentFolder.getParentFolder();
+      parentFolder = parentFolder.getParent();
     }
     Collections.reverse(parentFolders);
     String location = "";
@@ -174,7 +176,9 @@ public class GeneralPanel extends FlexTable {
       BaseImageBundle.images.folder32().applyTo(fileTypeIcon);
     } else if (permissibleObject instanceof File) {
       File file = (File) permissibleObject;
-      if (file.getContentType().contains("image/x-png")) {
+      if (StringUtils.isEmpty(file.getContentType())) {
+        BaseImageBundle.images.file32().applyTo(fileTypeIcon);
+      } else if (file.getContentType().contains("image/x-png")) {
         BaseImageBundle.images.png32().applyTo(fileTypeIcon);
       } else if (file.getContentType().contains("image/jpeg")) {
         BaseImageBundle.images.jpg32().applyTo(fileTypeIcon);
@@ -222,7 +226,7 @@ public class GeneralPanel extends FlexTable {
           callback.onSuccess(null);
         }
       };
-      BaseServiceAsync.service.updatePermissibleObject(newPermissibleObject, updatePermissibleObjectCallback);
+      BaseServiceCache.getService().updatePermissibleObject(newPermissibleObject, updatePermissibleObjectCallback);
     }
   }
 
