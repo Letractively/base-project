@@ -2,9 +2,13 @@ package org.damour.base.demo.client;
 
 import java.util.Date;
 
+import org.damour.base.client.BaseEntryPoint;
+import org.damour.base.client.localization.IResourceBundleLoadCallback;
+import org.damour.base.client.localization.ResourceBundle;
 import org.damour.base.client.objects.File;
 import org.damour.base.client.objects.User;
-import org.damour.base.client.service.BaseServiceAsync;
+import org.damour.base.client.service.BaseServiceCache;
+import org.damour.base.client.ui.IGenericCallback;
 import org.damour.base.client.ui.TabWidget;
 import org.damour.base.client.ui.admin.AdministratorPanel;
 import org.damour.base.client.ui.admin.commands.CreateGroupCommand;
@@ -23,6 +27,7 @@ import org.damour.base.client.ui.repository.FileManagerPanel;
 import org.damour.base.client.ui.toolbar.ToolBar;
 
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.WindowResizeListener;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -40,15 +45,15 @@ import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-public class DemoApplication implements EntryPoint, IAuthenticationListener {
+public class DemoApplication implements EntryPoint, IAuthenticationListener, IGenericCallback<Void>, IResourceBundleLoadCallback {
 
   public static final String domain = "%domain%";
 
+  ResourceBundle messages = null;
   FlexTable applicationPanel = new FlexTable();
   DeckPanel applicationContentDeck = new DeckPanel();
   ToolBar accountPanel = new ToolBar();
   FileManagerPanel fileManager = null;
-
   User user = null;
 
   public ComboMenuButton buildManageGroupsButton(boolean enabled) {
@@ -60,7 +65,7 @@ public class DemoApplication implements EntryPoint, IAuthenticationListener {
     groupsMenu.addItem("Create New Group", new CreateGroupCommand(user));
     groupsMenu.addItem("Join/Leave Groups", new JoinLeaveGroupsCommand(user));
 
-    ComboMenuButton menuButton = new ComboMenuButton("Groups", groupsMenu);
+    ComboMenuButton menuButton = new ComboMenuButton(messages.getString("groups", "Groups"), groupsMenu);
     menuButton.setEnabled(enabled);
     menuButton.setTitle("Create, manage or join groups");
     return menuButton;
@@ -68,8 +73,8 @@ public class DemoApplication implements EntryPoint, IAuthenticationListener {
 
   public ComboMenuButton buildProfileButton(boolean enabled) {
     MenuBar profileMenu = new MenuBar(true);
-    
-    MenuItem editAccountMenuItem = new MenuItem("Account", new MenuButtonCommand() {
+
+    MenuItem editAccountMenuItem = new MenuItem(messages.getString("account", "Account"), new MenuButtonCommand() {
       public void execute() {
         popup.hide();
         // it is possible the user is 'stale', but HIGHLY unlikely
@@ -79,22 +84,38 @@ public class DemoApplication implements EntryPoint, IAuthenticationListener {
     editAccountMenuItem.setTitle("Edit Your Account");
     profileMenu.addItem(editAccountMenuItem);
 
-    MenuItem myFilesMenuItem = new MenuItem("File Manager", new MenuButtonCommand() {
+    MenuItem myFilesMenuItem = new MenuItem(messages.getString("fileManager", "File Manager"), new MenuButtonCommand() {
       public void execute() {
         popup.hide();
         applicationContentDeck.showWidget(applicationContentDeck.getWidgetIndex(fileManager));
       }
     });
     myFilesMenuItem.setTitle("Manage Files");
-    profileMenu.addItem(myFilesMenuItem);    
-    
-    ComboMenuButton menuButton = new ComboMenuButton("Profile", profileMenu);
+    profileMenu.addItem(myFilesMenuItem);
+
+    ComboMenuButton menuButton = new ComboMenuButton(messages.getString("profile", "Profile"), profileMenu);
     menuButton.setEnabled(enabled);
     menuButton.setTitle("Edit account, profile, photos and more");
     return menuButton;
-  }  
-  
+  }
+
   public void onModuleLoad() {
+    BaseEntryPoint.addBaseStartupListener(this);
+  }
+
+  // the base has been loaded, now we can safely load
+  // this is due to asynchronous calls
+  public void invokeGenericCallback(Void object) {
+    onBaseModuleLoad();
+  }
+
+  public void onBaseModuleLoad() {
+    // when the bundle is loaded, it will fire an event
+    // calling our bundleLoaded
+    messages = new ResourceBundle("messages", "messages", true, this);
+  }
+
+  public void bundleLoaded(String bundleName) {
     AuthenticationHandler.getInstance().addLoginListener(this);
 
     applicationPanel.setWidth("100%");
@@ -139,13 +160,13 @@ public class DemoApplication implements EntryPoint, IAuthenticationListener {
     footerLinkPanel.setCellSpacing(5);
     footerLinkPanel.setStyleName("footerLinkPanel");
 
-    Label advertiseLink = new Label("Advertise with Us", false);
+    Label advertiseLink = new Label(messages.getString("advertiseWithUs", "Advertise with Us"), false);
     advertiseLink.setStyleName("footerLink");
 
-    Label feedbackLink = new Label("Feedback", false);
+    Label feedbackLink = new Label(messages.getString("feedback", "Feedback"), false);
     feedbackLink.setStyleName("footerLink");
 
-    Label privacyLink = new Label("Privacy", false);
+    Label privacyLink = new Label(messages.getString("privacy", "Privacy"), false);
     privacyLink.setStyleName("footerLink");
 
     int linkCol = -1;
@@ -189,19 +210,30 @@ public class DemoApplication implements EntryPoint, IAuthenticationListener {
     final int dateCol = ++linkCol;
     AsyncCallback<Date> serverStartupDateCallback = new AsyncCallback<Date>() {
       public void onFailure(Throwable caught) {
+        clearLoadingIndicator();
       }
 
       public void onSuccess(Date result) {
-        footerGradientPanel.setHTML(dateRow, dateCol, "Server Up Since " + result.toLocaleString());
+        clearLoadingIndicator();
+        footerGradientPanel.setHTML(dateRow, dateCol, messages.getString("serverUpSince", "Server Up Since") + " " + result.toLocaleString());
         footerGradientPanel.getCellFormatter().setHorizontalAlignment(dateRow, dateCol, HasHorizontalAlignment.ALIGN_CENTER);
       }
     };
-    BaseServiceAsync.service.getServerStartupDate(serverStartupDateCallback);
+    BaseServiceCache.getService().getServerStartupDate(serverStartupDateCallback);
 
     footerGradientPanelWrapper.add(footerGradientPanel);
     footerPanel.add(footerGradientPanelWrapper);
 
     return footerPanel;
+  }
+
+  public void clearLoadingIndicator() {
+    RootPanel loadingPanel = RootPanel.get("loading");
+    if (loadingPanel != null) {
+      loadingPanel.removeFromParent();
+      loadingPanel.setVisible(false);
+      loadingPanel.setHeight("0px");
+    }
   }
 
   public void buildLoginUI() {
@@ -233,19 +265,20 @@ public class DemoApplication implements EntryPoint, IAuthenticationListener {
   }
 
   public void loadApplication() {
+
     applicationContentDeck.clear();
     final TabPanel tabs = new TabPanel();
 
-    Label welcomeLabel = new Label("Welcome ", false);
+    Label welcomeLabel = new Label(messages.getString("welcome", "Welcome"), false);
     if (user.getFirstname() == null || "".equals(user.getFirstname())) {
-      welcomeLabel.setText(welcomeLabel.getText() + user.getUsername());
+      welcomeLabel.setText(welcomeLabel.getText() + " " + user.getUsername());
     } else {
-      welcomeLabel.setText(welcomeLabel.getText() + user.getFirstname());
+      welcomeLabel.setText(welcomeLabel.getText() + " " + user.getFirstname());
     }
     welcomeLabel.setStyleName("welcomeLabel");
 
-    ToolbarButton logoutLink = new ToolbarButton("Logout");
-    logoutLink.setTitle("Sign out");
+    ToolbarButton logoutLink = new ToolbarButton(messages.getString("logout", "Logout"));
+    logoutLink.setTitle(messages.getString("logout", "Logout"));
     logoutLink.addClickListener(new ClickListener() {
       public void onClick(final Widget sender) {
         AuthenticationHandler.getInstance().logout();
@@ -260,7 +293,7 @@ public class DemoApplication implements EntryPoint, IAuthenticationListener {
     accountPanelWrapper.setWidget(0, ++column, new Label());
     accountPanelWrapper.getCellFormatter().setWidth(0, column, "100%");
     if (user.isAdministrator()) {
-      final ToolbarButton adminLink = new ToolbarButton("Administration");
+      final ToolbarButton adminLink = new ToolbarButton(messages.getString("administration", "Administration"));
       final AdministratorPanel adminPanel = new AdministratorPanel(user);
       applicationContentDeck.add(adminPanel);
       adminLink.addClickListener(new ClickListener() {
@@ -268,8 +301,8 @@ public class DemoApplication implements EntryPoint, IAuthenticationListener {
           adminPanel.activate();
           if (applicationContentDeck.getVisibleWidget() == applicationContentDeck.getWidgetIndex(adminPanel)) {
             applicationContentDeck.showWidget(applicationContentDeck.getWidgetIndex(tabs));
-            adminLink.setText("Administration");
-            adminLink.setTitle("Administration");
+            adminLink.setText(messages.getString("administration", "Administration"));
+            adminLink.setTitle(messages.getString("administration", "Administration"));
           } else {
             adminLink.setText("Return to Application");
             adminLink.setTitle("Return to Application");
@@ -298,7 +331,7 @@ public class DemoApplication implements EntryPoint, IAuthenticationListener {
 
       public void onSuccess(File file) {
         RatingWidget ratingWidget = new RatingWidget(file, null, true);
-        tabs.add(ratingWidget, new TabWidget("Star Rating", false, tabs, ratingWidget));
+        tabs.add(ratingWidget, new TabWidget(messages.getString("rating", "Rating"), false, tabs, ratingWidget));
 
         AdvisoryWidget advisoryWidget = new AdvisoryWidget(file, null, true);
         tabs.add(advisoryWidget, new TabWidget("Advisory Widget", false, tabs, advisoryWidget));
@@ -307,12 +340,12 @@ public class DemoApplication implements EntryPoint, IAuthenticationListener {
         tabs.add(commentWidget, new TabWidget("Comment Widget", false, tabs, commentWidget));
       }
     };
-    BaseServiceAsync.service.getFile(1L, getFileCallback);
+    BaseServiceCache.getService().getFile(1L, getFileCallback);
 
     fileManager = new FileManagerPanel("File Manager");
     fileManager.setHeight("100%");
     applicationContentDeck.add(fileManager);
-    
+
     Launcher launcher = new Launcher(user);
     launcher.setHeight("100%");
     launcher.setWidth("100%");

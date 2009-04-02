@@ -42,9 +42,10 @@
 			<fileset dir="source" includes="**/*" />
 			<fileset dir="../base-project/source" includes="**/*" />
 		</copy>
-		<replace dir="dist/source" includes="**/*" token="%domain%" value="${domain}"></replace>
+		<replace dir="dist/source" includes="**/*" token="%domain%" value="${domain}">
+		</replace>
 	</target>
-	
+
 	<target name="compile" depends="copy-replace-source">
 		<javac destdir="dist/bin" debug="${debug}" optimize="${optimize}" deprecation="${deprecation}" compiler="modern" source="1.5" target="1.5" fork="true">
 			<src path="dist/source" />
@@ -64,7 +65,7 @@
 			<arg value="${gwt.app}" />
 		</java>
 	</target>
-	
+
 	<target name="clean-war">
 		<delete dir="${target.webapp.path}/${target.webapp.name}" />
 	</target>
@@ -72,8 +73,8 @@
 	<target name="clean-dist" depends="clean">
 		<delete dir="dist" />
 	</target>
-			
-	<target name="dist" depends="clean, compile-gwt">
+
+	<target name="dist-nodeps" depends="compile">
 		<copy todir="dist/bin" overwrite="true">
 			<fileset dir="dist/source" includes="**/*" />
 		</copy>
@@ -89,11 +90,13 @@
 			<fileset dir="lib" includes="*.zip, *.jar" excludes="**/*gwt-dev-windows.jar, **/*gwt-user.jar, **/*googlemaps*.jar, **/gwtchismes*" />
 			<fileset dir="../base-project/lib" includes="**/*.zip, **/*.jar" excludes="**/*gwt-dev-windows.jar, **/*gwt-user.jar, **/*googlemaps*.jar, **/gwtchismes*" />
 		</unzip>
-		<copy todir="dist/${target.webapp.name}/servlet">
-			<fileset dir="dist/bin" includes="*Service*,*Servlet*" />
-		</copy>
 		<zip destfile="dist/${project.name}.war" basedir="dist/${target.webapp.name}" />
 		<delete dir="dist/${target.webapp.name}" />
 	</target>
-	
+
+	<target name="dist" depends="clean, compile-gwt">
+		<antcall target="dist-nodeps">
+		</antcall>
+	</target>
+
 </project>

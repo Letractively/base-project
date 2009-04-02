@@ -2,8 +2,11 @@ package org.damour.base.demo.client;
 
 import org.damour.base.client.objects.User;
 import org.damour.base.client.ui.authentication.CreateNewAccountCommand;
+import org.damour.base.client.ui.colorpicker.ColorPickerDialog;
+import org.damour.base.client.ui.dialogs.IDialogCallback;
 import org.damour.base.demo.client.images.DemoImageBundle;
 
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
@@ -81,7 +84,21 @@ public class Launcher extends VerticalPanel {
         }
       });
     }
+    uploadPhotosImage.addClickListener(new ClickListener() {
+      public void onClick(Widget sender) {
+        final ColorPickerDialog picker = new ColorPickerDialog("00ff00");
+        picker.center();
+        picker.setCallback(new IDialogCallback() {
+          public void cancelPressed() {
+          }
+          public void okPressed() {
+            Window.alert(picker.getHexColor());
+          }
+        });
+      }
+    });
 
+    
     final Image ratePhotosImage = new Image();
     DemoImageBundle.images.ratePhotos_172x89().applyTo(ratePhotosImage);
     ratePhotosImage.setTitle("Rate Photos");
