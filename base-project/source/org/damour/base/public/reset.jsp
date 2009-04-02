@@ -7,6 +7,5 @@
 
 <% 
 HibernateUtil.getInstance().resetHibernate(); 
-BaseServiceImpl.bootstrap();
 %>
 
