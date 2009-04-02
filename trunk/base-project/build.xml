@@ -53,10 +53,6 @@
 		</java>
 	</target>
 	
-	<target name="clean-war">
-		<delete dir="${target.webapp.path}/${target.webapp.name}" />
-	</target>
-
 	<target name="clean-dist" depends="clean">
 		<delete dir="dist" />
 	</target>
@@ -65,22 +61,4 @@
 		<jar basedir="bin" destfile="dist/${project.name}-${release.major.number}.${release.minor.number}.${release.milestone.number}.jar" />
 	</target>
 
-	<target name="dist-war" depends="dist, compile-gwt">
-		<copy todir="dist/${target.webapp.name}" overwrite="true">
-			<fileset dir="${webapp.path}" includes="**/*" />
-		</copy>
-		<copy todir="dist/${target.webapp.name}">
-			<fileset dir="${gwt.output.dir}/${gwt.app}" includes="**/*" />
-		</copy>
-		<unzip dest="dist/${target.webapp.name}/WEB-INF/classes">
-			<fileset dir="dist" includes="${project.name}*.jar" />
-			<fileset dir="lib" includes="*.zip, *.jar" excludes="**/*gwt-dev-windows.jar, **/*gwt-user.jar, **/*googlemaps*.jar, **/gwtchismes*" />
-		</unzip>
-		<copy todir="dist/${target.webapp.name}/servlet">
-			<fileset dir="bin" includes="*Service*" />
-		</copy>
-		<zip destfile="dist/${project.name}.war" basedir="dist/${target.webapp.name}" />
-		<delete dir="dist/${target.webapp.name}" />
-	</target>
-	
 </project>

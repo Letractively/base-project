@@ -377,7 +377,7 @@ public class SecurityHelperTest {
     parentFolder.setDescription(parentDescription);
     session.save(parentFolder);
     Folder childFolder = new Folder();
-    childFolder.setParentFolder(parentFolder);
+    childFolder.setParent(parentFolder);
     childFolder.setName(childFolderName);
     childFolder.setDescription(childFolderDescription);
     session.save(childFolder);

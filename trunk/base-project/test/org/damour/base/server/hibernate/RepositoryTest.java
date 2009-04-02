@@ -1,15 +1,15 @@
 package org.damour.base.server.hibernate;
 
 import org.damour.base.client.objects.File;
-import org.damour.base.client.objects.FileComment;
-import org.damour.base.client.objects.FileUserAdvisory;
-import org.damour.base.client.objects.FileUserRating;
-import org.damour.base.client.objects.Folder;
+import org.damour.base.client.objects.Comment;
+import org.damour.base.client.objects.UserRating;
 import org.damour.base.client.objects.GroupMembership;
 import org.damour.base.client.objects.PendingGroupMembership;
+import org.damour.base.client.objects.PermissibleObject;
 import org.damour.base.client.objects.Permission;
 import org.damour.base.client.objects.RepositoryTreeNode;
 import org.damour.base.client.objects.User;
+import org.damour.base.client.objects.UserAdvisory;
 import org.damour.base.client.objects.UserGroup;
 import org.damour.base.server.hibernate.helpers.RepositoryHelper;
 import org.hibernate.Session;
@@ -31,18 +31,18 @@ public class RepositoryTest {
 
     // create 100 files which have global read = true
     for (int i = 0; i < 1; i++) {
-      Folder parent = new Folder();
+      PermissibleObject parent = new PermissibleObject();
       parent.setName("globalRead:true " + i);
       parent.setOwner(user);
       parent.setGlobalRead(true);
       session.save(parent);
 
       for (int k = 0; k < 5; k++) {
-        Folder folder = new Folder();
+        PermissibleObject folder = new PermissibleObject();
         folder.setName("globalRead:true " + i);
         folder.setOwner(user);
         folder.setGlobalRead(true);
-        folder.setParentFolder(parent);
+        folder.setParent(parent);
         session.save(folder);
 
         for (int z = 0; z < 5; z++) {
@@ -50,7 +50,7 @@ public class RepositoryTest {
           file.setName("globalRead:true " + z);
           file.setOwner(user);
           file.setGlobalRead(true);
-          file.setParentFolder(folder);
+          file.setParent(folder);
           session.save(file);
         }
       }
@@ -74,7 +74,7 @@ public class RepositoryTest {
     }
 
     for (int j = 0; j < 1; j++) {
-      Folder folder = new Folder();
+      PermissibleObject folder = new PermissibleObject();
       folder.setName("HAS PERM " + j);
       folder.setOwner(user);
       session.save(folder);
@@ -87,7 +87,7 @@ public class RepositoryTest {
     }
 
     for (int j = 0; j < 1; j++) {
-      Folder folder = new Folder();
+      PermissibleObject folder = new PermissibleObject();
       folder.setName("user owns, but does not have perm");
       folder.setOwner(user2);
       session.save(folder);
@@ -147,10 +147,10 @@ public class RepositoryTest {
     HibernateUtil.getInstance().generateHibernateMapping(GroupMembership.class);
     HibernateUtil.getInstance().generateHibernateMapping(PendingGroupMembership.class);
     HibernateUtil.getInstance().generateHibernateMapping(File.class);
-    HibernateUtil.getInstance().generateHibernateMapping(FileComment.class);
-    HibernateUtil.getInstance().generateHibernateMapping(FileUserRating.class);
-    HibernateUtil.getInstance().generateHibernateMapping(FileUserAdvisory.class);
-    HibernateUtil.getInstance().generateHibernateMapping(Folder.class);
+    HibernateUtil.getInstance().generateHibernateMapping(Comment.class);
+    HibernateUtil.getInstance().generateHibernateMapping(UserRating.class);
+    HibernateUtil.getInstance().generateHibernateMapping(UserAdvisory.class);
+    HibernateUtil.getInstance().generateHibernateMapping(PermissibleObject.class);
     HibernateUtil.getInstance().generateHibernateMapping(Permission.class);
     System.out.println("*********** before end ***********");
   }
