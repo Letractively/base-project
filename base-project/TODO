@@ -1,0 +1,5 @@
+-password cookie (hash) based on password hash + remote IP
+-file permissions based on bit masks or Set of perms, with API for setting/getting masks
+
+DONE-add color picker
+DONE-file logger

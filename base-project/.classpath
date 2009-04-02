@@ -33,5 +33,6 @@
 	<classpathentry kind="lib" path="lib/commons-httpclient-3.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/jhlabs-filters.jar"/>
 	<classpathentry kind="lib" path="lib/captcha-at.jar"/>
+	<classpathentry kind="lib" path="lib/auroris-colorpicker-2008-10-09.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

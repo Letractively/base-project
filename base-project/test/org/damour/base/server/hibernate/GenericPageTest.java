@@ -3,9 +3,9 @@ package org.damour.base.server.hibernate;
 import java.util.List;
 
 import org.damour.base.client.objects.File;
-import org.damour.base.client.objects.FileComment;
-import org.damour.base.client.objects.FileUserAdvisory;
-import org.damour.base.client.objects.FileUserRating;
+import org.damour.base.client.objects.Comment;
+import org.damour.base.client.objects.UserAdvisory;
+import org.damour.base.client.objects.UserRating;
 import org.damour.base.client.objects.Folder;
 import org.damour.base.client.objects.GroupMembership;
 import org.damour.base.client.objects.PendingGroupMembership;
@@ -36,10 +36,10 @@ public class GenericPageTest {
     session.save(file);
 
     for (int i = 0; i < 100; i++) {
-      FileComment comment = new FileComment();
+      Comment comment = new Comment();
       comment.setComment("comment " + i);
       comment.setAuthor(user);
-      comment.setFile(file);
+      comment.setPermissibleObject(file);
       session.save(comment);
     }
     tx.commit();
@@ -47,11 +47,11 @@ public class GenericPageTest {
 
     for (int testCount = 0; testCount < 10; testCount++) {
       session = HibernateUtil.getInstance().getSession();
-      GenericPage<FileComment> pageController = new GenericPage<FileComment>(session, FileComment.class, 0, 10);
+      GenericPage<Comment> pageController = new GenericPage<Comment>(session, Comment.class, 0, 10);
       long pageCount = pageController.getPageCount();
       for (int pageNumber = 0; pageNumber < pageCount; pageNumber++) {
-        List<FileComment> comments = pageController.getList();
-        for (FileComment comment : comments) {
+        List<Comment> comments = pageController.getList();
+        for (Comment comment : comments) {
           System.out.print(comment.getComment());
         }
         System.out.println();
@@ -74,9 +74,9 @@ public class GenericPageTest {
     HibernateUtil.getInstance().generateHibernateMapping(GroupMembership.class);
     HibernateUtil.getInstance().generateHibernateMapping(PendingGroupMembership.class);
     HibernateUtil.getInstance().generateHibernateMapping(File.class);
-    HibernateUtil.getInstance().generateHibernateMapping(FileComment.class);
-    HibernateUtil.getInstance().generateHibernateMapping(FileUserRating.class);
-    HibernateUtil.getInstance().generateHibernateMapping(FileUserAdvisory.class);
+    HibernateUtil.getInstance().generateHibernateMapping(Comment.class);
+    HibernateUtil.getInstance().generateHibernateMapping(UserRating.class);
+    HibernateUtil.getInstance().generateHibernateMapping(UserAdvisory.class);
     HibernateUtil.getInstance().generateHibernateMapping(Folder.class);
     HibernateUtil.getInstance().generateHibernateMapping(Permission.class);
     System.out.println("*********** before end ***********");
