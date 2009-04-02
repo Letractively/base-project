@@ -4,16 +4,16 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 import org.damour.base.client.objects.File;
-import org.damour.base.client.objects.FileComment;
-import org.damour.base.client.objects.FileUserAdvisory;
-import org.damour.base.client.objects.FileUserRating;
-import org.damour.base.client.objects.Folder;
-import org.damour.base.server.ReflectionCache;
+import org.damour.base.client.objects.Comment;
+import org.damour.base.client.objects.UserRating;
+import org.damour.base.client.objects.PermissibleObject;
+import org.damour.base.client.objects.UserAdvisory;
+import org.damour.base.server.hibernate.ReflectionCache;
 import org.hibernate.Session;
 
 public class FileObjectHelper {
 
-  public static List<File> getFiles(Session session, Folder parentFolder) {
+  public static List<File> getFiles(Session session, PermissibleObject parentFolder) {
     if (parentFolder == null) {
       return session.createQuery("from File where parentFolder is null").list();
     } else {
@@ -23,16 +23,16 @@ public class FileObjectHelper {
 
   public static void deleteFile(Session session, File file) {
     // we will need to delete all FileComment, FileUserAdvisory and FileUserRating
-    List<FileComment> comments = FileCommentHelper.getRootComments(session, file);
-    for (FileComment comment : comments) {
-      FileCommentHelper.deleteComment(session, comment);
+    List<Comment> comments = CommentHelper.getRootComments(session, file);
+    for (Comment comment : comments) {
+      CommentHelper.deleteComment(session, comment);
     }
-    List<FileUserAdvisory> advisories = FileAdvisoryHelper.getFileUserAdvisories(session, file);
-    for (FileUserAdvisory advisory : advisories) {
+    List<UserAdvisory> advisories = AdvisoryHelper.getUserAdvisories(session, file);
+    for (UserAdvisory advisory : advisories) {
       session.delete(advisory);
     }
-    List<FileUserRating> ratings = FileRatingHelper.getFileUserRatings(session, file);
-    for (FileUserRating rating : ratings) {
+    List<UserRating> ratings = RatingHelper.getUserRatings(session, file);
+    for (UserRating rating : ratings) {
       session.delete(rating);
     }
     // now delete the FileData if we have some (WITHOUT LOADING IT)

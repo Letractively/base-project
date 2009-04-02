@@ -32,9 +32,9 @@ public class UploadFileCommand implements Command {
         repositoryCallback.fileUploaded(id);
       }
     };
-    Folder parentFolder = null;
+    PermissibleObject parentFolder = null;
     if (permissibleObject instanceof File) {
-      parentFolder = permissibleObject.getParentFolder();
+      parentFolder = permissibleObject.getParent();
     } else if (permissibleObject instanceof Folder) {
       parentFolder = (Folder) permissibleObject;
     }

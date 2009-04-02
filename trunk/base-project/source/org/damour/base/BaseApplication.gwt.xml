@@ -5,22 +5,21 @@
 	<inherits name='com.google.gwt.xml.XML'/>
 	<inherits name='com.google.gwt.i18n.I18N' />
 	<inherits name='com.google.gwt.http.HTTP' />
-	<inherits name='com.thapar.gwt.user.ui.SimpleDatePicker' />
+	<inherits name='net.auroris.ColorPicker.ColorPicker' />
 
 	<!-- supported locales (beyond english defaults) -->
 	<extend-property name="locale" values="en"/>
 
 	<stylesheet src="base.css"/>
+	<stylesheet src="datePicker.css"/>
 
 	<!-- Specify the app entry point class.                   -->
-	<entry-point class='org.damour.base.client.service.BaseServiceStartup'/>
+	<entry-point class='org.damour.base.client.BaseEntryPoint'/>
 
-	<servlet path="/servlet/CaptchaImageGeneratorService" class="org.damour.base.server.CaptchaImageGeneratorService" />
-	<servlet path="/servlet/LoginService" class="org.damour.base.server.LoginService" />
-	<servlet path="/servlet/BaseService" class="org.damour.base.server.BaseServiceImpl" />
-	<servlet path="/servlet/FileUploadService" class="org.damour.base.server.FileUploadService" />
-	<servlet path="/servlet/FileUploadStatusService" class="org.damour.base.server.FileUploadStatusService" />
-	<servlet path="/servlet/GetFileService" class="org.damour.base.server.GetFileService" />
-	<servlet path="/servlet/LoadFilesTest" class="org.damour.base.server.LoadFilesTest" />
+	<servlet path="/servlet/org.damour.base.server.CaptchaImageGeneratorService" class="org.damour.base.server.CaptchaImageGeneratorService" />
+	<servlet path="/servlet/org.damour.base.server.LoginService" class="org.damour.base.server.LoginService" />
+	<servlet path="/servlet/org.damour.base.server.BaseService" class="org.damour.base.server.BaseService" />
+	<servlet path="/servlet/org.damour.base.server.FileUploadService" class="org.damour.base.server.FileUploadService" />
+	<servlet path="/servlet/org.damour.base.server.GetFileService" class="org.damour.base.server.GetFileService" />
 	
 </module>

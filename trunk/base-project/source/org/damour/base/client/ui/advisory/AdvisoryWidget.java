@@ -1,11 +1,12 @@
 package org.damour.base.client.ui.advisory;
 
 import org.damour.base.client.images.BaseImageBundle;
-import org.damour.base.client.objects.File;
-import org.damour.base.client.objects.FileUserAdvisory;
-import org.damour.base.client.service.BaseServiceAsync;
+import org.damour.base.client.objects.PermissibleObject;
+import org.damour.base.client.objects.UserAdvisory;
+import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.dialogs.MessageDialogBox;
 
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.ClickListener;
@@ -27,8 +28,8 @@ public class AdvisoryWidget extends VerticalPanel {
   boolean popupShowing = false;
   boolean showStatsLabel = true;
 
-  File file;
-  FileUserAdvisory fileAdvisory;
+  PermissibleObject permissibleObject;
+  UserAdvisory fileAdvisory;
   Image G = new Image();
   Image PG = new Image();
   Image PG13 = new Image();
@@ -96,8 +97,8 @@ public class AdvisoryWidget extends VerticalPanel {
     }
   };
 
-  public AdvisoryWidget(File file, FileUserAdvisory fileAdvisory, boolean showStatsLabel) {
-    this.file = file;
+  public AdvisoryWidget(PermissibleObject permissibleObject, UserAdvisory fileAdvisory, boolean showStatsLabel) {
+    this.permissibleObject = permissibleObject;
     this.fileAdvisory = fileAdvisory;
     this.showStatsLabel = showStatsLabel;
     if (fileAdvisory == null) {
@@ -155,21 +156,22 @@ public class AdvisoryWidget extends VerticalPanel {
 
     Image advisoryImage = new Image();
     Label statsLabel = new Label();
-
-    if (file == null || file.getAverageAdvisory() == 0) {
+    DOM.setStyleAttribute(statsLabel.getElement(), "fontSize", "8pt");
+    
+    if (permissibleObject == null || permissibleObject.getAverageAdvisory() == 0) {
       BaseImageBundle.images.advisoryNR().applyTo(advisoryImage);
       statsLabel.setText("Not Rated");
-    } else if (file != null) {
-      statsLabel.setText("Rating based on " + file.getNumAdvisoryVotes() + " votes");
-      if (file.getAverageAdvisory() > 0 && file.getAverageAdvisory() <= 1) {
+    } else if (permissibleObject != null) {
+      statsLabel.setText("Rating based on " + permissibleObject.getNumAdvisoryVotes() + " votes");
+      if (permissibleObject.getAverageAdvisory() > 0 && permissibleObject.getAverageAdvisory() <= 1) {
         BaseImageBundle.images.advisoryG().applyTo(advisoryImage);
-      } else if (file.getAverageAdvisory() > 1 && file.getAverageAdvisory() <= 2) {
+      } else if (permissibleObject.getAverageAdvisory() > 1 && permissibleObject.getAverageAdvisory() <= 2) {
         BaseImageBundle.images.advisoryPG().applyTo(advisoryImage);
-      } else if (file.getAverageAdvisory() > 2 && file.getAverageAdvisory() <= 3) {
+      } else if (permissibleObject.getAverageAdvisory() > 2 && permissibleObject.getAverageAdvisory() <= 3) {
         BaseImageBundle.images.advisoryPG13().applyTo(advisoryImage);
-      } else if (file.getAverageAdvisory() > 3 && file.getAverageAdvisory() <= 4) {
+      } else if (permissibleObject.getAverageAdvisory() > 3 && permissibleObject.getAverageAdvisory() <= 4) {
         BaseImageBundle.images.advisoryR().applyTo(advisoryImage);
-      } else if (file.getAverageAdvisory() > 4 && file.getAverageAdvisory() <= 5) {
+      } else if (permissibleObject.getAverageAdvisory() > 4 && permissibleObject.getAverageAdvisory() <= 5) {
         BaseImageBundle.images.advisoryNC17().applyTo(advisoryImage);
       }
     }
@@ -190,13 +192,13 @@ public class AdvisoryWidget extends VerticalPanel {
   }
 
   public void setFileUserAdvisory(int advisory) {
-    AsyncCallback<FileUserAdvisory> callback = new AsyncCallback<FileUserAdvisory>() {
+    AsyncCallback<UserAdvisory> callback = new AsyncCallback<UserAdvisory>() {
 
-      public void onSuccess(FileUserAdvisory userFileAdvisory) {
+      public void onSuccess(UserAdvisory userFileAdvisory) {
         if (userFileAdvisory != null) {
           AdvisoryWidget.this.fileAdvisory = userFileAdvisory;
-          if (userFileAdvisory.getFile() != null) {
-            AdvisoryWidget.this.file = userFileAdvisory.getFile();
+          if (userFileAdvisory.getPermissibleObject() != null) {
+            AdvisoryWidget.this.permissibleObject = userFileAdvisory.getPermissibleObject();
           }
         }
         buildAdvisoryImagePanel();
@@ -207,17 +209,17 @@ public class AdvisoryWidget extends VerticalPanel {
         dialog.center();
       }
     };
-    BaseServiceAsync.service.setFileUserAdvisory(file, advisory, callback);
+    BaseServiceCache.getService().setUserAdvisory(permissibleObject, advisory, callback);
   }
 
   public void getFileUserAdvisory() {
-    AsyncCallback<FileUserAdvisory> callback = new AsyncCallback<FileUserAdvisory>() {
+    AsyncCallback<UserAdvisory> callback = new AsyncCallback<UserAdvisory>() {
 
-      public void onSuccess(FileUserAdvisory userFileAdvisory) {
+      public void onSuccess(UserAdvisory userFileAdvisory) {
         if (userFileAdvisory != null) {
           AdvisoryWidget.this.fileAdvisory = userFileAdvisory;
-          if (userFileAdvisory.getFile() != null) {
-            AdvisoryWidget.this.file = userFileAdvisory.getFile();
+          if (userFileAdvisory.getPermissibleObject() != null) {
+            AdvisoryWidget.this.permissibleObject = userFileAdvisory.getPermissibleObject();
           }
         }
         buildAdvisoryImagePanel();
@@ -229,6 +231,6 @@ public class AdvisoryWidget extends VerticalPanel {
         dialog.center();
       }
     };
-    BaseServiceAsync.service.getFileUserAdvisory(file, callback);
+    BaseServiceCache.getService().getUserAdvisory(permissibleObject, callback);
   }
 }

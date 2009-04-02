@@ -6,7 +6,7 @@ import java.util.List;
 import org.damour.base.client.objects.GroupMembership;
 import org.damour.base.client.objects.User;
 import org.damour.base.client.objects.UserGroup;
-import org.damour.base.client.service.BaseServiceAsync;
+import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.IGenericCallback;
 import org.damour.base.client.ui.buttons.Button;
 import org.damour.base.client.ui.dialogs.MessageDialogBox;
@@ -127,7 +127,7 @@ public class EditGroupsForUserPanel extends FlexTable implements ChangeListener 
         onChange(null);
       };
     };
-    BaseServiceAsync.service.addUserToGroup(user, group, addUserCallback);
+    BaseServiceCache.getService().addUserToGroup(user, group, addUserCallback);
   }
 
   private void removeGroupMembership() {
@@ -157,7 +157,7 @@ public class EditGroupsForUserPanel extends FlexTable implements ChangeListener 
         onChange(null);
       };
     };
-    BaseServiceAsync.service.deleteUser(user, group, deleteUserCallback);
+    BaseServiceCache.getService().deleteUser(user, group, deleteUserCallback);
   }
 
   private void fetchGroupsForUser() {
@@ -182,13 +182,13 @@ public class EditGroupsForUserPanel extends FlexTable implements ChangeListener 
               }
             };
           };
-          BaseServiceAsync.service.getGroups(getGroupsCallback);
+          BaseServiceCache.getService().getGroups(getGroupsCallback);
         } else {
           populateUI();
         }
       };
     };
-    BaseServiceAsync.service.getGroups(user, getGroupsForUserCallback);
+    BaseServiceCache.getService().getGroups(user, getGroupsForUserCallback);
   }
 
   public void onChange(Widget sender) {

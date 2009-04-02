@@ -30,25 +30,25 @@ public class RepositoryHelper {
     if (parentFolder == null) {
       if (user != null && user.isAdministrator()) {
         // admin sees all
-        folders = session.createQuery("from " + Folder.class.getSimpleName() + " as folder where folder.parentFolder is null").setCacheable(true).list();
+        folders = session.createQuery("from " + Folder.class.getSimpleName() + " as folder where folder.parent is null").setCacheable(true).list();
       } else if (user == null) {
         folders = session.createQuery(
-            "from " + Folder.class.getSimpleName() + " as folder where folder.parentFolder is null folder.globalRead = true").setCacheable(true).list();
+            "from " + Folder.class.getSimpleName() + " as folder where folder.parent is null folder.globalRead = true").setCacheable(true).list();
       } else {
         folders = session.createQuery(
-            "from " + Folder.class.getSimpleName() + " as folder where folder.parentFolder is null and (folder.owner.id = " + user.id + " OR folder.globalRead = true OR folder.id in " + selectFolderUserPerm + " OR folder.id in "
+            "from " + Folder.class.getSimpleName() + " as folder where folder.parent is null and (folder.owner.id = " + user.id + " OR folder.globalRead = true OR folder.id in " + selectFolderUserPerm + " OR folder.id in "
                 + selectFolderGroupPerm + ")").setCacheable(true).list();
       }
     } else {
       if (user != null && user.isAdministrator()) {
         // admin sees all
-        folders = session.createQuery("from " + Folder.class.getSimpleName() + " as folder where folder.parentFolder.id = " + parentFolder.id).setCacheable(true).list();
+        folders = session.createQuery("from " + Folder.class.getSimpleName() + " as folder where folder.parent.id = " + parentFolder.id).setCacheable(true).list();
       } else if (user == null) {
         folders = session.createQuery(
-            "from " + Folder.class.getSimpleName() + " as folder where folder.parentFolder.id = " + parentFolder.id + " and folder.globalRead = true").setCacheable(true).list();
+            "from " + Folder.class.getSimpleName() + " as folder where folder.parent.id = " + parentFolder.id + " and folder.globalRead = true").setCacheable(true).list();
       } else {
         folders = session.createQuery(
-            "from " + Folder.class.getSimpleName() + " as folder where folder.parentFolder.id = " + parentFolder.id + " and (folder.owner.id = " + user.id + " OR folder.globalRead = true OR folder.id in " + selectFolderUserPerm
+            "from " + Folder.class.getSimpleName() + " as folder where folder.parent.id = " + parentFolder.id + " and (folder.owner.id = " + user.id + " OR folder.globalRead = true OR folder.id in " + selectFolderUserPerm
                 + " OR folder.id in " + selectFolderGroupPerm + ")").setCacheable(true).list();
       }
     }
@@ -56,25 +56,25 @@ public class RepositoryHelper {
     if (parentFolder == null) {
       if (user != null && user.isAdministrator()) {
         // admin sees all
-        files = session.createQuery("from " + File.class.getSimpleName() + " as file where file.parentFolder is null").setCacheable(true).list();
+        files = session.createQuery("from " + File.class.getSimpleName() + " as file where file.parent is null").setCacheable(true).list();
       } else if (user == null) {
         files = session.createQuery(
-            "from " + File.class.getSimpleName() + " as file where file.parentFolder is null and file.globalRead = true").setCacheable(true).list();
+            "from " + File.class.getSimpleName() + " as file where file.parent is null and file.globalRead = true").setCacheable(true).list();
       } else {
         files = session.createQuery(
-            "from " + File.class.getSimpleName() + " as file where file.parentFolder is null and (file.owner.id = " + user.id + " OR file.globalRead = true OR file.id in " + selectFileUserPerm + " OR file.id in " + selectFileGroupPerm
+            "from " + File.class.getSimpleName() + " as file where file.parent is null and (file.owner.id = " + user.id + " OR file.globalRead = true OR file.id in " + selectFileUserPerm + " OR file.id in " + selectFileGroupPerm
                 + ")").setCacheable(true).list();
       }
     } else {
       if (user != null && user.isAdministrator()) {
         // admin sees all
-        files = session.createQuery("from " + File.class.getSimpleName() + " as file where file.parentFolder.id = " + parentFolder.id).setCacheable(true).list();
+        files = session.createQuery("from " + File.class.getSimpleName() + " as file where file.parent.id = " + parentFolder.id).setCacheable(true).list();
       } else if (user == null) {
         files = session.createQuery(
-            "from " + File.class.getSimpleName() + " as file where file.parentFolder.id = " + parentFolder.id + " and file.globalRead = true").setCacheable(true).list();
+            "from " + File.class.getSimpleName() + " as file where file.parent.id = " + parentFolder.id + " and file.globalRead = true").setCacheable(true).list();
       } else {
         files = session.createQuery(
-            "from " + File.class.getSimpleName() + " as file where file.parentFolder.id = " + parentFolder.id + " and (file.owner.id = " + user.id + " OR file.globalRead = true OR file.id in " + selectFileUserPerm + " OR file.id in "
+            "from " + File.class.getSimpleName() + " as file where file.parent.id = " + parentFolder.id + " and (file.owner.id = " + user.id + " OR file.globalRead = true OR file.id in " + selectFileUserPerm + " OR file.id in "
                 + selectFileGroupPerm + ")").setCacheable(true).list();
       }
     }

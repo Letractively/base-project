@@ -1,7 +1,7 @@
 package org.damour.base.client.ui.admin;
 
 import org.damour.base.client.objects.MemoryStats;
-import org.damour.base.client.service.BaseServiceAsync;
+import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.buttons.Button;
 
 import com.google.gwt.i18n.client.NumberFormat;
@@ -96,7 +96,7 @@ public class MemoryAdminPanel extends VerticalPanel {
         populateUI(stats);
       };
     };
-    BaseServiceAsync.service.getMemoryStats(callback);
+    BaseServiceCache.getService().getMemoryStats(callback);
   }
 
   private void requestGarbageCollection() {
@@ -109,7 +109,7 @@ public class MemoryAdminPanel extends VerticalPanel {
         populateUI(stats);
       };
     };
-    BaseServiceAsync.service.requestGarbageCollection(callback);
+    BaseServiceCache.getService().requestGarbageCollection(callback);
   }
 
 }

@@ -5,11 +5,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.damour.base.client.objects.Category;
+import org.damour.base.client.objects.Comment;
 import org.damour.base.client.objects.File;
-import org.damour.base.client.objects.FileComment;
 import org.damour.base.client.objects.FileUploadStatus;
-import org.damour.base.client.objects.FileUserAdvisory;
-import org.damour.base.client.objects.FileUserRating;
 import org.damour.base.client.objects.Folder;
 import org.damour.base.client.objects.GroupMembership;
 import org.damour.base.client.objects.HibernateStat;
@@ -20,13 +18,14 @@ import org.damour.base.client.objects.PermissibleObject;
 import org.damour.base.client.objects.Permission;
 import org.damour.base.client.objects.RepositoryTreeNode;
 import org.damour.base.client.objects.User;
+import org.damour.base.client.objects.UserAdvisory;
 import org.damour.base.client.objects.UserGroup;
+import org.damour.base.client.objects.UserRating;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface BaseServiceAsync {
-  
-  public static final BaseServiceAsync service = (BaseServiceAsync) GWT.create(BaseService.class);
   
   public void getAuthenticatedUser(AsyncCallback<User> callback);
   public void createOrEditAccount(User user, String password, String captchaText, AsyncCallback<User> callback);
@@ -78,16 +77,16 @@ public interface BaseServiceAsync {
   public void addToCategory(Category category, PermissibleObject permissibleObject, AsyncCallback<Void> callback) throws Exception;
   
   // content rating & advisory
-  public void setFileUserRating(File file, int rating, AsyncCallback<FileUserRating> callback);
-  public void getFileUserRating(File file, AsyncCallback<FileUserRating> callback);
-  public void setFileUserAdvisory(File file, int advisory, AsyncCallback<FileUserAdvisory> callback);
-  public void getFileUserAdvisory(File file, AsyncCallback<FileUserAdvisory> callback);
+  public void setUserRating(PermissibleObject permissibleObject, int rating, AsyncCallback<UserRating> callback);
+  public void getUserRating(PermissibleObject permissibleObject, AsyncCallback<UserRating> callback);
+  public void setUserAdvisory(PermissibleObject permissibleObject, int advisory, AsyncCallback<UserAdvisory> callback);
+  public void getUserAdvisory(PermissibleObject permissibleObject, AsyncCallback<UserAdvisory> callback);
   
   // file comments
-  public void getCommentPage(File file, boolean sortDescending, int pageNumber, int pageSize, AsyncCallback<Page<FileComment>> callback);
-  public void getComments(File file, AsyncCallback<List<FileComment>> callback);
-  public void submitComment(FileComment comment, AsyncCallback<Boolean> callback);
-  public void approveComment(FileComment comment, AsyncCallback<Boolean> callback);
-  public void deleteComment(FileComment comment, AsyncCallback<Boolean> callback);
+  public void getCommentPage(PermissibleObject permissibleObject, boolean sortDescending, int pageNumber, int pageSize, AsyncCallback<Page<Comment>> callback);
+  public void getComments(PermissibleObject permissibleObject, AsyncCallback<List<Comment>> callback);
+  public void submitComment(Comment comment, AsyncCallback<Boolean> callback);
+  public void approveComment(Comment comment, AsyncCallback<Boolean> callback);
+  public void deleteComment(Comment comment, AsyncCallback<Boolean> callback);
   
 }

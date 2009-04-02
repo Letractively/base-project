@@ -1,9 +1,8 @@
 package org.damour.base.client.ui.repository;
 
 import org.damour.base.client.objects.FileUploadStatus;
-import org.damour.base.client.objects.Folder;
 import org.damour.base.client.objects.PermissibleObject;
-import org.damour.base.client.service.BaseServiceAsync;
+import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.dialogs.MessageDialogBox;
 import org.damour.base.client.ui.dialogs.PopupPanel;
 import org.damour.base.client.ui.progressbar.ProgressBar;
@@ -44,11 +43,11 @@ public class FileUploadPanel extends FlexTable {
           progressMeter.setTextVisible(true);
         }
       };
-      BaseServiceAsync.service.getFileUploadStatus(callback);
+      BaseServiceCache.getService().getFileUploadStatus(callback);
     }
   };
 
-  public FileUploadPanel(final IFileUploadCallback callback, Folder parentFolder, String formActionUrl) {
+  public FileUploadPanel(final IFileUploadCallback callback, PermissibleObject parentFolder, String formActionUrl) {
     // objectType = an instance of the content object to be published
     // on the server, this guy just needs to be someone who has getData/setData
     // and get/set mimetypes

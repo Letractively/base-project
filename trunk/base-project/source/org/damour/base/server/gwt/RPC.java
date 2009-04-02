@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.damour.base.server.Logger;
+
 import com.google.gwt.user.client.rpc.IncompatibleRemoteServiceException;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.SerializationException;
@@ -554,6 +556,7 @@ public final class RPC {
       throws SerializationException {
 
     if (object instanceof Throwable) {
+      Logger.log((Throwable)object);
       //EX[2,1,["java.lang.Exception/1920171873","could\x20not\x20insert:\x20[org.damour.base.client.objects.UserGroup]"],0,4]
       //EX[2,1,["java.lang.Exception/1920171873","pwned"],0,4]
       String escapedStr = ServerSerializationStreamWriter.escapeString(((Throwable)object).getMessage());

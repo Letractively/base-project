@@ -5,14 +5,14 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 
-import org.damour.base.client.Logger;
 import org.damour.base.client.objects.IHibernateFriendly;
-import org.damour.base.server.ReflectionCache;
+import org.damour.base.server.Logger;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
@@ -35,6 +35,9 @@ public class HibernateUtil {
   private String password;
   private String connectString;
 
+  private HashMap<Class, Element> classElementMap = new HashMap<Class, Element>();
+  private HashMap<Class, Element> idElementMap = new HashMap<Class, Element>();
+  private HashMap<Class, Boolean> idElementClearedMap = new HashMap<Class, Boolean>();
   private List<Class> mappedClasses = new ArrayList<Class>();
   private Document mappingDocument = DocumentHelper.createDocument();
   private Element mappingRoot = null;
@@ -50,6 +53,7 @@ public class HibernateUtil {
     setConnectString(rb.getString("connectString"));
     setTablePrefix(rb.getString("tablePrefix"));
     setColumnPrefix(rb.getString("columnPrefix"));
+    setHbm2ddlMode(getResource(rb, "hbm2ddlMode", "" + hbm2ddlMode));
     showSQL = "true".equalsIgnoreCase(getResource(rb, "showSQL", "" + showSQL));
     DEBUG = "true".equalsIgnoreCase(getResource(rb, "debug", "" + DEBUG));
 
@@ -60,11 +64,37 @@ public class HibernateUtil {
       setConnectString(getResource(override, "connectString", getConnectString()));
       setTablePrefix(getResource(override, "tablePrefix", getTablePrefix()));
       setColumnPrefix(getResource(override, "columnPrefix", getColumnPrefix()));
+      setHbm2ddlMode(getResource(override, "hbm2ddlMode", getHbm2ddlMode()));
       showSQL = "true".equalsIgnoreCase(getResource(override, "showSQL", "" + showSQL));
       DEBUG = "true".equalsIgnoreCase(getResource(override, "debug", "" + DEBUG));
+
+      // add mappings from overrides
+      generateHibernateMappings(override);
     } catch (Exception e) {
       // these are overrides, don't prevent startup by blowing out
       Logger.log(e);
+    }
+
+    // add these mappings last because the settings above may affect them
+    generateHibernateMappings(rb);
+  }
+
+  private void generateHibernateMappings(ResourceBundle bundle) {
+    try {
+      Enumeration<String> keys = bundle.getKeys();
+      while (keys.hasMoreElements()) {
+        String key = keys.nextElement();
+        if (key.startsWith("HibernateMapped")) {
+          try {
+            Class clazz = Class.forName(bundle.getString(key));
+            generateHibernateMapping(clazz);
+          } catch (Throwable t) {
+            Logger.log(t);
+          }
+        }
+      }
+    } catch (Throwable t) {
+      Logger.log(t);
     }
   }
 
@@ -86,7 +116,8 @@ public class HibernateUtil {
               System.gc();
               long total = Runtime.getRuntime().totalMemory();
               long free = Runtime.getRuntime().freeMemory();
-              System.out.println(DecimalFormat.getNumberInstance().format(total) + " allocated " + DecimalFormat.getNumberInstance().format(total - free) + " used " + DecimalFormat.getNumberInstance().format(free) + " free");
+              System.out.println(DecimalFormat.getNumberInstance().format(total) + " allocated " + DecimalFormat.getNumberInstance().format(total - free)
+                  + " used " + DecimalFormat.getNumberInstance().format(free) + " free");
               try {
                 Thread.sleep(30000);
               } catch (Exception e) {
@@ -108,6 +139,7 @@ public class HibernateUtil {
     } catch (Throwable t) {
     }
     sessionFactory = null;
+    instance = null;
   }
 
   public void setSessionFactory(SessionFactory inSessionFactory) {
@@ -151,15 +183,17 @@ public class HibernateUtil {
 
         // setup out provider for ehcache
         sessionFactoryElement.addElement("property").addAttribute("name", "cache.provider_class").setText(CacheProvider.class.getName());
+
         // add c3p0 configuration
         sessionFactoryElement.addElement("property").addAttribute("name", "c3p0.acquire_increment").setText("1");
-        sessionFactoryElement.addElement("property").addAttribute("name", "c3p0.idle_test_period").setText("60");
-        sessionFactoryElement.addElement("property").addAttribute("name", "c3p0.timeout").setText("120");
-        sessionFactoryElement.addElement("property").addAttribute("name", "c3p0.max_size").setText("5");
+        sessionFactoryElement.addElement("property").addAttribute("name", "c3p0.idle_test_period").setText("10");
+        sessionFactoryElement.addElement("property").addAttribute("name", "c3p0.timeout").setText("5000");
+        sessionFactoryElement.addElement("property").addAttribute("name", "c3p0.min_size").setText("3");
+        sessionFactoryElement.addElement("property").addAttribute("name", "c3p0.max_size").setText("15");
         sessionFactoryElement.addElement("property").addAttribute("name", "c3p0.max_statements").setText("0");
-        sessionFactoryElement.addElement("property").addAttribute("name", "c3p0.min_size").setText("1");
+        // sessionFactoryElement.addElement("property").addAttribute("name", "c3p0.validate").setText("true");
         sessionFactoryElement.addElement("property").addAttribute("name", "c3p0.preferredTestQuery").setText("select 1+1");
-        // generate ddl and update database
+        // generate ddl and update database (if configured)
         sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.hbm2ddl.auto").setText(hbm2ddlMode);
         // setup config
         Configuration cfg = new Configuration().configure(new DOMWriter().write(document));
@@ -248,10 +282,6 @@ public class HibernateUtil {
   public long getStartupDate() {
     return startupDate;
   }
-
-  HashMap<Class, Element> classElementMap = new HashMap<Class, Element>();
-  HashMap<Class, Element> idElementMap = new HashMap<Class, Element>();
-  HashMap<Class, Boolean> idElementClearedMap = new HashMap<Class, Boolean>();
 
   public void generateHibernateMapping(Class clazz) {
     if (!isClassMapped(clazz)) {
@@ -457,9 +487,10 @@ public class HibernateUtil {
   public void printStatistics() {
     Session session = HibernateUtil.getInstance().getSession();
     // org.hibernate.Session session = HibernateUtil.getInstance().getSession();
-    System.out.println("Query Cache: p" + session.getSessionFactory().getStatistics().getQueryCachePutCount() + " h" + session.getSessionFactory().getStatistics().getQueryCacheHitCount() + " m"
-        + session.getSessionFactory().getStatistics().getQueryCacheMissCount());
-    System.out.println("2nd Level Cache: p" + session.getSessionFactory().getStatistics().getSecondLevelCachePutCount() + " h" + session.getSessionFactory().getStatistics().getSecondLevelCacheHitCount() + " m"
+    System.out.println("Query Cache: p" + session.getSessionFactory().getStatistics().getQueryCachePutCount() + " h"
+        + session.getSessionFactory().getStatistics().getQueryCacheHitCount() + " m" + session.getSessionFactory().getStatistics().getQueryCacheMissCount());
+    System.out.println("2nd Level Cache: p" + session.getSessionFactory().getStatistics().getSecondLevelCachePutCount() + " h"
+        + session.getSessionFactory().getStatistics().getSecondLevelCacheHitCount() + " m"
         + session.getSessionFactory().getStatistics().getSecondLevelCacheMissCount());
   }
 

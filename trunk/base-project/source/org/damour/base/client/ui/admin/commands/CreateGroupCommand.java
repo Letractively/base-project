@@ -9,8 +9,6 @@ import org.damour.base.client.ui.dialogs.IDialogValidatorCallback;
 import org.damour.base.client.ui.dialogs.MessageDialogBox;
 import org.damour.base.client.ui.dialogs.PromptDialogBox;
 
-import com.google.gwt.user.client.Window;
-
 public class CreateGroupCommand implements MenuButtonCommand {
 
   User user;

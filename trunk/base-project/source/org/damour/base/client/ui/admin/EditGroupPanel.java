@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.damour.base.client.objects.User;
 import org.damour.base.client.objects.UserGroup;
-import org.damour.base.client.service.BaseServiceAsync;
+import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.IGenericCallback;
 import org.damour.base.client.ui.buttons.Button;
 import org.damour.base.client.ui.dialogs.MessageDialogBox;
@@ -116,7 +116,7 @@ public class EditGroupPanel extends FlexTable {
         }
       };
     };
-    BaseServiceAsync.service.getUsers(getUsersCallback);
+    BaseServiceCache.getService().getUsers(getUsersCallback);
   }
 
   public boolean apply() {
@@ -155,7 +155,7 @@ public class EditGroupPanel extends FlexTable {
       };
     };
 
-    BaseServiceAsync.service.createOrEditGroup(group, updateGroupCallback);
+    BaseServiceCache.getService().createOrEditGroup(group, updateGroupCallback);
     return true;
   }
 

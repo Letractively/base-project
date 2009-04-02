@@ -6,10 +6,11 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.damour.base.client.images.BaseImageBundle;
+import org.damour.base.client.objects.Comment;
 import org.damour.base.client.objects.File;
-import org.damour.base.client.objects.FileComment;
 import org.damour.base.client.objects.Page;
-import org.damour.base.client.service.BaseServiceAsync;
+import org.damour.base.client.objects.PermissibleObject;
+import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.authentication.AuthenticationHandler;
 import org.damour.base.client.ui.buttons.Button;
 import org.damour.base.client.ui.buttons.IconButton;
@@ -39,20 +40,20 @@ import com.google.gwt.user.client.ui.Widget;
 
 public class CommentWidget extends HorizontalPanel {
 
-  private File file;
-  private List<FileComment> comments;
+  private PermissibleObject permissibleObject;
+  private List<Comment> comments;
   private boolean sortDescending = true;
   private boolean flatten = false;
   private ListBox maxCommentDepthListBox = new ListBox(false);
 
-  private FileComment workingOnComment;
+  private Comment workingOnComment;
 
   private int pageNumber = 0;
   private int pageSize = 10;
   private long numComments = 0;
   private long lastPageNumber = 0;
 
-  HashMap<Integer, Page<FileComment>> pageCache = new HashMap<Integer, Page<FileComment>>();
+  HashMap<Integer, Page<Comment>> pageCache = new HashMap<Integer, Page<Comment>>();
 
   private AsyncCallback<Boolean> deleteCommentCallback = new AsyncCallback<Boolean>() {
 
@@ -92,9 +93,9 @@ public class CommentWidget extends HorizontalPanel {
       dialog.center();
     }
   };
-  private AsyncCallback<Page<FileComment>> pageCallback = new AsyncCallback<Page<FileComment>>() {
+  private AsyncCallback<Page<Comment>> pageCallback = new AsyncCallback<Page<Comment>>() {
 
-    public void onSuccess(Page<FileComment> page) {
+    public void onSuccess(Page<Comment> page) {
       pageCache.put(page.getPageNumber(), page);
       comments = page.getResults();
       numComments = page.getTotalRowCount();
@@ -109,9 +110,9 @@ public class CommentWidget extends HorizontalPanel {
     }
   };
 
-  private AsyncCallback<Page<FileComment>> preFetchPageCallback = new AsyncCallback<Page<FileComment>>() {
+  private AsyncCallback<Page<Comment>> preFetchPageCallback = new AsyncCallback<Page<Comment>>() {
 
-    public void onSuccess(Page<FileComment> page) {
+    public void onSuccess(Page<Comment> page) {
       pageCache.put(page.getPageNumber(), page);
     }
 
@@ -121,11 +122,11 @@ public class CommentWidget extends HorizontalPanel {
     }
   };
 
-  public CommentWidget(final File file, final List<FileComment> comments) {
-    this.file = file;
+  public CommentWidget(final PermissibleObject permissibleObject, final List<Comment> comments) {
+    this.permissibleObject = permissibleObject;
     this.comments = comments;
 
-    maxCommentDepthListBox.addItem("No Maximum", "999999");
+    maxCommentDepthListBox.addItem("None", "999999");
     maxCommentDepthListBox.addItem("1");
     maxCommentDepthListBox.addItem("2");
     maxCommentDepthListBox.addItem("3");
@@ -155,9 +156,9 @@ public class CommentWidget extends HorizontalPanel {
 
   private void loadCommentWidget(final boolean forceOpen) {
     clear();
-    if (file.isAllowComments()) {
+    if (permissibleObject.isAllowComments()) {
 
-      String fileName = file.getName();
+      String fileName = permissibleObject.getName();
       final DisclosurePanel commentDisclosurePanel = new DisclosurePanel("View comments (" + numComments + ") for " + fileName);
 
       VerticalPanel commentsPanel = new VerticalPanel();
@@ -165,22 +166,16 @@ public class CommentWidget extends HorizontalPanel {
       commentsPanel.setStyleName("commentsPanel");
       commentsPanel.setWidth("100%");
 
-      final FlexTable mainPanel = new FlexTable();
-      mainPanel.setWidth("100%");
-
-      mainPanel.setWidget(0, 0, createCommentPostPanel());
-      mainPanel.setWidget(1, 0, createButtonPanel(mainPanel, forceOpen));
-      mainPanel.getCellFormatter().setHorizontalAlignment(1, 0, HasHorizontalAlignment.ALIGN_LEFT);
 
       int renderedComments = 0;
-      boolean userCanManage = AuthenticationHandler.getInstance().getUser() != null && (AuthenticationHandler.getInstance().getUser().isAdministrator() || AuthenticationHandler.getInstance().getUser().equals(file.getOwner()));
-      List<FileComment> sortedComments = new ArrayList<FileComment>();
+      boolean userCanManage = AuthenticationHandler.getInstance().getUser() != null && (AuthenticationHandler.getInstance().getUser().isAdministrator() || AuthenticationHandler.getInstance().getUser().equals(permissibleObject.getOwner()));
+      List<Comment> sortedComments = new ArrayList<Comment>();
       sortedComments.addAll(comments);
       if (!flatten) {
         sortedComments = sortComments(sortedComments);
       }
 
-      for (final FileComment comment : sortedComments) {
+      for (final Comment comment : sortedComments) {
         int commentDepth = getCommentDepth(comment);
 
         int maxDepth = Integer.parseInt(maxCommentDepthListBox.getValue(maxCommentDepthListBox.getSelectedIndex()));
@@ -296,7 +291,7 @@ public class CommentWidget extends HorizontalPanel {
             Label spacerLabel = new Label();
             commentHeaderPanelWrapper.add(spacerLabel);
             if (!flatten) {
-              commentHeaderPanelWrapper.setCellWidth(spacerLabel, (commentDepth * 40) + "px");
+              commentHeaderPanelWrapper.setCellWidth(spacerLabel, (commentDepth * 20) + "px");
             }
             commentHeaderPanelWrapper.add(commentHeaderPanel);
             commentsPanel.add(commentHeaderPanelWrapper);
@@ -317,7 +312,7 @@ public class CommentWidget extends HorizontalPanel {
             Label spacerLabel = new Label();
             commentHeaderPanelWrapper.add(spacerLabel);
             if (!flatten) {
-              commentHeaderPanelWrapper.setCellWidth(spacerLabel, (commentDepth * 40) + "px");
+              commentHeaderPanelWrapper.setCellWidth(spacerLabel, (commentDepth * 20) + "px");
             }
             commentHeaderPanelWrapper.add(commentLabel);
             commentsPanel.add(commentHeaderPanelWrapper);
@@ -328,9 +323,17 @@ public class CommentWidget extends HorizontalPanel {
         }
       }
 
+      final FlexTable mainPanel = new FlexTable();
+      mainPanel.setWidth("100%");
       if (renderedComments > 0) {
-        mainPanel.setWidget(2, 0, commentsPanel);
-        mainPanel.getCellFormatter().setWidth(2, 0, "100%");
+        mainPanel.setWidget(0, 0, createButtonPanel(mainPanel, forceOpen));
+        mainPanel.getCellFormatter().setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_LEFT);
+        mainPanel.setWidget(1, 0, commentsPanel);
+        mainPanel.getCellFormatter().setWidth(1, 0, "100%");
+        mainPanel.setWidget(2, 0, createCommentPostPanel());
+      } else {
+        mainPanel.setWidget(0, 0, createCommentPostPanel());
+
       }
 
       commentDisclosurePanel.setContent(mainPanel);
@@ -375,11 +378,21 @@ public class CommentWidget extends HorizontalPanel {
         fetchPage();
       }
     });
+    if (lastPageNumber < 0) {
+    	firstPageImageButton.setEnabled(false);
+    	previousPageImageButton.setEnabled(false);
+    	nextPageImageButton.setEnabled(false);
+    	lastPageImageButton.setEnabled(false);
+    }
+    
     HorizontalPanel buttonPanel = new HorizontalPanel();
     buttonPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
     buttonPanel.add(firstPageImageButton);
     buttonPanel.add(previousPageImageButton);
     Label pageLabel = new Label("Page " + (pageNumber + 1) + " of " + (lastPageNumber + 1), false);
+    if (lastPageNumber < 0) {
+    	pageLabel.setText("Page 0 of 0");
+    }
     DOM.setStyleAttribute(pageLabel.getElement(), "margin", "0 5px 0 5px");
     buttonPanel.add(pageLabel);
     buttonPanel.add(nextPageImageButton);
@@ -446,7 +459,7 @@ public class CommentWidget extends HorizontalPanel {
   private DisclosurePanel createCommentPostPanel() {
     DisclosurePanel postCommentDisclosurePanel = new DisclosurePanel("Post Comment");
     postCommentDisclosurePanel.setWidth("100%");
-    postCommentDisclosurePanel.setOpen(comments.size() == 0);
+    postCommentDisclosurePanel.setOpen(true);
     VerticalPanel postCommentPanel = new VerticalPanel();
     postCommentPanel.setWidth("100%");
     // create text area for comment
@@ -470,10 +483,10 @@ public class CommentWidget extends HorizontalPanel {
         if (commentStr == null || "".equals(commentStr.trim())) {
           return;
         }
-        FileComment comment = new FileComment();
+        Comment comment = new Comment();
         comment.setAuthor(AuthenticationHandler.getInstance().getUser());
         comment.setComment(commentStr);
-        comment.setFile(file);
+        comment.setPermissibleObject(permissibleObject);
         comment.setEmail(emailTextField.getText());
         submitButton.setEnabled(false);
         submitComment(comment);
@@ -502,7 +515,7 @@ public class CommentWidget extends HorizontalPanel {
     return postCommentDisclosurePanel;
   }
 
-  private void replyToComment(final FileComment parentComment) {
+  private void replyToComment(final Comment parentComment) {
     PromptDialogBox dialog = new PromptDialogBox("Reply To: " + parentComment.getAuthor().getUsername(), "Submit", null, "Cancel", false, true);
     VerticalPanel replyPanel = new VerticalPanel();
 
@@ -530,10 +543,10 @@ public class CommentWidget extends HorizontalPanel {
     });
     dialog.setCallback(new IDialogCallback() {
       public void okPressed() {
-        FileComment newComment = new FileComment();
+        Comment newComment = new Comment();
         newComment.setAuthor(AuthenticationHandler.getInstance().getUser());
         newComment.setComment(textArea.getText());
-        newComment.setFile(file);
+        newComment.setPermissibleObject(permissibleObject);
         newComment.setParentComment(parentComment);
         newComment.setEmail(emailTextBox.getText());
         submitComment(newComment);
@@ -545,13 +558,13 @@ public class CommentWidget extends HorizontalPanel {
     dialog.center();
   }
 
-  private List<FileComment> sortComments(List<FileComment> comments) {
-    List<FileComment> sortedComments = new ArrayList<FileComment>();
-    for (FileComment comment : comments) {
+  private List<Comment> sortComments(List<Comment> comments) {
+    List<Comment> sortedComments = new ArrayList<Comment>();
+    for (Comment comment : comments) {
       if (!sortedComments.contains(comment)) {
         sortedComments.add(comment);
-        FileComment parentComment = comment.getParentComment();
-        FileComment previousParentComment = null;
+        Comment parentComment = comment.getParentComment();
+        Comment previousParentComment = null;
         while (parentComment != null) {
           // insert parents ahead of their child, if not already
           if (previousParentComment != null) {
@@ -571,9 +584,9 @@ public class CommentWidget extends HorizontalPanel {
     return sortedComments;
   }
 
-  private int getCommentDepth(FileComment comment) {
+  private int getCommentDepth(Comment comment) {
     int depth = 0;
-    FileComment parent = comment.getParentComment();
+    Comment parent = comment.getParentComment();
     while (parent != null) {
       depth++;
       parent = parent.getParentComment();
@@ -582,9 +595,9 @@ public class CommentWidget extends HorizontalPanel {
   }
 
   private void prefetchPage(int pageNumber) {
-    Page<FileComment> page = pageCache.get(pageNumber);
+    Page<Comment> page = pageCache.get(pageNumber);
     if (page == null && pageNumber >= 0 && pageNumber <= lastPageNumber) {
-      BaseServiceAsync.service.getCommentPage(file, sortDescending, pageNumber, pageSize, preFetchPageCallback);
+      BaseServiceCache.getService().getCommentPage(permissibleObject, sortDescending, pageNumber, pageSize, preFetchPageCallback);
     }
   }
 
@@ -606,23 +619,23 @@ public class CommentWidget extends HorizontalPanel {
   }
 
   private void fetchPage() {
-    Page<FileComment> page = pageCache.get(pageNumber);
+    Page<Comment> page = pageCache.get(pageNumber);
     if (page != null) {
       pageCallback.onSuccess(page);
     } else {
-      BaseServiceAsync.service.getCommentPage(file, sortDescending, pageNumber, pageSize, pageCallback);
+      BaseServiceCache.getService().getCommentPage(permissibleObject, sortDescending, pageNumber, pageSize, pageCallback);
     }
   }
 
-  private void submitComment(FileComment comment) {
-    BaseServiceAsync.service.submitComment(comment, submitCommentCallback);
+  private void submitComment(Comment comment) {
+    BaseServiceCache.getService().submitComment(comment, submitCommentCallback);
   }
 
-  private void approveComment(FileComment comment) {
-    BaseServiceAsync.service.approveComment(comment, approveCallback);
+  private void approveComment(Comment comment) {
+    BaseServiceCache.getService().approveComment(comment, approveCallback);
   }
 
-  private void deleteComment(FileComment comment) {
-    BaseServiceAsync.service.deleteComment(comment, deleteCommentCallback);
+  private void deleteComment(Comment comment) {
+    BaseServiceCache.getService().deleteComment(comment, deleteCommentCallback);
   }
 }

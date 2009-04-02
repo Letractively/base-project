@@ -34,7 +34,7 @@ public class OpenFileCommand implements Command {
     if (object instanceof File) {
       if (object instanceof Photo) {
         Photo photo = preview && ((Photo) object).getSlideshowImage() != null ? ((Photo) object).getSlideshowImage() : (Photo) object;
-        String url = "/servlet/GetFileService?file=" + photo.getId() + "&name=" + photo.getName();
+        String url = "/servlet/org.damour.base.server.GetFileService?file=" + photo.getId() + "&name=" + photo.getName();
         if (!GWT.isScript()) {
           url = "http://localhost/files/" + photo.getNameOnDisk();
         }
@@ -45,7 +45,7 @@ public class OpenFileCommand implements Command {
         promptDialog.setContent(image);
         promptDialog.center();
       } else if (object.getContentType().equals("audio/mpeg")) {
-        String url = "/servlet/GetFileService?file=" + object.getId() + "&name=" + object.getName();
+        String url = "/servlet/org.damour.base.server.GetFileService?file=" + object.getId() + "&name=" + object.getName();
         if (!GWT.isScript()) {
           url = "http://localhost/files/" + object.getNameOnDisk();
         }
@@ -54,7 +54,7 @@ public class OpenFileCommand implements Command {
         MP3Player.getInstance().play();
         MP3Player.getInstance().show();
       } else {
-        String url = "/servlet/GetFileService?file=" + object.getId() + "&name=" + object.getName() + "&download=true";
+        String url = "/servlet/org.damour.base.server.GetFileService?file=" + object.getId() + "&name=" + object.getName() + "&download=true";
         if (!GWT.isScript()) {
           url = "http://localhost/files/" + object.getNameOnDisk() + "?download=true";
         }

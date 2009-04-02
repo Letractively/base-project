@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.damour.base.client.objects.User;
 import org.damour.base.client.objects.UserGroup;
-import org.damour.base.client.service.BaseServiceAsync;
+import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.IGenericCallback;
 import org.damour.base.client.ui.buttons.Button;
 
@@ -111,7 +111,7 @@ public class EditAccountsPanel extends FlexTable implements IAdminPanel, ChangeL
         }
       };
     };
-    BaseServiceAsync.service.getUsers(getUsersCallback);
+    BaseServiceCache.getService().getUsers(getUsersCallback);
   }
 
   public void onChange(Widget sender) {

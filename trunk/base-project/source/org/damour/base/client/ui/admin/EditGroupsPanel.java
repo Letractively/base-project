@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.damour.base.client.objects.User;
 import org.damour.base.client.objects.UserGroup;
-import org.damour.base.client.service.BaseServiceAsync;
+import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.IGenericCallback;
 import org.damour.base.client.ui.buttons.Button;
 import org.damour.base.client.ui.dialogs.IDialogCallback;
@@ -146,7 +146,7 @@ public class EditGroupsPanel extends FlexTable implements IAdminPanel, ChangeLis
                 }
               };
             };
-            BaseServiceAsync.service.deleteGroup(group, deleteGroupCallback);
+            BaseServiceCache.getService().deleteGroup(group, deleteGroupCallback);
 
           }
 
@@ -240,7 +240,7 @@ public class EditGroupsPanel extends FlexTable implements IAdminPanel, ChangeLis
         }
       };
     };
-    BaseServiceAsync.service.getOwnedGroups(user, getGroupsCallback);
+    BaseServiceCache.getService().getOwnedGroups(user, getGroupsCallback);
   }
 
   public void onChange(Widget sender) {

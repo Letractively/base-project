@@ -2,7 +2,7 @@ package org.damour.base.client.ui.repository;
 
 import org.damour.base.client.objects.Folder;
 import org.damour.base.client.objects.PermissibleObject;
-import org.damour.base.client.service.BaseServiceAsync;
+import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.dialogs.IDialogCallback;
 import org.damour.base.client.ui.dialogs.IDialogValidatorCallback;
 import org.damour.base.client.ui.dialogs.MessageDialogBox;
@@ -29,10 +29,10 @@ public class CreateNewFolderCommand implements Command {
     dialogBox.setContent(folderNameTextBox);
     dialogBox.setCallback(new IDialogCallback() {
       public void okPressed() {
-        Folder parentFolder = null;
+        PermissibleObject parentFolder = null;
         if (repositoryTree.getLastItem() != null && repositoryTree.getLastItem().getUserObject() instanceof PermissibleObject) {
           PermissibleObject permissibleObject = (PermissibleObject) repositoryTree.getLastItem().getUserObject();
-          parentFolder = permissibleObject.getParentFolder();
+          parentFolder = permissibleObject.getParent();
         }
         AsyncCallback<Folder> callback = new AsyncCallback<Folder>() {
           public void onFailure(Throwable caught) {
@@ -46,10 +46,10 @@ public class CreateNewFolderCommand implements Command {
           }
         };
         Folder newFolder = new Folder();
-        newFolder.setParentFolder(parentFolder);
+        newFolder.setParent(parentFolder);
         newFolder.setName(folderNameTextBox.getText());
         newFolder.setDescription(folderNameTextBox.getText());
-        BaseServiceAsync.service.createNewFolder(newFolder, callback);
+        BaseServiceCache.getService().createNewFolder(newFolder, callback);
       }
 
       public void cancelPressed() {

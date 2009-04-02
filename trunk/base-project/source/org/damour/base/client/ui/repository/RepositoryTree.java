@@ -11,7 +11,7 @@ import org.damour.base.client.objects.Folder;
 import org.damour.base.client.objects.PermissibleObject;
 import org.damour.base.client.objects.Photo;
 import org.damour.base.client.objects.RepositoryTreeNode;
-import org.damour.base.client.service.BaseServiceAsync;
+import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.ToolTip;
 
 import com.google.gwt.core.client.GWT;
@@ -160,7 +160,7 @@ public class RepositoryTree extends Tree implements TreeListener {
         Photo photo = (Photo) file;
         if (photo.getThumbnailImage() != null) {
           if (GWT.isScript()) {
-            thumbnailImageURL = "/servlet/GetFileService?file=" + photo.getThumbnailImage().getId() + "&name=" + photo.getName();
+            thumbnailImageURL = "/servlet/org.damour.base.server.GetFileService?file=" + photo.getThumbnailImage().getId() + "&name=" + photo.getName();
           } else {
             thumbnailImageURL = "http://localhost/files/" + photo.getThumbnailImage().getNameOnDisk();
           }
@@ -193,7 +193,7 @@ public class RepositoryTree extends Tree implements TreeListener {
         }
       }
     };
-    BaseServiceAsync.service.getRepositoryTree(callback);
+    BaseServiceCache.getService().getRepositoryTree(callback);
   }
 
   public void onTreeItemSelected(TreeItem item) {

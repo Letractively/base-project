@@ -3,7 +3,7 @@ package org.damour.base.client.ui.admin;
 import java.util.List;
 
 import org.damour.base.client.objects.HibernateStat;
-import org.damour.base.client.service.BaseServiceAsync;
+import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.buttons.Button;
 
 import com.google.gwt.i18n.client.NumberFormat;
@@ -117,7 +117,7 @@ public class HibernateAdminPanel extends VerticalPanel {
         fetchHibernateStats();
       };
     };
-    BaseServiceAsync.service.evictClassFromCache(className, callback);
+    BaseServiceCache.getService().evictClassFromCache(className, callback);
   }
 
   private void fetchHibernateStats() {
@@ -138,7 +138,7 @@ public class HibernateAdminPanel extends VerticalPanel {
         populateUI(stats);
       };
     };
-    BaseServiceAsync.service.getHibernateStats(callback);
+    BaseServiceCache.getService().getHibernateStats(callback);
   }
 
   private void resetHibernate() {
@@ -151,7 +151,7 @@ public class HibernateAdminPanel extends VerticalPanel {
         fetchHibernateStats();
       };
     };
-    BaseServiceAsync.service.resetHibernate(callback);
+    BaseServiceCache.getService().resetHibernate(callback);
   }
 
 }

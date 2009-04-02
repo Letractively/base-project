@@ -5,8 +5,9 @@ import java.util.Date;
 import java.util.List;
 
 import org.damour.base.client.objects.User;
-import org.damour.base.client.service.BaseServiceAsync;
+import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.buttons.Button;
+import org.damour.base.client.ui.datepicker.SimpleDatePicker;
 import org.damour.base.client.ui.dialogs.IDialogCallback;
 import org.damour.base.client.ui.dialogs.IDialogValidatorCallback;
 import org.damour.base.client.ui.dialogs.MessageDialogBox;
@@ -25,7 +26,6 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
-import com.thapar.gwt.user.ui.client.widget.simpledatepicker.SimpleDatePicker;
 
 public class AuthenticationHandler {
 
@@ -229,7 +229,7 @@ public class AuthenticationHandler {
         }
       };
     };
-    BaseServiceAsync.service.getLoginHint(username, callback);
+    BaseServiceCache.getService().getLoginHint(username, callback);
   }
 
   public void showNewAccountDialog(final boolean showLoginIfCancelPressed) {
@@ -349,7 +349,7 @@ public class AuthenticationHandler {
   }
 
   private void createCaptchaImage() {
-      captchaValidationImage.setUrl("/servlet/CaptchaImageGeneratorService?attempt=" + System.currentTimeMillis());
+      captchaValidationImage.setUrl("/servlet/org.damour.base.server.CaptchaImageGeneratorService?attempt=" + System.currentTimeMillis());
   }
 
   public void showEditAccountDialog(final User user) {
@@ -481,7 +481,7 @@ public class AuthenticationHandler {
         }
       };
     };
-    BaseServiceAsync.service.login(username, password, loginCallback);
+    BaseServiceCache.getService().login(username, password, loginCallback);
   }
 
   public void createNewAccount(final String username, final String firstname, final String lastname, final String password, final String passwordHint, final String email, final long birthday) {
@@ -517,7 +517,7 @@ public class AuthenticationHandler {
     user.setPasswordHint(passwordHint);
     user.setEmail(email);
     user.setBirthday(birthday);
-    BaseServiceAsync.service.createOrEditAccount(user, password, captchaValidationTextBox.getText().toUpperCase(), loginCallback);
+    BaseServiceCache.getService().createOrEditAccount(user, password, captchaValidationTextBox.getText().toUpperCase(), loginCallback);
   }
 
   public void editAccount(User user, String password) {
@@ -547,7 +547,7 @@ public class AuthenticationHandler {
       };
     };
 
-    BaseServiceAsync.service.createOrEditAccount(user, password, null, loginCallback);
+    BaseServiceCache.getService().createOrEditAccount(user, password, null, loginCallback);
   }
 
   public void logout() {
@@ -561,7 +561,7 @@ public class AuthenticationHandler {
         fireLoggedOut();
       };
     };
-    BaseServiceAsync.service.logout(loginCallback);
+    BaseServiceCache.getService().logout(loginCallback);
   }
 
   public void handleUserAuthentication(final boolean forcePrompt) {
@@ -583,7 +583,7 @@ public class AuthenticationHandler {
         }
       };
     };
-    BaseServiceAsync.service.getAuthenticatedUser(isAuthenticatedCallback);
+    BaseServiceCache.getService().getAuthenticatedUser(isAuthenticatedCallback);
   }
 
   public String getDomain() {
