@@ -3,11 +3,10 @@ package org.damour.base.client.objects;
 import java.io.Serializable;
 
 public class FileUploadStatus implements Serializable {
-  public static final int UPLOADING = 0;
-  public static final int CREATING_FILE = 1;
-  public static final int WRITING_FILE = 2;
-  public static final int WRITING_DATABASE = 3;
-  public static final int BUILDING_THUMBNAILS = 4;
+  public static final int UPLOADING = 1;
+  public static final int CREATING_FILE = 2;
+  public static final int WRITING_FILE = 3;
+  public static final int WRITING_DATABASE = 4;
   public static final int FINISHED = 5;
   
   public int status = UPLOADING;

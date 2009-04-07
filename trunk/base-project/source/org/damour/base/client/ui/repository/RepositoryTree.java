@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import org.damour.base.client.BaseEntryPoint;
 import org.damour.base.client.images.BaseImageBundle;
 import org.damour.base.client.objects.File;
 import org.damour.base.client.objects.Folder;
@@ -57,12 +58,14 @@ public class RepositoryTree extends Tree implements TreeListener {
     addTreeListener(this);
     sinkEvents(Event.ONDBLCLICK);
   }
-  
+
   public void onBrowserEvent(Event event) {
     super.onBrowserEvent(event);
     if (event.getTypeInt() == Event.ONDBLCLICK) {
-      OpenFileCommand cmd = new OpenFileCommand((File)getLastItem().getUserObject(), true);
-      cmd.execute();
+      if (getLastItem().getUserObject() instanceof File) {
+        OpenFileCommand cmd = new OpenFileCommand((File) getLastItem().getUserObject(), true);
+        cmd.execute();
+      }
     }
   }
 
@@ -159,11 +162,7 @@ public class RepositoryTree extends Tree implements TreeListener {
       if (file instanceof Photo) {
         Photo photo = (Photo) file;
         if (photo.getThumbnailImage() != null) {
-          if (GWT.isScript()) {
-            thumbnailImageURL = "/servlet/org.damour.base.server.GetFileService?file=" + photo.getThumbnailImage().getId() + "&name=" + photo.getName();
-          } else {
-            thumbnailImageURL = "http://localhost/files/" + photo.getThumbnailImage().getNameOnDisk();
-          }
+          thumbnailImageURL = BaseEntryPoint.getSettings().getString("GetFileService", BaseEntryPoint.GET_FILE_SERVICE_PATH) + photo.getThumbnailImage().getId() + "_inline_" + photo.getName();
         }
       }
       new ToolTip(treeItemLabel, thumbnailImageURL, tooltip);
