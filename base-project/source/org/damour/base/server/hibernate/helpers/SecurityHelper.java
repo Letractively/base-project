@@ -11,18 +11,18 @@ import org.damour.base.client.objects.SecurityPrincipal;
 import org.damour.base.client.objects.User;
 import org.damour.base.client.objects.UserGroup;
 import org.damour.base.client.objects.Permission.PERM;
-import org.damour.base.server.hibernate.HibernateUtil;
 import org.hibernate.Session;
-import org.hibernate.Transaction;
 
 public class SecurityHelper {
 
   public static void deletePermissions(Session session, PermissibleObject object) {
     session.createQuery("delete from " + Permission.class.getSimpleName() + " where permissibleObject.id = " + object.id).setCacheable(true).executeUpdate();
   }
-  
+
   public static List<Permission> getPermissions(Session session, SecurityPrincipal principal, PermissibleObject object) {
-    return session.createQuery("from " + Permission.class.getSimpleName() + " where securityPrincipal.id = " + principal.id + " and permissibleObject.id = " + object.id).setCacheable(true).list();
+    return session.createQuery(
+        "from " + Permission.class.getSimpleName() + " where securityPrincipal.id = " + principal.id + " and permissibleObject.id = " + object.id)
+        .setCacheable(true).list();
   }
 
   public static List<Permission> getPermissions(Session session, PermissibleObject object) {
@@ -39,17 +39,22 @@ public class SecurityHelper {
 
   public static List<User> getUsersInUserGroup(Session session, UserGroup group) {
     // select user from GroupMembership where userGroup.id = group.id
-    return session.createQuery("select user from " + GroupMembership.class.getSimpleName() + " groupMem where groupMem.userGroup.id = " + group.id).setCacheable(true).list();
+    return session.createQuery("select user from " + GroupMembership.class.getSimpleName() + " groupMem where groupMem.userGroup.id = " + group.id)
+        .setCacheable(true).list();
   }
 
   public static List<UserGroup> getUserGroups(Session session, User user) {
     // select distinct userGroup from GroupMembership where user.id = user.id
-    return session.createQuery("select distinct userGroup from " + GroupMembership.class.getSimpleName() + " groupMem where groupMem.user.id = " + user.id).setCacheable(true).list();
+    return session.createQuery("select distinct userGroup from " + GroupMembership.class.getSimpleName() + " groupMem where groupMem.user.id = " + user.id)
+        .setCacheable(true).list();
   }
 
   public static List<UserGroup> getVisibleUserGroups(Session session, User user) {
     // select distinct userGroup from GroupMembership where user.id = user.id
-    return session.createQuery("select distinct userGroup from " + GroupMembership.class.getSimpleName() + " groupMem where groupMem.visible = true and groupMem.user.id = " + user.id).setCacheable(true).list();
+    return session
+        .createQuery(
+            "select distinct userGroup from " + GroupMembership.class.getSimpleName() + " groupMem where groupMem.visible = true and groupMem.user.id = "
+                + user.id).setCacheable(true).list();
   }
 
   public static List<UserGroup> getOwnedUserGroups(Session session, User user) {
@@ -98,13 +103,15 @@ public class SecurityHelper {
 
   public static Folder getFolder(Session session, Folder parentFolder, String folderName) {
     if (parentFolder == null) {
-      List<Folder> folders = session.createQuery("from " + Folder.class.getSimpleName() + " where parentFolder is null and name = '" + folderName + "'").setCacheable(true).list();
+      List<Folder> folders = session.createQuery("from " + Folder.class.getSimpleName() + " where parentFolder is null and name = '" + folderName + "'")
+          .setCacheable(true).list();
       if (folders != null && folders.size() > 0) {
         return folders.get(0);
       }
       return null;
     }
-    List<Folder> folders = session.createQuery("from " + Folder.class.getSimpleName() + " where parentFolder.id = " + parentFolder.id).setCacheable(true).list();
+    List<Folder> folders = session.createQuery("from " + Folder.class.getSimpleName() + " where parentFolder.id = " + parentFolder.id).setCacheable(true)
+        .list();
     if (folders != null && folders.size() > 0) {
       return folders.get(0);
     }
@@ -112,7 +119,8 @@ public class SecurityHelper {
   }
 
   public static GroupMembership getGroupMembership(Session session, User user, UserGroup group) {
-    List<GroupMembership> memberships = session.createQuery("from " + GroupMembership.class.getSimpleName() + " where userGroup.id = " + group.id + " and user.id = " + user.id).setCacheable(true).list();
+    List<GroupMembership> memberships = session.createQuery(
+        "from " + GroupMembership.class.getSimpleName() + " where userGroup.id = " + group.id + " and user.id = " + user.id).setCacheable(true).list();
     if (memberships != null && memberships.size() > 0) {
       return memberships.get(0);
     }
@@ -199,137 +207,6 @@ public class SecurityHelper {
       }
     }
     return false;
-  }
-
-  public static void main(String args[]) {
-    HibernateUtil.getInstance().setTablePrefix("table_");
-    HibernateUtil.getInstance().setColumnPrefix("column_");
-    HibernateUtil.getInstance().generateHibernateMapping(User.class);
-    HibernateUtil.getInstance().generateHibernateMapping(UserGroup.class);
-    HibernateUtil.getInstance().generateHibernateMapping(GroupMembership.class);
-    HibernateUtil.getInstance().generateHibernateMapping(Folder.class);
-    HibernateUtil.getInstance().generateHibernateMapping(Permission.class);
-
-    org.hibernate.Session session = HibernateUtil.getInstance().getSession();
-    System.out.println(session.getCacheMode());
-    Transaction tx = session.beginTransaction();
-
-    // create new user
-    User user = UserHelper.getUser(session, "mdamour1976");
-    if (user == null) {
-      user = new User();
-      user.setUsername("mdamour1976");
-      user.setPasswordHash("password");
-      user.setSignupDate(System.currentTimeMillis());
-      session.save(user);
-    }
-
-    // create new group
-    UserGroup group = new UserGroup();
-    group.setName("groupName1");
-    session.save(group);
-    // create new group membership
-    GroupMembership groupMembership = new GroupMembership();
-    groupMembership.setUser(user);
-    groupMembership.setUserGroup(group);
-    session.save(groupMembership);
-
-    UserGroup group2 = new UserGroup();
-    group2.setName("groupName2");
-    session.save(group2);
-
-    UserGroup group3 = new UserGroup();
-    group3.setName("groupName3");
-    session.save(group3);
-
-    // create new group membership
-    GroupMembership groupMembership2 = new GroupMembership();
-    groupMembership2.setUser(user);
-    groupMembership2.setUserGroup(group2);
-    session.save(groupMembership2);
-
-    // create new group membership
-    GroupMembership groupMembership3 = new GroupMembership();
-    groupMembership3.setUser(user);
-    groupMembership3.setUserGroup(group3);
-    session.save(groupMembership3);
-
-    // create new folder
-    Folder folder = new Folder();
-    folder.setName("folderName");
-    folder.setDescription("folderDescription");
-    session.save(folder);
-
-    Permission perm = new Permission();
-    perm.setReadPerm(true);
-    perm.setPermissibleObject(folder);
-    perm.setSecurityPrincipal(user);
-    session.save(perm);
-
-    perm = new Permission();
-    perm.setWritePerm(true);
-    perm.setPermissibleObject(folder);
-    perm.setSecurityPrincipal(group);
-    session.save(perm);
-
-    perm = new Permission();
-    perm.setExecutePerm(true);
-    perm.setPermissibleObject(folder);
-    perm.setSecurityPrincipal(group2);
-    session.save(perm);
-
-    perm = new Permission();
-    perm.setExecutePerm(false);
-    perm.setPermissibleObject(folder);
-    perm.setSecurityPrincipal(group3);
-    session.save(perm);
-
-    tx.commit();
-
-    List<GroupMembership> groups = getUserGroupMemberhips(session, user);
-    for (GroupMembership _group : groups) {
-      System.out.println("user group: " + _group.getUserGroup().getName());
-    }
-
-    List<Permission> permissions = getPermissions(session, user, folder);
-    for (Permission _perm : permissions) {
-      System.out.println("perm user: " + _perm.getSecurityPrincipal().getClass().getName());
-    }
-
-    permissions = getPermissions(session, group, folder);
-    for (Permission _perm : permissions) {
-      System.out.println("perm group: " + _perm.getSecurityPrincipal().getClass().getName());
-    }
-
-    permissions = getPermissions(session, folder);
-    for (Permission _perm : permissions) {
-      System.out.println("perm all: " + _perm.getSecurityPrincipal().getClass().getName());
-    }
-
-    System.out.println("Does User Have Read: " + doesUserHavePermission(session, user, folder, PERM.READ));
-    System.out.println("Does User Have Write: " + doesUserHavePermission(session, user, folder, PERM.WRITE));
-    System.out.println("Does User Have Execute: " + doesUserHavePermission(session, user, folder, PERM.EXECUTE));
-
-    long start = System.currentTimeMillis();
-    for (int i = 0; i < 1000; i++) {
-      dostuff();
-    }
-    long stop = System.currentTimeMillis();
-
-    System.out.println((stop - start) + "ms");
-
-    HibernateUtil.getInstance().printStatistics();
-  }
-
-  public static void dostuff() {
-    org.hibernate.Session session = HibernateUtil.getInstance().getSession();
-    User me = UserHelper.getUser(session, "mdamour1976");
-    List<GroupMembership> mygroups = getUserGroupMemberhips(session, me);
-    for (GroupMembership _group : mygroups) {
-      // System.out.println("my user group: " + _group.getUniqueUserGroup().getUniqueName());
-    }
-    session.flush();
-    session.close();
   }
 
 }
