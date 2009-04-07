@@ -20,7 +20,6 @@
         target: clean              
        =================================================================== -->
 	<target name="clean" depends="">
-		<delete dir="bin" />
 		<delete dir="dist" />
 		<delete dir="${gwt.output.dir}" />
 	</target>
@@ -29,12 +28,12 @@
         target: init              
        =================================================================== -->
 	<target name="init">
-		<mkdir dir="bin" />
 		<mkdir dir="dist" />
+		<mkdir dir="dist/bin" />
 	</target>
 
 	<target name="compile" depends="init">
-		<javac destdir="bin" debug="${debug}" optimize="${optimize}" deprecation="${deprecation}" compiler="modern" source="1.5" target="1.5" fork="true">
+		<javac destdir="dist/bin" debug="${debug}" optimize="${optimize}" deprecation="${deprecation}" compiler="modern" source="1.5" target="1.5" fork="true">
 			<src path="source" />
 			<classpath refid="classpath" />
 		</javac>
@@ -53,12 +52,12 @@
 		</java>
 	</target>
 	
-	<target name="clean-dist" depends="clean">
-		<delete dir="dist" />
-	</target>
-			
-	<target name="dist" depends="clean-dist, compile">
-		<jar basedir="bin" destfile="dist/${project.name}-${release.major.number}.${release.minor.number}.${release.milestone.number}.jar" />
+	<target name="dist" depends="clean, compile">
+		<copy todir="dist/bin">
+			<fileset dir="source">
+			</fileset>
+		</copy>
+		<jar basedir="dist/bin" destfile="dist/${project.name}-${release.major.number}.${release.minor.number}.${release.milestone.number}.jar" />
 	</target>
 
 </project>
