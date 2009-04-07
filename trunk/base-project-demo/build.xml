@@ -79,9 +79,6 @@
 			<fileset dir="dist/source" includes="**/*" />
 		</copy>
 		<jar basedir="dist/bin" destfile="dist/${project.name}-${release.major.number}.${release.minor.number}.${release.milestone.number}.jar" />
-		<copy todir="dist/${target.webapp.name}" overwrite="true">
-			<fileset dir="${webapp.path}" includes="**/*" />
-		</copy>
 		<copy todir="dist/${target.webapp.name}">
 			<fileset dir="${gwt.output.dir}/${gwt.app}" includes="**/*" />
 		</copy>
@@ -90,6 +87,7 @@
 			<fileset dir="lib" includes="*.zip, *.jar" excludes="**/*gwt-dev-windows.jar, **/*gwt-user.jar, **/*googlemaps*.jar, **/gwtchismes*" />
 			<fileset dir="../base-project/lib" includes="**/*.zip, **/*.jar" excludes="**/*gwt-dev-windows.jar, **/*gwt-user.jar, **/*googlemaps*.jar, **/gwtchismes*" />
 		</unzip>
+		<delete file="dist/${project.name}.war" />
 		<zip destfile="dist/${project.name}.war" basedir="dist/${target.webapp.name}" />
 		<delete dir="dist/${target.webapp.name}" />
 	</target>
