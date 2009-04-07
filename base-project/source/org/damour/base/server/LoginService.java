@@ -1,6 +1,7 @@
 package org.damour.base.server;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -22,13 +23,15 @@ public class LoginService extends HttpServlet {
   }
 
   protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
+    response.setContentType("text/plain");
+    OutputStream out = response.getOutputStream();
     try {
       User user = baseService.login(request, response, request.getParameter("username"), request.getParameter("password"));
-      response.setContentType("text/plain");
-      response.getOutputStream().write("true".getBytes());
+      out.write("true".getBytes());
       return;
     } catch (Throwable t) {
+      out.write("false".getBytes());
     }
-    response.getOutputStream().write("false".getBytes());
+    out.close();
   }
 }
