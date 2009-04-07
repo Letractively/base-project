@@ -27,7 +27,6 @@ import org.damour.base.client.ui.repository.FileManagerPanel;
 import org.damour.base.client.ui.toolbar.ToolBar;
 
 import com.google.gwt.core.client.EntryPoint;
-import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.WindowResizeListener;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -46,8 +45,6 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 public class DemoApplication implements EntryPoint, IAuthenticationListener, IGenericCallback<Void>, IResourceBundleLoadCallback {
-
-  public static final String domain = "%domain%";
 
   ResourceBundle messages = null;
   FlexTable applicationPanel = new FlexTable();
@@ -147,7 +144,6 @@ public class DemoApplication implements EntryPoint, IAuthenticationListener, IGe
     RootPanel.get("content").add(applicationPanel);
 
     buildLoginUI();
-    AuthenticationHandler.getInstance().setDomain(domain);
     AuthenticationHandler.getInstance().handleUserAuthentication(false);
   }
 
@@ -202,7 +198,8 @@ public class DemoApplication implements EntryPoint, IAuthenticationListener, IGe
 
     linkCol = -1;
     int row = -1;
-    footerGradientPanel.setHTML(++row, ++linkCol, "Copyright &#169 2007-" + ((new Date()).getYear() + 1900) + " " + domain + ".  All rights reserved.");
+    footerGradientPanel.setHTML(++row, ++linkCol, "Copyright &#169 2007-" + ((new Date()).getYear() + 1900) + " "
+        + BaseEntryPoint.getSettings().getString("companyName", "Your Company") + ".  All rights reserved.");
     footerGradientPanel.getCellFormatter().setHorizontalAlignment(row, linkCol, HasHorizontalAlignment.ALIGN_CENTER);
 
     linkCol = -1;
