@@ -20,6 +20,6 @@
 	<servlet path="/servlet/org.damour.base.server.LoginService" class="org.damour.base.server.LoginService" />
 	<servlet path="/servlet/org.damour.base.server.BaseService" class="org.damour.base.server.BaseService" />
 	<servlet path="/servlet/org.damour.base.server.FileUploadService" class="org.damour.base.server.FileUploadService" />
-	<servlet path="/servlet/org.damour.base.server.GetFileService" class="org.damour.base.server.GetFileService" />
+	<servlet path="/files" class="org.damour.base.server.GetFileService" />
 	
 </module>
