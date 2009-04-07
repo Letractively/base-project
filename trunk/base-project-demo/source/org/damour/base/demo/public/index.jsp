@@ -16,7 +16,7 @@
   }
 
   Properties properties = new Properties();
-  properties.load(new FileInputStream(getServletContext().getRealPath("base_messages/base_messages.properties")));
+  properties.load(new FileInputStream(getServletContext().getRealPath("messages/messages.properties")));
 %>
 
 
