@@ -20,10 +20,10 @@ import com.google.gwt.user.client.ui.FormSubmitEvent;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class FileUploadPanel extends FlexTable {
-  private int STATUS_UPDATE_INTERVAL = 2500;
+  private int STATUS_UPDATE_INTERVAL = 1000;
   private FormPanel form = new FormPanel();
   private PopupPanel progressPopup = new PopupPanel(false, true);
-  private ProgressBar progressMeter = new ProgressBar();
+  private ProgressBar progressMeter = new ProgressBar(0, 5);
   FileUploadStatus result;
 
   private Timer uploadStatusTimer = new Timer() {
@@ -34,12 +34,7 @@ public class FileUploadPanel extends FlexTable {
 
         public void onSuccess(FileUploadStatus result) {
           FileUploadPanel.this.result = result;
-          progressMeter.setMaxProgress(result.getContentLength());
-          if (result.getStatus() > FileUploadStatus.UPLOADING) {
-            progressMeter.setProgress(result.getBytesWritten());
-          } else {
-            progressMeter.setProgress(result.getBytesRead());
-          }
+          progressMeter.setProgress(result.getStatus());
           progressMeter.setTextVisible(true);
         }
       };
@@ -58,8 +53,8 @@ public class FileUploadPanel extends FlexTable {
         String percentText = (int) (100 * bar.getPercent()) + "%";
         if (result.getStatus() == FileUploadStatus.UPLOADING) {
           return "Uploading... " + percentText;
-        } else if (result.getStatus() == FileUploadStatus.BUILDING_THUMBNAILS) {
-          return "Building Thumbnails... " + percentText;
+        } else if (result.getStatus() == FileUploadStatus.WRITING_DATABASE) {
+          return "Writing to Database... " + percentText;
         }
         return "Saving... " + percentText;
       }
