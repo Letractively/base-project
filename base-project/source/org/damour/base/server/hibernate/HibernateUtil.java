@@ -8,11 +8,14 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ResourceBundle;
+import java.util.Properties;
 import java.util.Set;
 
 import org.damour.base.client.objects.IHibernateFriendly;
+import org.damour.base.client.utils.StringUtils;
+import org.damour.base.server.BaseSystem;
 import org.damour.base.server.Logger;
+import org.damour.base.server.hibernate.helpers.DefaultData;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
@@ -22,11 +25,11 @@ import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 
 public class HibernateUtil {
   private static boolean DEBUG = true;
-  private static final long startupDate = System.currentTimeMillis();
 
   private static HibernateUtil instance = null;
 
@@ -47,18 +50,43 @@ public class HibernateUtil {
   private String hbm2ddlMode = "update";
 
   private HibernateUtil() {
-    ResourceBundle rb = ResourceBundle.getBundle("settings");
-    setUsername(rb.getString("username"));
-    setPassword(rb.getString("password"));
-    setConnectString(rb.getString("connectString"));
-    setTablePrefix(rb.getString("tablePrefix"));
-    setColumnPrefix(rb.getString("columnPrefix"));
+    Properties rb = new Properties();
+    try {
+      rb.load(BaseSystem.getBaseClassLoader().getResourceAsStream("settings.properties"));
+      Logger.dump(rb);
+    } catch (Throwable t) {
+      Logger.log(t);
+      try {
+        rb.load(getClass().getClassLoader().getResourceAsStream("settings.properties"));
+        Logger.dump(rb);
+      } catch (Throwable tt) {
+      }
+    }
+
+    setUsername(rb.getProperty("username"));
+    setPassword(rb.getProperty("password"));
+    setConnectString(rb.getProperty("connectString"));
+    setTablePrefix(rb.getProperty("tablePrefix"));
+    setColumnPrefix(rb.getProperty("columnPrefix"));
     setHbm2ddlMode(getResource(rb, "hbm2ddlMode", "" + hbm2ddlMode));
     showSQL = "true".equalsIgnoreCase(getResource(rb, "showSQL", "" + showSQL));
     DEBUG = "true".equalsIgnoreCase(getResource(rb, "debug", "" + DEBUG));
 
     try {
-      ResourceBundle override = ResourceBundle.getBundle("settings_override");
+      Properties override = new Properties();
+      try {
+        override.load(BaseSystem.getBaseClassLoader().getResourceAsStream("settings_override.properties"));
+        Logger.dump(override);
+      } catch (Throwable t) {
+        Logger.log(t);
+        try {
+          rb.load(getClass().getClassLoader().getResourceAsStream("settings.properties"));
+          Logger.dump(rb);
+        } catch (Throwable tt) {
+          Logger.log(tt);
+        }
+      }
+
       setUsername(getResource(override, "username", getUsername()));
       setPassword(getResource(override, "password", getPassword()));
       setConnectString(getResource(override, "connectString", getConnectString()));
@@ -70,6 +98,7 @@ public class HibernateUtil {
 
       // add mappings from overrides
       generateHibernateMappings(override);
+
     } catch (Exception e) {
       // these are overrides, don't prevent startup by blowing out
       Logger.log(e);
@@ -79,14 +108,36 @@ public class HibernateUtil {
     generateHibernateMappings(rb);
   }
 
-  private void generateHibernateMappings(ResourceBundle bundle) {
+  private void bootstrap() {
     try {
-      Enumeration<String> keys = bundle.getKeys();
+      org.hibernate.Session session = HibernateUtil.getInstance().getSession();
+      Transaction tx = session.beginTransaction();
+      try {
+        DefaultData.create(session);
+        tx.commit();
+      } catch (HibernateException he) {
+        tx.rollback();
+        session.close();
+      } finally {
+        try {
+          session.close();
+        } catch (Throwable t) {
+        }
+      }
+    } catch (Throwable t) {
+      BaseSystem.setDomainName("sometests.com");
+      Logger.log(t);
+    }
+  }
+
+  private void generateHibernateMappings(Properties bundle) {
+    try {
+      Enumeration keys = bundle.keys();
       while (keys.hasMoreElements()) {
-        String key = keys.nextElement();
+        String key = (String) keys.nextElement();
         if (key.startsWith("HibernateMapped")) {
           try {
-            Class clazz = Class.forName(bundle.getString(key));
+            Class clazz = Class.forName(bundle.getProperty(key));
             generateHibernateMapping(clazz);
           } catch (Throwable t) {
             Logger.log(t);
@@ -98,17 +149,21 @@ public class HibernateUtil {
     }
   }
 
-  private String getResource(ResourceBundle bundle, String key, String defaultValue) {
+  private String getResource(Properties bundle, String key, String defaultValue) {
     try {
-      return bundle.getString(key);
+      String property = bundle.getProperty(key);
+      if (!StringUtils.isEmpty(property)) {
+        return property;
+      }
     } catch (Throwable t) {
-      return defaultValue;
     }
+    return defaultValue;
   }
 
-  public static HibernateUtil getInstance() {
+  public static synchronized HibernateUtil getInstance() {
     if (instance == null) {
       instance = new HibernateUtil();
+      instance.bootstrap();
       if (DEBUG) {
         Runnable r = new Runnable() {
           public void run() {
@@ -133,12 +188,16 @@ public class HibernateUtil {
     return instance;
   }
 
-  public void resetHibernate() {
+  public static void resetHibernate() {
     try {
-      sessionFactory.close();
+      instance.sessionFactory.getCurrentSession().close();
     } catch (Throwable t) {
     }
-    sessionFactory = null;
+    try {
+      instance.sessionFactory.close();
+      instance.sessionFactory = null;
+    } catch (Throwable t) {
+    }
     instance = null;
   }
 
@@ -188,8 +247,8 @@ public class HibernateUtil {
         sessionFactoryElement.addElement("property").addAttribute("name", "c3p0.acquire_increment").setText("1");
         sessionFactoryElement.addElement("property").addAttribute("name", "c3p0.idle_test_period").setText("10");
         sessionFactoryElement.addElement("property").addAttribute("name", "c3p0.timeout").setText("5000");
-        sessionFactoryElement.addElement("property").addAttribute("name", "c3p0.min_size").setText("3");
-        sessionFactoryElement.addElement("property").addAttribute("name", "c3p0.max_size").setText("15");
+        sessionFactoryElement.addElement("property").addAttribute("name", "c3p0.min_size").setText("1");
+        sessionFactoryElement.addElement("property").addAttribute("name", "c3p0.max_size").setText("5");
         sessionFactoryElement.addElement("property").addAttribute("name", "c3p0.max_statements").setText("0");
         // sessionFactoryElement.addElement("property").addAttribute("name", "c3p0.validate").setText("true");
         sessionFactoryElement.addElement("property").addAttribute("name", "c3p0.preferredTestQuery").setText("select 1+1");
@@ -242,7 +301,6 @@ public class HibernateUtil {
   }
 
   public List executeQuery(Session session, String query) {
-    Logger.log(query);
     return executeQuery(session, query, true);
   }
 
@@ -257,7 +315,6 @@ public class HibernateUtil {
   }
 
   public void setUsername(String username) {
-    sessionFactory = null;
     this.username = username;
   }
 
@@ -277,10 +334,6 @@ public class HibernateUtil {
   public void setConnectString(String connectString) {
     sessionFactory = null;
     this.connectString = connectString;
-  }
-
-  public long getStartupDate() {
-    return startupDate;
   }
 
   public void generateHibernateMapping(Class clazz) {
@@ -442,7 +495,6 @@ public class HibernateUtil {
         }
       }
       addMappedClass(clazz);
-      resetHibernate();
       Logger.log("Finished mapping for " + clazz.getSimpleName().toLowerCase());
     }
   }
