@@ -24,16 +24,6 @@ public class StringUtils {
     return null == str || "".equals( str.trim() ); //$NON-NLS-1$
   }
   
-  public static String defaultString( String str, String xdefault )
-  {
-    return StringUtils.isEmpty( str ) ? xdefault : str;
-  }
-  
-  public static String defaultString( String str )
-  {
-    return StringUtils.isEmpty( str ) ? "" : str; //$NON-NLS-1$
-  }
-  
   public static String defaultIfEmpty( String str, String xdefault )
   {
     return StringUtils.isEmpty( str ) ? xdefault : str;
