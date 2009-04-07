@@ -70,7 +70,7 @@ public class RemoteServiceServlet extends HttpServlet implements
    * 500.
    */
   @Override
-  public final void doPost(HttpServletRequest request,
+  public void doPost(HttpServletRequest request,
       HttpServletResponse response) {
     try {
       // Store the request & response objects in thread-local storage.
