@@ -7,7 +7,7 @@ import java.io.StringWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
+import java.util.Properties;
 
 public class Logger {
 
@@ -19,19 +19,15 @@ public class Logger {
 
   static {
     try {
-      File tmpDir = new File("/tmp");
+      File tmpDir = new File(BaseSystem.getTempDir());
       tmpDir.mkdirs();
     } catch (Throwable t) {
     }
   }
-  
+
   public static String getLogName() {
     if (logName == null) {
-      if (BaseSystem.getDomainName() == null) {
-        logName = "/tmp/baseproject." + logFileDateFormat.format(new Date()) + ".log.txt";
-      } else {
-        logName = "/tmp/" + BaseSystem.getDomainName() + logFileDateFormat.format(new Date()) + ".log.txt";
-      }
+      logName = BaseSystem.getTempDir() + logFileDateFormat.format(new Date()) + ".log.txt";
     }
     return logName;
   }
@@ -85,6 +81,21 @@ public class Logger {
 
   public static void resetLogger() {
     logName = null;
+  }
+
+  public static void dump(Properties properties) {
+    if (properties == null) {
+      return;
+    }
+    try {
+      log("properties {");
+      for (Object key : properties.keySet()) {
+        Object value = properties.get(key);
+        log("  " + key + " = " + value);
+      }
+      log("}");
+    } catch (Throwable t) {
+    }
   }
 
 }
