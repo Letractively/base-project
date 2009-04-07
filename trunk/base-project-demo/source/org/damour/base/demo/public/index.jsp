@@ -5,6 +5,11 @@
 <%@page import="java.io.FileInputStream"%>
 
 <%
+  // set the BaseSystem classloader for others to enjoy
+  // it is likely:  org.apache.jasper.servlet.JasperLoader 
+  // compared to :  org.apache.catalina.loader.WebappClassLoader
+  BaseSystem.setBaseClassLoader(getClass().getClassLoader());
+
   Locale effectiveLocale = request.getLocale(); 
   if (!StringUtils.isEmpty(request.getParameter("locale"))) {
     effectiveLocale = new Locale(request.getParameter("locale"));
@@ -14,10 +19,13 @@
   properties.load(new FileInputStream(getServletContext().getRealPath("base_messages/base_messages.properties")));
 %>
 
-<html>
+
+<%@page import="org.damour.base.server.BaseSystem"%>
+<%@page import="org.damour.base.server.Logger"%><html>
 	<head>
 		<title>Demo</title>
 		<meta name="gwt:property" content="locale=<%=effectiveLocale%>">
+		<meta name="jsp:classloader" content="<%=BaseSystem.getBaseClassLoader().getClass().getName()%>">
 		<link rel="shortcut icon" href="favicon.ico">
 	    <script language='javascript' src='soundmanager/soundmanager2.js' type="text/javascript"></script>
 	</head>
