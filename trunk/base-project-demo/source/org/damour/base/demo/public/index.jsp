@@ -25,7 +25,6 @@
 	<head>
 		<title>Demo</title>
 		<meta name="gwt:property" content="locale=<%=effectiveLocale%>">
-		<meta name="jsp:classloader" content="<%=BaseSystem.getBaseClassLoader().getClass().getName()%>">
 		<link rel="shortcut icon" href="favicon.ico">
 	    <script language='javascript' src='soundmanager/soundmanager2.js' type="text/javascript"></script>
 	</head>
