@@ -34,9 +34,7 @@ import com.google.gwt.user.client.Window;
 /**
  * This class is a ResourceBundle for GWT projects. Provided with a resource's base-name it will fetch and merge resources as follows:
  * 
- * 1. base-name.properties
- * 2. base-name_xx.properties (where XX = language, such as en)
- * 3. base-name_xx_yy.properties (where yy = country, such as US)
+ * 1. base-name.properties 2. base-name_xx.properties (where XX = language, such as en) 3. base-name_xx_yy.properties (where yy = country, such as US)
  * 
  * When each new resource is fetched it is merged with previous resources. Resource collisions are resolved by overwriting existing resources with new
  * resources. In this way we are able to provide language/country overrides above the default bundles.
@@ -44,7 +42,7 @@ import com.google.gwt.user.client.Window;
  * @author Michael D'Amour
  */
 public class ResourceBundle {
-  
+
   private static final Map<String, String> bundleCache = new HashMap<String, String>();
   public static final String PROPERTIES_EXTENSION = ".properties"; //$NON-NLS-1$
   private HashMap<String, String> bundle = new HashMap<String, String>();
@@ -57,15 +55,15 @@ public class ResourceBundle {
   private String localeName = "default";
   private String currentAttemptUrl = null;
   private boolean attemptLocalizedFetches = true;
-  
+
   private class FakeResponse extends Response {
 
     private String text;
-    
+
     public FakeResponse(String text) {
       this.text = text;
     }
-    
+
     public String getHeader(String arg0) {
       return null;
     }
@@ -89,9 +87,9 @@ public class ResourceBundle {
     public String getText() {
       return text;
     }
-    
+
   }
-  
+
   /**
    * The MessageBundle class fetches localized properties files by using the GWT RequestBuilder against the supplied path. Ideally the path should be relative,
    * but absolute paths are accepted. When the ResourceBundle has fetched and loaded all available resources it will notify the caller by way of
@@ -127,7 +125,7 @@ public class ResourceBundle {
     if (bundleCache.containsKey(currentAttemptUrl)) {
       baseCallback.onResponseReceived(null, new FakeResponse(bundleCache.get(currentAttemptUrl)));
     } else {
-      RequestBuilder requestBuilder = new RequestBuilder(RequestBuilder.GET, currentAttemptUrl); 
+      RequestBuilder requestBuilder = new RequestBuilder(RequestBuilder.GET, currentAttemptUrl);
       try {
         requestBuilder.sendRequest(null, baseCallback);
       } catch (RequestException e) {
@@ -146,7 +144,7 @@ public class ResourceBundle {
 
       public void onResponseReceived(Request request, Response response) {
         String propertiesFileText = response.getText();
-        
+
         // build a simple map of key/value pairs from the properties file
         if (response.getStatusCode() == Response.SC_OK) {
           bundle = PropertiesUtil.buildProperties(propertiesFileText, bundle);
@@ -158,14 +156,14 @@ public class ResourceBundle {
           // put empty bundle in cache (not found, but we want to remember it was not found)
           bundleCache.put(currentAttemptUrl, "");
         }
-        
+
         // if we are not attempting to fetch any localized bundles
         // then fire our callback and then return, we're done
         if (!attemptLocalizedFetches) {
           fireBundleLoadCallback();
           return;
         }
-        
+
         // now fetch the the lang/country variants
         if (localeName.equalsIgnoreCase("default")) { //$NON-NLS-1$
           // process only bundleName.properties
@@ -178,19 +176,18 @@ public class ResourceBundle {
             // 2. fetch bundleName_lang.properties
             // 3. fetch bundleName_lang_country.properties
             currentAttemptUrl = path + bundleName + "_" + lang + PROPERTIES_EXTENSION;
-            
+
             // IE caches the file and causes an issue with the request
-            
-            
+
             if (bundleCache.containsKey(currentAttemptUrl)) {
               langCallback.onResponseReceived(null, new FakeResponse(bundleCache.get(currentAttemptUrl)));
             } else {
               RequestBuilder requestBuilder = new RequestBuilder(RequestBuilder.GET, currentAttemptUrl); //$NON-NLS-1$ //$NON-NLS-2$
-              
-              // Caching causing some strange behavior with IE6. 
+
+              // Caching causing some strange behavior with IE6.
               // TODO: Investigate caching issue.
               requestBuilder.setHeader("Cache-Control", "no-cache");
-              
+
               try {
                 requestBuilder.sendRequest(null, langCallback);
               } catch (RequestException e) {
@@ -226,7 +223,6 @@ public class ResourceBundle {
           bundleCache.put(currentAttemptUrl, "");
         }
 
-        
         StringTokenizer st = new StringTokenizer(localeName, '_');
         if (st.countTokens() == 2) {
           // 3. fetch bundleName_lang_country.properties
@@ -294,20 +290,22 @@ public class ResourceBundle {
     }
     return decodeUTF8(bundle.get(key));
   }
-  
+
   /**
    * This method return the value for the given key with UTF-8 respected and will replace {n} tokens with the parameters that are passed in.
    * 
-   * @param key The name of the resource being requested
-   * @param parameters The values to replace occurrences of {n} in the found resource
+   * @param key
+   *          The name of the resource being requested
+   * @param parameters
+   *          The values to replace occurrences of {n} in the found resource
    * @return The UTF-8 friendly value found for the given key
    */
-  public String getString(String key, String defaultValue, String...parameters) {
+  public String getString(String key, String defaultValue, String... parameters) {
     String resource = bundle.get(key);
     if (resource == null) {
       return defaultValue;
     }
-    for (int i=0;i<parameters.length;i++) {
+    for (int i = 0; i < parameters.length; i++) {
       resource = resource.replace("{" + i + "}", parameters[i]); //$NON-NLS-1$ //$NON-NLS-2$
     }
     return decodeUTF8(resource);
@@ -321,7 +319,12 @@ public class ResourceBundle {
   public Set<String> getKeys() {
     return bundle.keySet();
   }
-  
+
+  public void mergeResourceBundle(ResourceBundle inBundle) {
+    // the incoming bundle will override the defaults in bundle
+    bundle.putAll(inBundle.bundle);
+  }
+
   private String decodeUTF8(String str) {
     if (str == null) {
       return str;

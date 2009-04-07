@@ -23,6 +23,13 @@ import org.damour.base.client.utils.StringUtils;
 
 public class PropertiesUtil {
 
+  public static HashMap<String, String> mergeProperties(final HashMap<String, String> defaultProperties, final HashMap<String, String> overrideProperties) {
+    HashMap<String, String> mergeProperties = new HashMap<String, String>();
+    mergeProperties.putAll(defaultProperties);
+    mergeProperties.putAll(overrideProperties);
+    return mergeProperties;
+  }
+  
   /**
    * This method builds a HashMap out of a given input String (which is typically read from a standard
    * java .properties file).  The caller may provide a default properties map which will be 'merged' with the
