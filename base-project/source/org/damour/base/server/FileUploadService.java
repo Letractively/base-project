@@ -8,13 +8,15 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -32,11 +34,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.ProgressListener;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.multipart.FilePart;
-import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.Part;
+import org.apache.commons.io.IOUtils;
 import org.damour.base.client.objects.File;
 import org.damour.base.client.objects.FileData;
 import org.damour.base.client.objects.FileUploadStatus;
@@ -50,6 +48,8 @@ import org.damour.base.server.hibernate.helpers.SecurityHelper;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
+import com.mysql.jdbc.ServerPreparedStatement;
+
 public class FileUploadService extends HttpServlet {
 
   private static BaseService baseService = new BaseService();
@@ -59,7 +59,6 @@ public class FileUploadService extends HttpServlet {
   }
 
   protected void doPost(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
-
     Session session = HibernateUtil.getInstance().getSession();
     User owner = baseService.getAuthenticatedUser(session, request, response);
     if (owner == null) {
@@ -136,10 +135,10 @@ public class FileUploadService extends HttpServlet {
         tx.commit();
         Logger.log("Wrote to file: " + outputFile.getCanonicalPath());
 
-        saveFile(fileObject.getNameOnDisk(), outputFile, request);
+        status.setStatus(FileUploadStatus.WRITING_DATABASE);
+        saveFileFromStream(fileObject, new FileInputStream(outputFile));
 
         try {
-          status.setStatus(FileUploadStatus.WRITING_DATABASE);
 
           // if we are uploading a photo, create slideshow (sane size) image and thumbnail
           if (fileObject instanceof Photo) {
@@ -147,8 +146,6 @@ public class FileUploadService extends HttpServlet {
             BufferedImage bi = javax.imageio.ImageIO.read(outputFile);
             ByteArrayOutputStream pngOut = new ByteArrayOutputStream();
             ImageIO.write(bi, "png", pngOut);
-
-            status.setStatus(FileUploadStatus.BUILDING_THUMBNAILS);
 
             tx = session.beginTransaction();
             Photo photo = (Photo) fileObject;
@@ -215,11 +212,8 @@ public class FileUploadService extends HttpServlet {
             slideFile.setNameOnDisk(createFileName(slideFile.getId().toString() + "_", name, "_slide"));
             tx.commit();
 
-            // save via java/php bridge
-            saveData(thumbFile.getNameOnDisk(), thumbOutStream.toByteArray(), request);
-
-            // save via java/php bridge
-            saveData(slideFile.getNameOnDisk(), slideOutStream.toByteArray(), request);
+            saveFileFromStream(thumbFile, new ByteArrayInputStream(thumbOutStream.toByteArray()));
+            saveFileFromStream(slideFile, new ByteArrayInputStream(slideOutStream.toByteArray()));
           }
 
           status.setStatus(FileUploadStatus.FINISHED);
@@ -252,42 +246,49 @@ public class FileUploadService extends HttpServlet {
     response.flushBuffer();
   }
 
-  protected void saveFile(String name, java.io.File file, HttpServletRequest request) {
-    try {
-      PostMethod filePost = new PostMethod("http://" + request.getServerName() + "/test.php");
-      ArrayList<Part> parts = new ArrayList<Part>();
-      parts.add(new FilePart(name, file));// NON-NLS
-      filePost.setRequestEntity(new MultipartRequestEntity(parts.toArray(new Part[parts.size()]), filePost.getParams()));
-      HttpClient client = new HttpClient();
-      int status = client.executeMethod(filePost);
-    } catch (Throwable t) {
-      t.printStackTrace();
-    }
-  }
-
-  protected void saveData(String name, byte[] data, HttpServletRequest request) {
-    ByteArrayInputStream bais = new ByteArrayInputStream(data);
+  protected void saveFileFromStream(File fileObj, InputStream inputStream) {
     PreparedStatement ps = null;
+    Connection conn = null;
     try {
-      Connection conn = DriverManager.getConnection(HibernateUtil.getInstance().getConnectString(), HibernateUtil.getInstance().getUsername(), HibernateUtil
-          .getInstance().getPassword());
-      String INSERT_PICTURE = "insert into " + FileData.class.getSimpleName() + " (id, permissibleObject, data) values (?, ?, ?)";
+      Properties dbprops = new Properties();
+      dbprops.setProperty("user", HibernateUtil.getInstance().getUsername());
+      dbprops.setProperty("password", HibernateUtil.getInstance().getPassword());
+
+      conn = (Connection) DriverManager.getConnection(HibernateUtil.getInstance().getConnectString(), dbprops);
+      String insert_data = "insert into " + FileData.class.getSimpleName().toLowerCase() + " (permissibleObject, data) values (?, ?)";
       conn.setAutoCommit(false);
-      ps = conn.prepareStatement(INSERT_PICTURE);
-      ps.setString(1, "001");
-      ps.setString(2, "name");
-      ps.setBinaryStream(3, bais, (int) data.length);
+      if (conn instanceof com.mysql.jdbc.Connection) {
+        // this gets around mysql limits (blob send check size)
+        com.mysql.jdbc.Connection mysqlConn = (com.mysql.jdbc.Connection) conn;
+        ps = (ServerPreparedStatement) mysqlConn.serverPrepareStatement(insert_data);
+        ((ServerPreparedStatement) ps).setBinaryStream(2, inputStream);
+      } else {
+        ps = conn.prepareStatement(insert_data);
+        try {
+          ps.setBinaryStream(2, inputStream);
+        } catch (Throwable t) {
+          ps.setBytes(2, IOUtils.toByteArray(inputStream));
+        }
+      }
+      ps.setLong(1, fileObj.getId());
       ps.executeUpdate();
       conn.commit();
     } catch (Throwable t) {
+      Logger.log(t);
     } finally {
       try {
         ps.close();
-        bais.close();
+      } catch (Throwable t) {
+      }
+      try {
+        conn.close();
+      } catch (Throwable t) {
+      }
+      try {
+        inputStream.close();
       } catch (Throwable t) {
       }
     }
-
     // try {
     // PostMethod filePost = new PostMethod("http://" + request.getServerName() + "/test.php");
     // ArrayList<Part> parts = new ArrayList<Part>();
@@ -367,23 +368,25 @@ public class FileUploadService extends HttpServlet {
   protected List<FileItem> getFileItems(final HttpServletRequest request, final User user) throws FileUploadException {
     // half a meg and it stays in memory, over it goes to disk
     int sizeThreshold = 524288;
-    java.io.File repository = new java.io.File(java.io.File.separatorChar + "tmp" + java.io.File.separatorChar + BaseSystem.getDomainName(request)
-        + java.io.File.separatorChar + "uploads");
+    java.io.File repository = new java.io.File(BaseSystem.getTempDir() + java.io.File.separatorChar + "uploads");
     repository.mkdirs();
 
     DiskFileItemFactory fileFactory = new DiskFileItemFactory(sizeThreshold, repository);
     ServletFileUpload fu = new ServletFileUpload(fileFactory);
+
+    final FileUploadStatus status = new FileUploadStatus();
+    status.setStatus(FileUploadStatus.UPLOADING);
+    BaseService.fileUploadStatusMap.put(user, status);
+
     // If file size exceeds, a FileUploadException will be thrown
-    fu.setSizeMax(67108864);
+    fu.setSizeMax(268435456);
     fu.setProgressListener(new ProgressListener() {
       public void update(long bytesRead, long contentLength, int item) {
+        status.setItem(item);
+        status.setBytesRead(bytesRead);
+        status.setContentLength(contentLength);
+        status.setStatus(FileUploadStatus.UPLOADING);
         try {
-          FileUploadStatus status = new FileUploadStatus();
-          status.setItem(item);
-          status.setBytesRead(bytesRead);
-          status.setContentLength(contentLength);
-          status.setStatus(FileUploadStatus.UPLOADING);
-          BaseService.fileUploadStatusMap.put(user, status);
         } catch (Exception e) {
           e.printStackTrace();
         }
