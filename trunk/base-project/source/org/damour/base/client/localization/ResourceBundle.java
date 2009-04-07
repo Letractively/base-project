@@ -275,6 +275,11 @@ public class ResourceBundle {
     }
   }
 
+  public String getString(String key) {
+    String resource = bundle.get(key);
+    return decodeUTF8(resource);
+  }
+
   /**
    * This method returns the value for the given key with UTF-8 respected if supplied in \\uXXXX style format (single forward slash, u, followed by 4 digits).
    * UTF-8 escaped values are replaced with entity escaping, such as '&#x0101;' for proper consumption by web browsers.
@@ -288,7 +293,7 @@ public class ResourceBundle {
     if (resource == null) {
       return defaultValue;
     }
-    return decodeUTF8(bundle.get(key));
+    return decodeUTF8(resource);
   }
 
   /**
