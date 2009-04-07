@@ -35,8 +35,8 @@ public class FileObjectHelper {
     for (UserRating rating : ratings) {
       session.delete(rating);
     }
-    // now delete the FileData if we have some (WITHOUT LOADING IT)
-    // must be done via PHP bridge
+
+    session.createQuery("delete FileData where permissibleObject.id = " + file.id).executeUpdate();
     
     // also delete all permissions for this
     SecurityHelper.deletePermissions(session, file);
