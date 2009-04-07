@@ -7,7 +7,6 @@ import java.util.List;
 
 import org.damour.base.client.images.BaseImageBundle;
 import org.damour.base.client.objects.Comment;
-import org.damour.base.client.objects.File;
 import org.damour.base.client.objects.Page;
 import org.damour.base.client.objects.PermissibleObject;
 import org.damour.base.client.service.BaseServiceCache;
@@ -38,7 +37,7 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-public class CommentWidget extends HorizontalPanel {
+public class CommentWidget extends VerticalPanel {
 
   private PermissibleObject permissibleObject;
   private List<Comment> comments;
@@ -100,6 +99,12 @@ public class CommentWidget extends HorizontalPanel {
       comments = page.getResults();
       numComments = page.getTotalRowCount();
       lastPageNumber = page.getLastPageNumber();
+      if (page.getResults().size() == 0) {
+        if (pageNumber != lastPageNumber) {
+          pageNumber = (int) lastPageNumber;
+          fetchPage();
+        }
+      }
       loadCommentWidget(true);
       prefetchPages();
     }
@@ -166,9 +171,10 @@ public class CommentWidget extends HorizontalPanel {
       commentsPanel.setStyleName("commentsPanel");
       commentsPanel.setWidth("100%");
 
-
       int renderedComments = 0;
-      boolean userCanManage = AuthenticationHandler.getInstance().getUser() != null && (AuthenticationHandler.getInstance().getUser().isAdministrator() || AuthenticationHandler.getInstance().getUser().equals(permissibleObject.getOwner()));
+      boolean userCanManage = AuthenticationHandler.getInstance().getUser() != null
+          && (AuthenticationHandler.getInstance().getUser().isAdministrator() || AuthenticationHandler.getInstance().getUser().equals(
+              permissibleObject.getOwner()));
       List<Comment> sortedComments = new ArrayList<Comment>();
       sortedComments.addAll(comments);
       if (!flatten) {
@@ -183,7 +189,8 @@ public class CommentWidget extends HorizontalPanel {
           continue;
         }
 
-        boolean userIsAuthorOfComment = AuthenticationHandler.getInstance().getUser() != null && comment.getAuthor().equals(AuthenticationHandler.getInstance().getUser());
+        boolean userIsAuthorOfComment = AuthenticationHandler.getInstance().getUser() != null
+            && comment.getAuthor().equals(AuthenticationHandler.getInstance().getUser());
         if (userCanManage || userIsAuthorOfComment || comment.isApproved()) {
 
           FlexTable commentHeaderPanel = new FlexTable();
@@ -275,7 +282,8 @@ public class CommentWidget extends HorizontalPanel {
                   }
                 };
                 PromptDialogBox dialogBox = new PromptDialogBox("Question", "Yes", null, "No", false, true);
-                dialogBox.setContent(new Label("Delete comment by " + (comment.getAuthor() == null ? comment.getEmail() : comment.getAuthor().getUsername()) + "?"));
+                dialogBox.setContent(new Label("Delete comment by " + (comment.getAuthor() == null ? comment.getEmail() : comment.getAuthor().getUsername())
+                    + "?"));
                 dialogBox.setCallback(callback);
                 dialogBox.center();
               }
@@ -325,26 +333,22 @@ public class CommentWidget extends HorizontalPanel {
 
       final FlexTable mainPanel = new FlexTable();
       mainPanel.setWidth("100%");
-      if (renderedComments > 0) {
-        mainPanel.setWidget(0, 0, createButtonPanel(mainPanel, forceOpen));
-        mainPanel.getCellFormatter().setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_LEFT);
-        mainPanel.setWidget(1, 0, commentsPanel);
-        mainPanel.getCellFormatter().setWidth(1, 0, "100%");
-        mainPanel.setWidget(2, 0, createCommentPostPanel());
-      } else {
-        mainPanel.setWidget(0, 0, createCommentPostPanel());
-
-      }
+      mainPanel.setWidget(0, 0, createButtonPanel(mainPanel, forceOpen));
+      mainPanel.getCellFormatter().setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_LEFT);
+      mainPanel.setWidget(1, 0, commentsPanel);
+      mainPanel.getCellFormatter().setWidth(1, 0, "100%");
 
       commentDisclosurePanel.setContent(mainPanel);
       commentDisclosurePanel.setOpen(renderedComments == 0 || forceOpen);
       commentDisclosurePanel.setWidth("100%");
+      add(createCommentPostPanel());
       add(commentDisclosurePanel);
     }
   }
 
   private Widget createPageControllerPanel(final FlexTable mainPanel) {
-    final IconButton nextPageImageButton = new IconButton(null, true, BaseImageBundle.images.next(), BaseImageBundle.images.next(), BaseImageBundle.images.next(), BaseImageBundle.images.next());
+    final IconButton nextPageImageButton = new IconButton(null, true, BaseImageBundle.images.next(), BaseImageBundle.images.next(), BaseImageBundle.images
+        .next(), BaseImageBundle.images.next());
     nextPageImageButton.addClickListener(new ClickListener() {
       public void onClick(Widget sender) {
         if (pageNumber == lastPageNumber) {
@@ -354,7 +358,8 @@ public class CommentWidget extends HorizontalPanel {
         fetchPage();
       }
     });
-    final IconButton previousPageImageButton = new IconButton(null, false, BaseImageBundle.images.previous(), BaseImageBundle.images.previous(), BaseImageBundle.images.previous(), BaseImageBundle.images.previous());
+    final IconButton previousPageImageButton = new IconButton(null, false, BaseImageBundle.images.previous(), BaseImageBundle.images.previous(),
+        BaseImageBundle.images.previous(), BaseImageBundle.images.previous());
     previousPageImageButton.addClickListener(new ClickListener() {
       public void onClick(Widget sender) {
         if (pageNumber == 0) {
@@ -364,14 +369,16 @@ public class CommentWidget extends HorizontalPanel {
         fetchPage();
       }
     });
-    final IconButton lastPageImageButton = new IconButton(null, false, BaseImageBundle.images.last(), BaseImageBundle.images.last(), BaseImageBundle.images.last(), BaseImageBundle.images.last());
+    final IconButton lastPageImageButton = new IconButton(null, false, BaseImageBundle.images.last(), BaseImageBundle.images.last(), BaseImageBundle.images
+        .last(), BaseImageBundle.images.last());
     lastPageImageButton.addClickListener(new ClickListener() {
       public void onClick(Widget sender) {
         pageNumber = (int) lastPageNumber;
         fetchPage();
       }
     });
-    final IconButton firstPageImageButton = new IconButton(null, false, BaseImageBundle.images.first(), BaseImageBundle.images.first(), BaseImageBundle.images.first(), BaseImageBundle.images.first());
+    final IconButton firstPageImageButton = new IconButton(null, false, BaseImageBundle.images.first(), BaseImageBundle.images.first(), BaseImageBundle.images
+        .first(), BaseImageBundle.images.first());
     firstPageImageButton.addClickListener(new ClickListener() {
       public void onClick(Widget sender) {
         pageNumber = 0;
@@ -379,19 +386,19 @@ public class CommentWidget extends HorizontalPanel {
       }
     });
     if (lastPageNumber < 0) {
-    	firstPageImageButton.setEnabled(false);
-    	previousPageImageButton.setEnabled(false);
-    	nextPageImageButton.setEnabled(false);
-    	lastPageImageButton.setEnabled(false);
+      firstPageImageButton.setEnabled(false);
+      previousPageImageButton.setEnabled(false);
+      nextPageImageButton.setEnabled(false);
+      lastPageImageButton.setEnabled(false);
     }
-    
+
     HorizontalPanel buttonPanel = new HorizontalPanel();
     buttonPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
     buttonPanel.add(firstPageImageButton);
     buttonPanel.add(previousPageImageButton);
     Label pageLabel = new Label("Page " + (pageNumber + 1) + " of " + (lastPageNumber + 1), false);
     if (lastPageNumber < 0) {
-    	pageLabel.setText("Page 0 of 0");
+      pageLabel.setText("Page 0 of 0");
     }
     DOM.setStyleAttribute(pageLabel.getElement(), "margin", "0 5px 0 5px");
     buttonPanel.add(pageLabel);
@@ -401,7 +408,8 @@ public class CommentWidget extends HorizontalPanel {
   }
 
   private Widget createButtonPanel(final FlexTable mainPanel, final boolean forceOpen) {
-    final IconButton reloadImageButton = new IconButton("Refresh", true, BaseImageBundle.images.refresh_16(), BaseImageBundle.images.refresh_16(), BaseImageBundle.images.refresh_16(), BaseImageBundle.images.refresh_disabled_16());
+    final IconButton reloadImageButton = new IconButton("Refresh", true, BaseImageBundle.images.refresh_16(), BaseImageBundle.images.refresh_16(),
+        BaseImageBundle.images.refresh_16(), BaseImageBundle.images.refresh_disabled_16());
     reloadImageButton.setTitle("Refresh comments");
     reloadImageButton.addClickListener(new ClickListener() {
       public void onClick(Widget sender) {
@@ -410,7 +418,8 @@ public class CommentWidget extends HorizontalPanel {
       }
     });
 
-    final IconButton sortImageButton = new IconButton("Sort " + (sortDescending ? "Ascending" : "Descending"), true, BaseImageBundle.images.sort(), BaseImageBundle.images.sort(), BaseImageBundle.images.sort(), BaseImageBundle.images.sort());
+    final IconButton sortImageButton = new IconButton("Sort " + (sortDescending ? "Ascending" : "Descending"), true, BaseImageBundle.images.sort(),
+        BaseImageBundle.images.sort(), BaseImageBundle.images.sort(), BaseImageBundle.images.sort());
     sortImageButton.setTitle(sortDescending ? "Show oldest comments first" : "Show most recent comments first");
     sortImageButton.addClickListener(new ClickListener() {
       public void onClick(Widget sender) {
@@ -424,10 +433,12 @@ public class CommentWidget extends HorizontalPanel {
 
     IconButton flattenImageButton = null;
     if (flatten) {
-      flattenImageButton = new IconButton("Hierarchy", true, BaseImageBundle.images.hierarchy(), BaseImageBundle.images.hierarchy(), BaseImageBundle.images.hierarchy(), BaseImageBundle.images.hierarchy());
+      flattenImageButton = new IconButton("Hierarchy", true, BaseImageBundle.images.hierarchy(), BaseImageBundle.images.hierarchy(), BaseImageBundle.images
+          .hierarchy(), BaseImageBundle.images.hierarchy());
       flattenImageButton.setTitle("Build a comment hierarchy");
     } else {
-      flattenImageButton = new IconButton("Flatten", true, BaseImageBundle.images.flatten(), BaseImageBundle.images.flatten(), BaseImageBundle.images.flatten(), BaseImageBundle.images.flatten());
+      flattenImageButton = new IconButton("Flatten", true, BaseImageBundle.images.flatten(), BaseImageBundle.images.flatten(),
+          BaseImageBundle.images.flatten(), BaseImageBundle.images.flatten());
       flattenImageButton.setTitle("Flatten the comment hierarchy");
     }
     flattenImageButton.addClickListener(new ClickListener() {
@@ -464,7 +475,7 @@ public class CommentWidget extends HorizontalPanel {
     postCommentPanel.setWidth("100%");
     // create text area for comment
     final TextArea commentTextArea = new TextArea();
-    commentTextArea.setVisibleLines(5);
+    commentTextArea.setVisibleLines(3);
     commentTextArea.setWidth("500px");
     // create textfield for email address (if not logged in)
     final TextBox emailTextField = new TextBox();
@@ -497,6 +508,7 @@ public class CommentWidget extends HorizontalPanel {
 
       public void onClick(Widget sender) {
         commentTextArea.setText("");
+        submitButton.setEnabled(true);
       }
     });
     // add buttons
