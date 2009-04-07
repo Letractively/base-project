@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.damour.base.client.BaseEntryPoint;
 import org.damour.base.client.objects.User;
 import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.buttons.Button;
@@ -30,8 +31,6 @@ import com.google.gwt.user.client.ui.Widget;
 public class AuthenticationHandler {
 
   private List<IAuthenticationListener> listeners = new ArrayList<IAuthenticationListener>();
-
-  public String domain = "the website owner";
 
   private User user;
   TextBox username = new TextBox();
@@ -149,15 +148,19 @@ public class AuthenticationHandler {
     readDisclaimer.addClickListener(new ClickListener() {
 
       public void onClick(final Widget sender) {
+
+        String companyName = BaseEntryPoint.getSettings().getString("companyName", "the Company");
+
         String disclaimerText = new String(
             "By using this website, you acknowledge that you have read and agree to these terms.  Department staff may revise these terms periodically.  If you continue to use this website after changes are made to these terms, it will mean that you accept such changes.  If at any time you do not wish to accept the Terms, you may choose not to use this website.");
         disclaimerText += "<BR><BR>The information contained in this website is for general information purposes only. The information is provided by "
-            + domain
+            + companyName
             + " and whilst we endeavour to keep the information up-to-date and correct, we make no representations or warranties of any kind, express or implied, about the completeness, accuracy, reliability, suitability or availability with respect to the website or the information, products, services, or related graphics contained on the website for any purpose. Any reliance you place on such information is therefore strictly at your own risk.";
         disclaimerText += "<BR><BR>In no event will we be liable for any loss or damage including without limitation, indirect or consequential loss or damage, or any loss or damage whatsoever arising from loss of data or profits arising out of, or in connection with, the use of this website.";
-        disclaimerText += "<BR><BR>Through this website you are able to link to other websites which are not under the control of " + domain
+        disclaimerText += "<BR><BR>Through this website you are able to link to other websites which are not under the control of "
+            + companyName
             + ". We have no control over the nature, content and availability of those sites. The inclusion of any links does not necessarily imply a recommendation or endorse the views expressed within them.";
-        disclaimerText += "<BR><BR>Every effort is made to keep the website up and running smoothly. However, " + domain
+        disclaimerText += "<BR><BR>Every effort is made to keep the website up and running smoothly. However, " + companyName
             + " takes no responsibility for, and will not be liable for, the website being temporarily unavailable due to technical issues beyond our control.";
         final MessageDialogBox dialog = new MessageDialogBox("Disclaimer & Terms of Use", disclaimerText, true, true, true);
         dialog.setWidth("600px");
@@ -184,6 +187,7 @@ public class AuthenticationHandler {
       }
     });
   }
+
   public void showLoginDialog(boolean forceRecenter) {
     username.setReadOnly(false);
     // present login dialog
@@ -332,7 +336,8 @@ public class AuthenticationHandler {
           dialog.center();
           return;
         }
-        createNewAccount(username.getText(), firstname.getText(), lastname.getText(), password.getText(), passwordHint.getText(), emailAddress.getText(), birthdayPicker.getSelectedDate().getTime());
+        createNewAccount(username.getText(), firstname.getText(), lastname.getText(), password.getText(), passwordHint.getText(), emailAddress.getText(),
+            birthdayPicker.getSelectedDate().getTime());
       }
 
       public void cancelPressed() {
@@ -349,7 +354,7 @@ public class AuthenticationHandler {
   }
 
   private void createCaptchaImage() {
-      captchaValidationImage.setUrl("/servlet/org.damour.base.server.CaptchaImageGeneratorService?attempt=" + System.currentTimeMillis());
+    captchaValidationImage.setUrl("/servlet/org.damour.base.server.CaptchaImageGeneratorService?attempt=" + System.currentTimeMillis());
   }
 
   public void showEditAccountDialog(final User user) {
@@ -484,7 +489,8 @@ public class AuthenticationHandler {
     BaseServiceCache.getService().login(username, password, loginCallback);
   }
 
-  public void createNewAccount(final String username, final String firstname, final String lastname, final String password, final String passwordHint, final String email, final long birthday) {
+  public void createNewAccount(final String username, final String firstname, final String lastname, final String password, final String passwordHint,
+      final String email, final long birthday) {
     final AsyncCallback<User> loginCallback = new AsyncCallback<User>() {
       public void onFailure(Throwable caught) {
         MessageDialogBox dialog = new MessageDialogBox("Error", caught.getMessage(), true, true, true);
@@ -584,14 +590,6 @@ public class AuthenticationHandler {
       };
     };
     BaseServiceCache.getService().getAuthenticatedUser(isAuthenticatedCallback);
-  }
-
-  public String getDomain() {
-    return domain;
-  }
-
-  public void setDomain(String domain) {
-    this.domain = domain;
   }
 
   // LoginListener events
