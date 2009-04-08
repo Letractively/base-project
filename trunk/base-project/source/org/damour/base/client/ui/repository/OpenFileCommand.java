@@ -1,12 +1,11 @@
 package org.damour.base.client.ui.repository;
 
-import org.damour.base.client.BaseEntryPoint;
+import org.damour.base.client.BaseApplication;
 import org.damour.base.client.objects.File;
 import org.damour.base.client.objects.Photo;
 import org.damour.base.client.soundmanager.MP3Player;
 import org.damour.base.client.ui.dialogs.PromptDialogBox;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Frame;
@@ -35,7 +34,7 @@ public class OpenFileCommand implements Command {
     if (object instanceof File) {
       if (object instanceof Photo) {
         Photo photo = preview && ((Photo) object).getSlideshowImage() != null ? ((Photo) object).getSlideshowImage() : (Photo) object;
-        String url = BaseEntryPoint.getSettings().getString("GetFileService", BaseEntryPoint.GET_FILE_SERVICE_PATH) + photo.getId() + "_inline_" + photo.getName();
+        String url = BaseApplication.getSettings().getString("GetFileService", BaseApplication.GET_FILE_SERVICE_PATH) + photo.getId() + "_inline_" + photo.getName();
         Image image = new Image(url);
         image.setHeight(photo.getHeight() + "px");
         image.setWidth(photo.getWidth() + "px");
@@ -43,13 +42,13 @@ public class OpenFileCommand implements Command {
         promptDialog.setContent(image);
         promptDialog.center();
       } else if ("audio/mpeg".equals(object.getContentType())) {
-        String url = BaseEntryPoint.getSettings().getString("GetFileService", BaseEntryPoint.GET_FILE_SERVICE_PATH) + object.getId() + "_inline_" + object.getName();
+        String url = BaseApplication.getSettings().getString("GetFileService", BaseApplication.GET_FILE_SERVICE_PATH) + object.getId() + "_inline_" + object.getName();
         String name = ((File) object).getName();
         MP3Player.getInstance().addSoundToPlayList(name, url);
         MP3Player.getInstance().play();
         MP3Player.getInstance().show();
       } else {
-        String url = BaseEntryPoint.getSettings().getString("GetFileService", BaseEntryPoint.GET_FILE_SERVICE_PATH) + object.getId() + "_attachment_" + object.getName();
+        String url = BaseApplication.getSettings().getString("GetFileService", BaseApplication.GET_FILE_SERVICE_PATH) + object.getId() + "_attachment_" + object.getName();
         final Frame hidden = new Frame(url);
         DOM.setStyleAttribute(hidden.getElement(), "display", "none");
         RootPanel.get().add(hidden);

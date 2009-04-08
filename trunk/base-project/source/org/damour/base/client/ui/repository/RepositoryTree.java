@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import org.damour.base.client.BaseEntryPoint;
+import org.damour.base.client.BaseApplication;
 import org.damour.base.client.images.BaseImageBundle;
 import org.damour.base.client.objects.File;
 import org.damour.base.client.objects.Folder;
@@ -15,7 +15,6 @@ import org.damour.base.client.objects.RepositoryTreeNode;
 import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.ToolTip;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -162,7 +161,7 @@ public class RepositoryTree extends Tree implements TreeListener {
       if (file instanceof Photo) {
         Photo photo = (Photo) file;
         if (photo.getThumbnailImage() != null) {
-          thumbnailImageURL = BaseEntryPoint.getSettings().getString("GetFileService", BaseEntryPoint.GET_FILE_SERVICE_PATH) + photo.getThumbnailImage().getId() + "_inline_" + photo.getName();
+          thumbnailImageURL = BaseApplication.getSettings().getString("GetFileService", BaseApplication.GET_FILE_SERVICE_PATH) + photo.getThumbnailImage().getId() + "_inline_" + photo.getName();
         }
       }
       new ToolTip(treeItemLabel, thumbnailImageURL, tooltip);

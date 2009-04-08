@@ -1,6 +1,6 @@
 package org.damour.base.client.ui.repository;
 
-import org.damour.base.client.BaseEntryPoint;
+import org.damour.base.client.BaseApplication;
 import org.damour.base.client.objects.File;
 import org.damour.base.client.objects.Folder;
 import org.damour.base.client.objects.PermissibleObject;
@@ -39,7 +39,7 @@ public class UploadFileCommand implements Command {
     } else if (permissibleObject instanceof Folder) {
       parentFolder = (Folder) permissibleObject;
     }
-    final FileUploadPanel fileuploader = new FileUploadPanel(fileUploadCallback, parentFolder, BaseEntryPoint.getSettings().getString("FileUploadService", BaseEntryPoint.FILE_UPLOAD_SERVICE_PATH));
+    final FileUploadPanel fileuploader = new FileUploadPanel(fileUploadCallback, parentFolder, BaseApplication.getSettings().getString("FileUploadService", BaseApplication.FILE_UPLOAD_SERVICE_PATH));
     uploadDialog.setContent(fileuploader);
     uploadDialog.setValidatorCallback(new IDialogValidatorCallback() {
       public boolean validate() {

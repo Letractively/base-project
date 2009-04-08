@@ -2,8 +2,7 @@ package org.damour.base.demo.client;
 
 import java.util.Date;
 
-import org.damour.base.client.AbstractApplication;
-import org.damour.base.client.BaseEntryPoint;
+import org.damour.base.client.BaseApplication;
 import org.damour.base.client.objects.File;
 import org.damour.base.client.objects.User;
 import org.damour.base.client.service.BaseServiceCache;
@@ -15,6 +14,7 @@ import org.damour.base.client.ui.admin.commands.ManageMyGroupsCommand;
 import org.damour.base.client.ui.admin.commands.ManagePendingGroupJoinsCommand;
 import org.damour.base.client.ui.advisory.AdvisoryWidget;
 import org.damour.base.client.ui.authentication.AuthenticationHandler;
+import org.damour.base.client.ui.authentication.IAuthenticationListener;
 import org.damour.base.client.ui.buttons.ComboMenuButton;
 import org.damour.base.client.ui.buttons.MenuButtonCommand;
 import org.damour.base.client.ui.buttons.ToolbarButton;
@@ -40,7 +40,7 @@ import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-public class DemoApplication extends AbstractApplication {
+public class DemoApplication extends BaseApplication implements IAuthenticationListener {
 
   FlexTable applicationPanel = new FlexTable();
   DeckPanel applicationContentDeck = new DeckPanel();
@@ -92,6 +92,7 @@ public class DemoApplication extends AbstractApplication {
   }
 
   public void loadModule() {
+    Window.alert("DemoApplication::loadModule()");
 
     applicationPanel.setWidth("100%");
     applicationPanel.setHeight("100%");
@@ -122,6 +123,7 @@ public class DemoApplication extends AbstractApplication {
     RootPanel.get("content").add(applicationPanel);
 
     buildLoginUI();
+    AuthenticationHandler.getInstance().addLoginListener(this);
     AuthenticationHandler.getInstance().handleUserAuthentication(false);
   }
 
@@ -177,7 +179,7 @@ public class DemoApplication extends AbstractApplication {
     linkCol = -1;
     int row = -1;
     footerGradientPanel.setHTML(++row, ++linkCol, "Copyright &#169 2007-" + ((new Date()).getYear() + 1900) + " "
-        + BaseEntryPoint.getSettings().getString("companyName", "Your Company") + ".  All rights reserved.");
+        + getSettings().getString("companyName", "Your Company") + ".  All rights reserved.");
     footerGradientPanel.getCellFormatter().setHorizontalAlignment(row, linkCol, HasHorizontalAlignment.ALIGN_CENTER);
 
     linkCol = -1;
