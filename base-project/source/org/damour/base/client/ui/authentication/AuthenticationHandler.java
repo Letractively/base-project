@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.damour.base.client.BaseEntryPoint;
+import org.damour.base.client.BaseApplication;
 import org.damour.base.client.objects.User;
 import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.buttons.Button;
@@ -149,7 +149,7 @@ public class AuthenticationHandler {
 
       public void onClick(final Widget sender) {
 
-        String companyName = BaseEntryPoint.getSettings().getString("companyName", "the Company");
+        String companyName = BaseApplication.getSettings().getString("companyName", "the Company");
 
         String disclaimerText = new String(
             "By using this website, you acknowledge that you have read and agree to these terms.  Department staff may revise these terms periodically.  If you continue to use this website after changes are made to these terms, it will mean that you accept such changes.  If at any time you do not wish to accept the Terms, you may choose not to use this website.");

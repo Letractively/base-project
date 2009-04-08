@@ -14,7 +14,7 @@
 	<stylesheet src="datePicker.css"/>
 
 	<!-- Specify the app entry point class.                   -->
-	<entry-point class='org.damour.base.client.BaseEntryPoint'/>
+	<entry-point class='org.damour.base.client.BaseApplication'/>
 
 	<servlet path="/servlet/org.damour.base.server.CaptchaImageGeneratorService" class="org.damour.base.server.CaptchaImageGeneratorService" />
 	<servlet path="/servlet/org.damour.base.server.LoginService" class="org.damour.base.server.LoginService" />

@@ -1,7 +1,7 @@
 package org.damour.base.client.ui.repository;
 
 
-import org.damour.base.client.BaseEntryPoint;
+import org.damour.base.client.BaseApplication;
 import org.damour.base.client.objects.File;
 
 import com.google.gwt.user.client.Command;
@@ -18,7 +18,7 @@ public class DownloadFileCommand implements Command {
   }
 
   public void execute() {
-    String url = BaseEntryPoint.getSettings().getString("GetFileService", BaseEntryPoint.GET_FILE_SERVICE_PATH) + object.getId() + "_attachment_" + object.getName();
+    String url = BaseApplication.getSettings().getString("GetFileService", BaseApplication.GET_FILE_SERVICE_PATH) + object.getId() + "_attachment_" + object.getName();
     final Frame hidden = new Frame(url);
     DOM.setStyleAttribute(hidden.getElement(), "display", "none");
     RootPanel.get().add(hidden);
