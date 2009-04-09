@@ -1,5 +1,10 @@
 -password cookie (hash) based on password hash + remote IP
 -file permissions based on bit masks or Set of perms, with API for setting/getting masks
+-WaitPanel (show/hide)
+-user settings service
+-base_settings_override.properties
 
+DONE-when deleting comments on a page, if that page goes away, pwned
+DONE-database file data persistence
 DONE-add color picker
 DONE-file logger
