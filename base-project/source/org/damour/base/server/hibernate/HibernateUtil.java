@@ -29,8 +29,6 @@ import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 
 public class HibernateUtil {
-  private static boolean DEBUG = true;
-
   private static HibernateUtil instance = null;
 
   private SessionFactory sessionFactory = null;
@@ -51,19 +49,8 @@ public class HibernateUtil {
 
   private HibernateUtil() {
     Logger.log("creating new HibernateUtil()");
-    Properties rb = new Properties();
-    try {
-      rb.load(BaseSystem.getBaseClassLoader().getResourceAsStream("settings.properties"));
-      Logger.dump(rb);
-    } catch (Throwable t) {
-      Logger.log(t);
-      try {
-        rb.load(getClass().getClassLoader().getResourceAsStream("settings.properties"));
-        Logger.dump(rb);
-      } catch (Throwable tt) {
-        Logger.log(tt);
-      }
-    }
+
+    Properties rb = BaseSystem.getSettings();
 
     setUsername(rb.getProperty("username"));
     setPassword(rb.getProperty("password"));
@@ -72,39 +59,6 @@ public class HibernateUtil {
     setColumnPrefix(rb.getProperty("columnPrefix"));
     setHbm2ddlMode(getResource(rb, "hbm2ddlMode", "" + hbm2ddlMode));
     showSQL = "true".equalsIgnoreCase(getResource(rb, "showSQL", "" + showSQL));
-    DEBUG = "true".equalsIgnoreCase(getResource(rb, "debug", "" + DEBUG));
-
-    try {
-      Properties override = new Properties();
-      try {
-        override.load(BaseSystem.getBaseClassLoader().getResourceAsStream("settings_override.properties"));
-        Logger.dump(override);
-      } catch (Throwable t) {
-        Logger.log(t);
-        try {
-          rb.load(getClass().getClassLoader().getResourceAsStream("settings.properties"));
-          Logger.dump(rb);
-        } catch (Throwable tt) {
-          Logger.log(tt);
-        }
-      }
-
-      setUsername(getResource(override, "username", getUsername()));
-      setPassword(getResource(override, "password", getPassword()));
-      setConnectString(getResource(override, "connectString", getConnectString()));
-      setTablePrefix(getResource(override, "tablePrefix", getTablePrefix()));
-      setColumnPrefix(getResource(override, "columnPrefix", getColumnPrefix()));
-      setHbm2ddlMode(getResource(override, "hbm2ddlMode", getHbm2ddlMode()));
-      showSQL = "true".equalsIgnoreCase(getResource(override, "showSQL", "" + showSQL));
-      DEBUG = "true".equalsIgnoreCase(getResource(override, "debug", "" + DEBUG));
-
-      // add mappings from overrides
-      generateHibernateMappings(override);
-
-    } catch (Exception e) {
-      // these are overrides, don't prevent startup by blowing out
-      Logger.log(e);
-    }
 
     // add these mappings last because the settings above may affect them
     generateHibernateMappings(rb);
@@ -166,7 +120,7 @@ public class HibernateUtil {
     if (instance == null) {
       instance = new HibernateUtil();
       instance.bootstrap();
-      if (DEBUG) {
+      if (Logger.DEBUG) {
         Runnable r = new Runnable() {
           public void run() {
             while (true) {

@@ -11,7 +11,7 @@ import java.util.Properties;
 
 public class Logger {
 
-  public static final boolean DEBUG = true;
+  public static boolean DEBUG = false;
 
   private static String logName = null;
   private static DateFormat logDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -25,9 +25,10 @@ public class Logger {
     }
   }
 
-  public static String getLogName() {
+  private static String getLogName() {
     if (logName == null) {
       logName = BaseSystem.getTempDir() + logFileDateFormat.format(new Date()) + ".log.txt";
+      DEBUG = "true".equalsIgnoreCase((String) BaseSystem.getSettings().get("debug"));
     }
     return logName;
   }
