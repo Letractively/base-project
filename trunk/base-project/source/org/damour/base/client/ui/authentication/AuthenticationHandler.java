@@ -8,7 +8,6 @@ import org.damour.base.client.BaseApplication;
 import org.damour.base.client.objects.User;
 import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.buttons.Button;
-import org.damour.base.client.ui.datepicker.SimpleDatePicker;
 import org.damour.base.client.ui.dialogs.IDialogCallback;
 import org.damour.base.client.ui.dialogs.IDialogValidatorCallback;
 import org.damour.base.client.ui.dialogs.MessageDialogBox;
@@ -18,6 +17,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
@@ -28,6 +28,9 @@ import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.datepicker.client.DateBox;
+import com.google.gwt.user.datepicker.client.DatePicker;
+import com.google.gwt.user.datepicker.client.DateBox.DefaultFormat;
 
 public class AuthenticationHandler {
 
@@ -42,8 +45,9 @@ public class AuthenticationHandler {
   TextBox firstname = new TextBox();
   TextBox lastname = new TextBox();
   CheckBox disclaimerCheckBox = new CheckBox("I have read and agree with the disclaimer statement");
-  SimpleDatePicker birthdayPicker;
-
+  DefaultFormat format = new DefaultFormat(DateTimeFormat.getMediumDateFormat());
+  DateBox dateBox = new DateBox(new DatePicker(), new Date(), format);
+  
   final Button signupButton = new Button("Signup");
   PromptDialogBox loginDialog = new PromptDialogBox("Login", "Login", signupButton, "Cancel", false, true);
   PromptDialogBox accountDialog = new PromptDialogBox("Edit Account", "Submit", null, "Cancel", false, true);
@@ -69,12 +73,12 @@ public class AuthenticationHandler {
   }
 
   private AuthenticationHandler() {
-
     loginDialog.setContent(new FlexTable());
 
     final Date possibleBirthday = new Date();
     possibleBirthday.setYear(possibleBirthday.getYear() - 25);
-    birthdayPicker = new SimpleDatePicker(possibleBirthday);
+    dateBox.setValue(possibleBirthday);
+    
     username.setVisibleLength(30);
     password.setVisibleLength(30);
     password.addFocusHandler(new FocusHandler() {
@@ -277,7 +281,7 @@ public class AuthenticationHandler {
     contentPanel.setWidget(row, 0, emailLabel);
     contentPanel.setWidget(row++, 1, emailAddress);
     contentPanel.setWidget(row, 0, birthdayLabel);
-    contentPanel.setWidget(row++, 1, birthdayPicker);
+    contentPanel.setWidget(row++, 1, dateBox);
 
     contentPanel.setWidget(row++, 1, new HTML("<HR>"));
     contentPanel.setText(row++, 1, "Type the characters you see in the picture below.");
@@ -310,7 +314,7 @@ public class AuthenticationHandler {
           validationMessage += "You must enter a valid email address.<BR>";
           validationFailed = true;
         }
-        if (birthdayPicker.getSelectedDate() == null) {
+        if (dateBox.getDatePicker().getHighlightedDate() == null) {
           validationMessage += "You must enter your birthdate.<BR>";
           validationFailed = true;
         }
@@ -332,7 +336,7 @@ public class AuthenticationHandler {
           return;
         }
         createNewAccount(username.getText(), firstname.getText(), lastname.getText(), password.getText(), passwordHint.getText(), emailAddress.getText(),
-            birthdayPicker.getSelectedDate().getTime());
+            dateBox.getDatePicker().getHighlightedDate().getTime());
       }
 
       public void cancelPressed() {
@@ -349,7 +353,7 @@ public class AuthenticationHandler {
   }
 
   private void createCaptchaImage() {
-    captchaValidationImage.setUrl("/servlet/org.damour.base.server.CaptchaImageGeneratorService?attempt=" + System.currentTimeMillis());
+    captchaValidationImage.setUrl(BaseApplication.getSettings().getString("CaptchaService", BaseApplication.CAPTCHA_SERVICE_PATH) + "?attempt=" + System.currentTimeMillis());
   }
 
   public void showEditAccountDialog(final User user) {
@@ -408,11 +412,8 @@ public class AuthenticationHandler {
     contentPanel.setWidget(row, 0, birthdayLabel);
 
     Date date = new Date(user.getBirthday());
-    birthdayPicker = new SimpleDatePicker(date);
-    birthdayPicker.setSelectedDate(date);
-    birthdayPicker.setCurrentDate(date);
-    birthdayPicker.setText(birthdayPicker.getDateFormatter().formatDate(date));
-    contentPanel.setWidget(row++, 1, birthdayPicker);
+    dateBox.getDatePicker().setValue(date);
+    contentPanel.setWidget(row++, 1, dateBox);
 
     accountDialog.setCallback(new IDialogCallback() {
       public void okPressed() {
@@ -427,7 +428,7 @@ public class AuthenticationHandler {
           validationMessage += "<BR>You must enter a valid email address.";
           validationFailed = true;
         }
-        if (birthdayPicker.getSelectedDate() == null) {
+        if (dateBox.getDatePicker().getHighlightedDate() == null) {
           validationMessage += "<BR>You must enter your birthdate.";
           validationFailed = true;
         }
@@ -441,7 +442,7 @@ public class AuthenticationHandler {
         user.setLastname(lastname.getText());
         user.setPasswordHint(passwordHint.getText());
         user.setEmail(emailAddress.getText());
-        user.setBirthday(birthdayPicker.getSelectedDate().getTime());
+        user.setBirthday(dateBox.getDatePicker().getHighlightedDate().getTime());
         editAccount(user, password.getText());
       }
 
