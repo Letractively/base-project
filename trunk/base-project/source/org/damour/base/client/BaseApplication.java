@@ -19,6 +19,7 @@ import com.google.gwt.user.client.ui.RootPanel;
 public class BaseApplication implements EntryPoint {
 
   public static final String BASE_SERVICE_PATH = "/servlet/org.damour.base.server.BaseService";
+  public static final String CAPTCHA_SERVICE_PATH = "/servlet/org.damour.base.server.CaptchaImageGeneratorService";
   public static final String FILE_UPLOAD_SERVICE_PATH = "/servlet/org.damour.base.server.FileUploadService";
   public static final String GET_FILE_SERVICE_PATH = "/files/";
 
