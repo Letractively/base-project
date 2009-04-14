@@ -55,8 +55,7 @@ public class BaseSystem {
 
   public static void setBaseClassLoader(final ClassLoader classLoader) {
     if (BaseSystem.classLoader != classLoader) {
-      Logger.log("BaseSystem:setBaseClassLoader = " + classLoader);
-      Logger.log(new Exception("Debug Stack Dump"));
+      Logger.log("BaseSystem:setBaseClassLoader = " + classLoader.getClass().getName());
       BaseSystem.classLoader = classLoader;
     }
   }

@@ -34,7 +34,7 @@ import com.google.gwt.user.server.rpc.impl.SerializedInstanceReference;
 /**
  * Serialization utility class used by the server-side RPC code.
  */
-class SerializabilityUtil {
+public class SerializabilityUtil {
 
   public static final String DEFAULT_ENCODING = "UTF-8";
 
@@ -248,7 +248,7 @@ class SerializabilityUtil {
     }
   }
 
-  private static void generateSerializationSignature(Class<?> instanceType,
+  public static void generateSerializationSignature(Class<?> instanceType,
       CRC32 crc) throws UnsupportedEncodingException {
     crc.update(getSerializedTypeName(instanceType).getBytes(DEFAULT_ENCODING));
 
