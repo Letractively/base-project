@@ -6,9 +6,9 @@ import org.damour.base.client.objects.User;
 import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.IGenericCallback;
 import org.damour.base.client.ui.buttons.Button;
-import org.damour.base.client.ui.datepicker.SimpleDatePicker;
 import org.damour.base.client.ui.dialogs.MessageDialogBox;
 
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.ClickListener;
@@ -17,6 +17,9 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.datepicker.client.DateBox;
+import com.google.gwt.user.datepicker.client.DatePicker;
+import com.google.gwt.user.datepicker.client.DateBox.DefaultFormat;
 
 public class EditAccountPanel extends FlexTable {
 
@@ -29,7 +32,8 @@ public class EditAccountPanel extends FlexTable {
     final TextBox lastnameTextBox = new TextBox();
     final TextBox emailTextBox = new TextBox();
     Date birthday = new Date(user.getBirthday());
-    final SimpleDatePicker birthdayPicker = new SimpleDatePicker(birthday);
+    DefaultFormat format = new DefaultFormat(DateTimeFormat.getMediumDateFormat());
+    final DateBox birthdayPicker = new DateBox(new DatePicker(), birthday, format);
     final CheckBox validatedCheckBox = new CheckBox("Validated");
     final CheckBox administratorCheckBox = new CheckBox("Administrator");
 
@@ -40,9 +44,7 @@ public class EditAccountPanel extends FlexTable {
     emailTextBox.setText(user.getEmail());
     validatedCheckBox.setChecked(user.isValidated());
     administratorCheckBox.setChecked(user.isAdministrator());
-    birthdayPicker.setSelectedDate(birthday);
-    birthdayPicker.setCurrentDate(birthday);
-    birthdayPicker.setText(birthdayPicker.getDateFormatter().formatDate(birthday));
+    birthdayPicker.setValue(birthday);
 
     Button applyButton = new Button("Apply");
     applyButton.addClickListener(new ClickListener() {
@@ -52,7 +54,7 @@ public class EditAccountPanel extends FlexTable {
         user.setFirstname(firstnameTextBox.getText());
         user.setLastname(lastnameTextBox.getText());
         user.setEmail(emailTextBox.getText());
-        user.setBirthday(birthdayPicker.getSelectedDate().getTime());
+        user.setBirthday(birthdayPicker.getDatePicker().getHighlightedDate().getTime());
         user.setAdministrator(administratorCheckBox.isChecked());
         user.setValidated(validatedCheckBox.isChecked());
         final AsyncCallback<User> loginCallback = new AsyncCallback<User>() {
