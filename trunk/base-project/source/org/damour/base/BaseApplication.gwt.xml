@@ -3,12 +3,8 @@
 	<!-- Inherit the core Web Toolkit stuff.                  -->
 	<inherits name='com.google.gwt.user.User'/>
 	<inherits name='com.google.gwt.xml.XML'/>
-	<inherits name='com.google.gwt.i18n.I18N' />
 	<inherits name='com.google.gwt.http.HTTP' />
 	<inherits name='net.auroris.ColorPicker.ColorPicker' />
-
-	<!-- supported locales (beyond english defaults) -->
-	<extend-property name="locale" values="en"/>
 
 	<stylesheet src="base.css"/>
 	<stylesheet src="datePicker.css"/>
@@ -16,10 +12,6 @@
 	<!-- Specify the app entry point class.                   -->
 	<entry-point class='org.damour.base.client.BaseApplication'/>
 
-	<servlet path="/servlet/org.damour.base.server.CaptchaImageGeneratorService" class="org.damour.base.server.CaptchaImageGeneratorService" />
-	<servlet path="/servlet/org.damour.base.server.LoginService" class="org.damour.base.server.LoginService" />
-	<servlet path="/servlet/org.damour.base.server.BaseService" class="org.damour.base.server.BaseService" />
-	<servlet path="/servlet/org.damour.base.server.FileUploadService" class="org.damour.base.server.FileUploadService" />
 	<servlet path="/files" class="org.damour.base.server.GetFileService" />
 	
 </module>
