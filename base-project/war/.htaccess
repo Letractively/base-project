@@ -1,0 +1,24 @@
+RewriteEngine on
+RewriteRule ^files/(.*)_inline_(.*)$ /servlet/org.damour.base.server.GetFileService?file=$1&disposition=inline&name=$2
+RewriteRule ^files/(.*)_attachment_(.*)$ /servlet/org.damour.base.server.GetFileService?file=$1&disposition=attachment&name=$2
+
+<FilesMatch "\.(flv|gif|jpg|jpeg|png|ico|swf|pdf)$">
+   Header set Cache-Control "max-age=2592000"
+</FilesMatch>
+
+<FilesMatch "\.(js|css|txt)$">
+   Header set Cache-Control "max-age=2592000"
+</FilesMatch>
+
+<FilesMatch "\.cache\.(html|htm)$">
+   Header set Cache-Control "max-age=2592000"
+</FilesMatch>
+
+<FilesMatch "\.(properties)$">
+   Header set Cache-Control "No-Cache"
+</FilesMatch>
+
+
+AddHandler x-httpd-php5 .php
+AddHandler x-httpd-php .php4
+
