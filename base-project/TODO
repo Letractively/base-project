@@ -2,8 +2,13 @@
 -file permissions based on bit masks or Set of perms, with API for setting/getting masks
 -WaitPanel (show/hide)
 -user settings service
--base_settings_override.properties
+-email widget
+-share widget
+-debug in BaseSystem used everywhere (get rid of HibernateUtil.DEBUG)
+-BaseSystem to hold settings for itself (logging debug mode), other
+-BaseSystem reset, calls reset on settings, HibernateUtil.reset
 
+DONE-base_settings_override.properties
 DONE-when deleting comments on a page, if that page goes away, pwned
 DONE-database file data persistence
 DONE-add color picker
