@@ -12,6 +12,4 @@
 	<!-- Specify the app entry point class.                   -->
 	<entry-point class='org.damour.base.client.BaseApplication'/>
 
-	<servlet path="/files" class="org.damour.base.server.GetFileService" />
-	
 </module>
