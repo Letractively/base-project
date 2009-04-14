@@ -55,6 +55,7 @@ public class ResourceBundle {
   private String localeName = "default";
   private String currentAttemptUrl = null;
   private boolean attemptLocalizedFetches = true;
+  private Map<String, String> supportedLocales = null;
 
   private class FakeResponse extends Response {
 
@@ -90,6 +91,10 @@ public class ResourceBundle {
 
   }
 
+  public ResourceBundle() {
+    this.localeName = StringUtils.defaultIfEmpty(Window.Location.getParameter("locale"), getLanguagePreference());
+  }
+
   /**
    * The MessageBundle class fetches localized properties files by using the GWT RequestBuilder against the supplied path. Ideally the path should be relative,
    * but absolute paths are accepted. When the ResourceBundle has fetched and loaded all available resources it will notify the caller by way of
@@ -104,15 +109,21 @@ public class ResourceBundle {
    *          The callback to invoke when the bundle has finished loading
    */
   public ResourceBundle(String path, String bundleName, boolean attemptLocalizedFetches, IResourceBundleLoadCallback bundleLoadCallback) {
+    this();
+    loadBundle(path, bundleName, attemptLocalizedFetches, bundleLoadCallback);
+  }
+
+  public void loadBundle(String path, String bundleName, boolean attemptLocalizedFetches, IResourceBundleLoadCallback bundleLoadCallback) {
+    this.bundleName = bundleName;
+    this.bundleLoadCallback = bundleLoadCallback;
+    this.attemptLocalizedFetches = attemptLocalizedFetches;
+
     if (!StringUtils.isEmpty(path) && !path.endsWith("/")) {
       path = path + "/";
     }
     this.path = path;
-    this.bundleName = bundleName;
-    this.bundleLoadCallback = bundleLoadCallback;
-    this.attemptLocalizedFetches = attemptLocalizedFetches;
+
     // get the locale meta property if the url parameter is missing
-    this.localeName = StringUtils.defaultIfEmpty(Window.Location.getParameter("locale"), getLanguagePreference());
     initCallbacks();
     // decompose locale
     // _en_US
@@ -133,6 +144,7 @@ public class ResourceBundle {
         fireBundleLoadCallback();
       }
     }
+
   }
 
   private void initCallbacks() {
@@ -179,7 +191,7 @@ public class ResourceBundle {
 
             // IE caches the file and causes an issue with the request
 
-            if (bundleCache.containsKey(currentAttemptUrl)) {
+            if (!isSupportedLocale(lang) || bundleCache.containsKey(currentAttemptUrl)) {
               langCallback.onResponseReceived(null, new FakeResponse(bundleCache.get(currentAttemptUrl)));
             } else {
               RequestBuilder requestBuilder = new RequestBuilder(RequestBuilder.GET, currentAttemptUrl); //$NON-NLS-1$ //$NON-NLS-2$
@@ -227,7 +239,7 @@ public class ResourceBundle {
         if (st.countTokens() == 2) {
           // 3. fetch bundleName_lang_country.properties
           currentAttemptUrl = path + bundleName + "_" + localeName + PROPERTIES_EXTENSION;
-          if (bundleCache.containsKey(currentAttemptUrl)) {
+          if (!isSupportedLocale(localeName) || bundleCache.containsKey(currentAttemptUrl)) {
             langCountryCallback.onResponseReceived(null, new FakeResponse(bundleCache.get(currentAttemptUrl)));
           } else {
             RequestBuilder requestBuilder = new RequestBuilder(RequestBuilder.GET, currentAttemptUrl); //$NON-NLS-1$ //$NON-NLS-2$
@@ -325,6 +337,10 @@ public class ResourceBundle {
     return bundle.keySet();
   }
 
+  public static void clearCache() {
+    bundleCache.clear();
+  }
+  
   public void mergeResourceBundle(ResourceBundle inBundle) {
     // the incoming bundle will override the defaults in bundle
     bundle.putAll(inBundle.bundle);
@@ -342,6 +358,19 @@ public class ResourceBundle {
     return str;
   }
 
+  public boolean isSupportedLocale(String localeCode) {
+    if (supportedLocales == null) {
+      // if supportedLocales is null, then we have no idea what we support
+      // so we'll force try anything
+      return true;
+    }
+    return supportedLocales.containsKey(localeCode);
+  }
+
+  public void setSupportedLocales(Map<String, String> supportedLocales) {
+    this.supportedLocales = supportedLocales;
+  }
+
   private static native String getLanguagePreference()
   /*-{
     var m = $doc.getElementsByTagName('meta'); 
@@ -352,4 +381,5 @@ public class ResourceBundle {
     }
     return "default";
   }-*/;
+
 }

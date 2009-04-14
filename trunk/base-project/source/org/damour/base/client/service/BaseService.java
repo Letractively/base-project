@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import org.damour.base.client.exceptions.LoginException;
 import org.damour.base.client.objects.Category;
 import org.damour.base.client.objects.Comment;
 import org.damour.base.client.objects.File;
@@ -25,7 +26,7 @@ import org.damour.base.client.objects.UserRating;
 import com.google.gwt.user.client.rpc.RemoteService;
 
 public interface BaseService extends RemoteService {
-  public User getAuthenticatedUser() throws Exception;
+  public User getAuthenticatedUser() throws LoginException;
   public User createOrEditAccount(User user, String password, String captchaText) throws Exception;
   public User login(String username, String password) throws Exception;
   public void logout() throws Exception;

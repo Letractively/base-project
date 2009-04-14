@@ -14,19 +14,20 @@ import org.damour.base.client.ui.dialogs.IDialogValidatorCallback;
 import org.damour.base.client.ui.dialogs.MessageDialogBox;
 import org.damour.base.client.ui.dialogs.PromptDialogBox;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.FocusEvent;
+import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.FlexTable;
-import com.google.gwt.user.client.ui.FocusListener;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.Widget;
 
 public class AuthenticationHandler {
 
@@ -76,22 +77,16 @@ public class AuthenticationHandler {
     birthdayPicker = new SimpleDatePicker(possibleBirthday);
     username.setVisibleLength(30);
     password.setVisibleLength(30);
-    password.addFocusListener(new FocusListener() {
-      public void onFocus(Widget sender) {
+    password.addFocusHandler(new FocusHandler() {
+      public void onFocus(FocusEvent event) {
         password.selectAll();
-      }
-
-      public void onLostFocus(Widget sender) {
       }
     });
 
     passwordConfirm.setVisibleLength(30);
-    passwordConfirm.addFocusListener(new FocusListener() {
-      public void onFocus(Widget sender) {
+    passwordConfirm.addFocusHandler(new FocusHandler() {
+      public void onFocus(FocusEvent event) {
         passwordConfirm.selectAll();
-      }
-
-      public void onLostFocus(Widget sender) {
       }
     });
 
@@ -124,8 +119,8 @@ public class AuthenticationHandler {
       }
     });
 
-    signupButton.addClickListener(new ClickListener() {
-      public void onClick(final Widget sender) {
+    signupButton.addClickHandler(new ClickHandler() {
+      public void onClick(final ClickEvent event) {
         loginDialog.hide();
         // create an account, prepopulate UI with values from login dialog (user/pass)
         showNewAccountDialog(true);
@@ -135,8 +130,8 @@ public class AuthenticationHandler {
     hintLink.setTitle("Retrieve your password hint.");
     hintLink.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
     hintLink.setStyleName("link");
-    hintLink.addClickListener(new ClickListener() {
-      public void onClick(final Widget sender) {
+    hintLink.addClickHandler(new ClickHandler() {
+      public void onClick(final ClickEvent event) {
         if (username.getText() == null || "".equals(username.getText())) {
           final MessageDialogBox dialog = new MessageDialogBox("Error", "Enter your username.", true, true, true);
           dialog.center();
@@ -145,9 +140,9 @@ public class AuthenticationHandler {
         }
       }
     });
-    readDisclaimer.addClickListener(new ClickListener() {
+    readDisclaimer.addClickHandler(new ClickHandler() {
 
-      public void onClick(final Widget sender) {
+      public void onClick(final ClickEvent event) {
 
         String companyName = BaseApplication.getSettings().getString("companyName", "the Company");
 
@@ -181,8 +176,8 @@ public class AuthenticationHandler {
     firstname.setTitle("Enter your firstname");
     lastname.setTitle("Enter your lastname");
 
-    captchaValidationImage.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    captchaValidationImage.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent sender) {
         createCaptchaImage();
       }
     });
@@ -319,7 +314,7 @@ public class AuthenticationHandler {
           validationMessage += "You must enter your birthdate.<BR>";
           validationFailed = true;
         }
-        if (!disclaimerCheckBox.isChecked()) {
+        if (!disclaimerCheckBox.getValue()) {
           validationMessage += "You must read and agree with the disclaimer statement to continue.<BR>";
           validationFailed = true;
         }
@@ -557,12 +552,12 @@ public class AuthenticationHandler {
   }
 
   public void logout() {
-    final AsyncCallback loginCallback = new AsyncCallback() {
+    final AsyncCallback<Void> loginCallback = new AsyncCallback<Void>() {
       public void onFailure(Throwable caught) {
         Window.open("/", "_top", "");
       }
 
-      public void onSuccess(Object result) {
+      public void onSuccess(Void nothing) {
         AuthenticationHandler.this.user = null;
         fireLoggedOut();
       };
