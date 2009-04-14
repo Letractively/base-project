@@ -5,7 +5,4 @@ import org.damour.base.server.BaseService;
 
 public class DemoServiceImpl extends BaseService implements DemoService {
 
-  static {
-  }
-
 }

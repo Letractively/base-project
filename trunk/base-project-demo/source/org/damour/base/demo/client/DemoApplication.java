@@ -92,8 +92,6 @@ public class DemoApplication extends BaseApplication implements IAuthenticationL
   }
 
   public void loadModule() {
-    Window.alert("DemoApplication::loadModule()");
-
     applicationPanel.setWidth("100%");
     applicationPanel.setHeight("100%");
     applicationPanel.getFlexCellFormatter().setVerticalAlignment(0, 0, HasVerticalAlignment.ALIGN_TOP);
