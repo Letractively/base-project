@@ -24,7 +24,7 @@
        =================================================================== -->
 	<target name="clean" depends="">
 		<delete dir="dist" />
-		<delete dir="${gwt.output.dir}" />
+		<delete dir="${gwt.output.dir}/${gwt.app.name}" />
 	</target>
 
 	<!-- ===================================================================
@@ -42,8 +42,6 @@
 			<fileset dir="source" includes="**/*" />
 			<fileset dir="../base-project/source" includes="**/*" />
 		</copy>
-		<replace dir="dist/source" includes="**/*" token="%domain%" value="${domain}">
-		</replace>
 	</target>
 
 	<target name="compile" depends="copy-replace-source">
@@ -54,20 +52,15 @@
 	</target>
 
 	<target name="compile-gwt" depends="compile">
-		<java classname="com.google.gwt.dev.GWTCompiler" fork="true" maxmemory="1024M">
+		<java classname="com.google.gwt.dev.Compiler" fork="true" maxmemory="1024M">
 			<classpath>
 				<path refid="classpath" />
 				<pathelement location="dist/source" />
 			</classpath>
-			<arg value="-out" />
-			<arg value="&quot;${gwt.output.dir}&quot;" />
-			<arg value="%*" />
+			<arg value="-localWorkers" />
+			<arg value="2" />
 			<arg value="${gwt.app}" />
 		</java>
-	</target>
-
-	<target name="clean-war">
-		<delete dir="${target.webapp.path}/${target.webapp.name}" />
 	</target>
 
 	<target name="clean-dist" depends="clean">
@@ -80,21 +73,20 @@
 		</copy>
 		<jar basedir="dist/bin" destfile="dist/${project.name}-${release.major.number}.${release.minor.number}.${release.milestone.number}.jar" />
 		<copy todir="dist/${target.webapp.name}">
-			<fileset dir="${gwt.output.dir}/${gwt.app}" includes="**/*" />
+			<fileset dir="../base-project/${gwt.output.dir}" includes="**/*" excludes="WEB-INF/classes/**/*"/>
+			<fileset dir="${gwt.output.dir}" includes="**/*" excludes="WEB-INF/classes/**/*"/>
 		</copy>
 		<unzip dest="dist/${target.webapp.name}/WEB-INF/classes">
 			<fileset dir="dist" includes="${project.name}*.jar" />
-			<fileset dir="lib" includes="*.zip, *.jar" excludes="**/*gwt-dev-windows.jar, **/*gwt-user.jar, **/*googlemaps*.jar, **/gwtchismes*" />
-			<fileset dir="../base-project/lib" includes="**/*.zip, **/*.jar" excludes="**/*gwt-dev-windows.jar, **/*gwt-user.jar, **/*googlemaps*.jar, **/gwtchismes*" />
+			<fileset dir="lib" includes="*.zip, *.jar" excludes="**/*gwt-dev-windows.jar, **/*gwt-user.jar, **/*googlemaps*.jar, **/gwtchismes*, **/*colorpicker*" />
+			<fileset dir="../base-project/lib" includes="**/*.zip, **/*.jar" excludes="**/*gwt-dev-windows.jar, **/*gwt-user.jar, **/*googlemaps*.jar, **/gwtchismes*, **/*colorpicker*" />
 		</unzip>
 		<delete file="dist/${project.name}.war" />
 		<zip destfile="dist/${project.name}.war" basedir="dist/${target.webapp.name}" />
 		<delete dir="dist/${target.webapp.name}" />
 	</target>
 
-	<target name="dist" depends="clean, compile-gwt">
-		<antcall target="dist-nodeps">
-		</antcall>
+	<target name="dist" depends="clean, compile-gwt, dist-nodeps">
 	</target>
 
 </project>
