@@ -16,6 +16,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.damour.base.client.exceptions.LoginException;
 import org.damour.base.client.objects.Category;
 import org.damour.base.client.objects.Comment;
 import org.damour.base.client.objects.File;
@@ -222,7 +223,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     return user;
   }
 
-  private void destroyCookies(HttpServletResponse response) throws Exception {
+  private void destroyCookies(HttpServletResponse response) {
     Cookie userCookie = new Cookie("user", "");
     userCookie.setMaxAge(0);
     userCookie.setPath("/");
@@ -255,11 +256,11 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     return null;
   }
 
-  protected User getAuthenticatedUser(org.hibernate.Session session) throws Exception {
+  protected User getAuthenticatedUser(org.hibernate.Session session) throws LoginException {
     return getAuthenticatedUser(session, getThreadLocalRequest(), getThreadLocalResponse());
   }
 
-  public User getAuthenticatedUser() throws Exception {
+  public User getAuthenticatedUser() throws LoginException {
     Cookie cookies[] = getThreadLocalRequest().getCookies();
     Cookie userCookie = null;
     Cookie userAuthCookie = null;
@@ -271,7 +272,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       }
     }
     if (userCookie == null || userAuthCookie == null) {
-      throw new RuntimeException("Could not get authenticated user.");
+      throw new LoginException("Could not get authenticated user.");
     }
     User user = getAuthenticatedUser(session.get());
     if (user == null) {

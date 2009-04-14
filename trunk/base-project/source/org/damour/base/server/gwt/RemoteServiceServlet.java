@@ -70,7 +70,7 @@ public class RemoteServiceServlet extends HttpServlet implements
    * 500.
    */
   @Override
-  public void doPost(HttpServletRequest request,
+  public final void doPost(HttpServletRequest request,
       HttpServletResponse response) {
     try {
       // Store the request & response objects in thread-local storage.
@@ -125,12 +125,13 @@ public class RemoteServiceServlet extends HttpServlet implements
 
     if (serializationPolicy == null) {
       // Failed to get the requested serialization policy; use the default
-      getServletContext().log(
+      log(
           "WARNING: Failed to get the SerializationPolicy '"
               + strongName
               + "' for module '"
               + moduleBaseURL
-              + "'; a legacy, 1.3.3 compatible, serialization policy will be used.  You may experience SerializationExceptions as a result.");
+              + "'; a legacy, 1.3.3 compatible, serialization policy will be used.  You may experience SerializationExceptions as a result.",
+          null);
       serializationPolicy = RPC.getDefaultSerializationPolicy();
     }
 
@@ -167,10 +168,11 @@ public class RemoteServiceServlet extends HttpServlet implements
   public String processCall(String payload) throws SerializationException {
     try {
       RPCRequest rpcRequest = RPC.decodeRequest(payload, this.getClass(), this);
+      onAfterRequestDeserialized(rpcRequest);
       return RPC.invokeAndEncodeResponse(this, rpcRequest.getMethod(),
           rpcRequest.getParameters(), rpcRequest.getSerializationPolicy());
     } catch (IncompatibleRemoteServiceException ex) {
-      getServletContext().log(
+      log(
           "An IncompatibleRemoteServiceException was thrown while processing this call.",
           ex);
       return RPC.encodeResponseForFailure(null, ex);
@@ -203,7 +205,7 @@ public class RemoteServiceServlet extends HttpServlet implements
         modulePath = new URL(moduleBaseURL).getPath();
       } catch (MalformedURLException ex) {
         // log the information, we will default
-        getServletContext().log("Malformed moduleBaseURL: " + moduleBaseURL, ex);
+        log("Malformed moduleBaseURL: " + moduleBaseURL, ex);
       }
     }
 
@@ -220,7 +222,7 @@ public class RemoteServiceServlet extends HttpServlet implements
           + ", is not in the same web application as this servlet, "
           + contextPath
           + ".  Your module may not be properly configured or your client and server code maybe out of date.";
-      getServletContext().log(message);
+      log(message, null);
     } else {
       // Strip off the context path from the module base URL. It should be a
       // strict prefix.
@@ -238,19 +240,17 @@ public class RemoteServiceServlet extends HttpServlet implements
             serializationPolicy = SerializationPolicyLoader.loadFromStream(is,
                 null);
           } catch (ParseException e) {
-            getServletContext().log(
-                "ERROR: Failed to parse the policy file '"
+            log("ERROR: Failed to parse the policy file '"
                     + serializationPolicyFilePath + "'", e);
           } catch (IOException e) {
-            getServletContext().log(
-                "ERROR: Could not read the policy file '"
+            log("ERROR: Could not read the policy file '"
                     + serializationPolicyFilePath + "'", e);
           }
         } else {
           String message = "ERROR: The serialization policy file '"
               + serializationPolicyFilePath
               + "' was not found; did you forget to include it in this deployment?";
-          getServletContext().log(message);
+          log(message, null);
         }
       } finally {
         if (is != null) {
@@ -269,15 +269,15 @@ public class RemoteServiceServlet extends HttpServlet implements
   /**
    * Override this method to control what should happen when an exception
    * escapes the {@link #processCall(String)} method. The default implementation
-   * will log the failure and send a generic failure response to the client.<p/>
-   * 
+   * will log the failure and send a generic failure response to the client.
+   * <p>
    * An "expected failure" is an exception thrown by a service method that is
    * declared in the signature of the service method. These exceptions are
    * serialized back to the client, and are not passed to this method. This
    * method is called only for exceptions or errors that are not part of the
    * service method's signature, or that result from SecurityExceptions,
-   * SerializationExceptions, or other failures within the RPC framework.<p/>
-   * 
+   * SerializationExceptions, or other failures within the RPC framework.
+   * <p>
    * Note that if the desired behavior is to both send the GENERIC_FAILURE_MSG
    * response AND to rethrow the exception, then this method should first send
    * the GENERIC_FAILURE_MSG response itself (using getThreadLocalResponse), and
@@ -293,9 +293,9 @@ public class RemoteServiceServlet extends HttpServlet implements
   }
 
   /**
-   * Gets the <code>HttpServletRequest</code> object for the current call. It
-   * is stored thread-locally so that simultaneous invocations can have
-   * different request objects.
+   * Gets the <code>HttpServletRequest</code> object for the current call. It is
+   * stored thread-locally so that simultaneous invocations can have different
+   * request objects.
    */
   protected final HttpServletRequest getThreadLocalRequest() {
     return perThreadRequest.get();
@@ -308,6 +308,14 @@ public class RemoteServiceServlet extends HttpServlet implements
    */
   protected final HttpServletResponse getThreadLocalResponse() {
     return perThreadResponse.get();
+  }
+
+  /**
+   * Override this method to examine the deserialized version of the request
+   * before the call to the servlet method is made. The default implementation
+   * does nothing and need not be called by subclasses.
+   */
+  protected void onAfterRequestDeserialized(RPCRequest rpcRequest) {
   }
 
   /**

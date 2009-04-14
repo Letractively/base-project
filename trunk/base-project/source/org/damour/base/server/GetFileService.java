@@ -128,8 +128,6 @@ public class GetFileService extends HttpServlet {
           }
         }
       } else {
-        // consider copying to /tmp to read from later rather than from database
-        // depending on performance of the database
         List<FileData> fileDataList = HibernateUtil.getInstance().executeQuery(session,
             "from " + FileData.class.getSimpleName() + " where permissibleObject.id = " + file.getId());
         if (fileDataList.size() == 0) {
@@ -141,8 +139,10 @@ public class GetFileService extends HttpServlet {
         }
 
         fileData = (FileData) fileDataList.get(0);
-        IOUtils.write(fileData.getData(), outStream);
 
+        // consider copying to /tmp to read from later rather than from database
+        // depending on performance of the database
+        // DONE
         FileOutputStream fileOutputStream = new FileOutputStream(possibleDataFile);
         try {
           IOUtils.write(fileData.getData(), fileOutputStream);
@@ -154,6 +154,8 @@ public class GetFileService extends HttpServlet {
           } catch (Throwable t) {
           }
         }
+        
+        IOUtils.write(fileData.getData(), outStream);
       }
     } catch (Throwable t) {
       Logger.log(t);

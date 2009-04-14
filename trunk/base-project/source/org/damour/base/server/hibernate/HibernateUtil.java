@@ -50,6 +50,7 @@ public class HibernateUtil {
   private String hbm2ddlMode = "update";
 
   private HibernateUtil() {
+    Logger.log("creating new HibernateUtil()");
     Properties rb = new Properties();
     try {
       rb.load(BaseSystem.getBaseClassLoader().getResourceAsStream("settings.properties"));
@@ -60,6 +61,7 @@ public class HibernateUtil {
         rb.load(getClass().getClassLoader().getResourceAsStream("settings.properties"));
         Logger.dump(rb);
       } catch (Throwable tt) {
+        Logger.log(tt);
       }
     }
 

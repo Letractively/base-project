@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.zip.CRC32;
 
 import org.damour.base.server.Logger;
 
@@ -560,7 +561,17 @@ public final class RPC {
       //EX[2,1,["java.lang.Exception/1920171873","could\x20not\x20insert:\x20[org.damour.base.client.objects.UserGroup]"],0,4]
       //EX[2,1,["java.lang.Exception/1920171873","pwned"],0,4]
       String escapedStr = ServerSerializationStreamWriter.escapeString(((Throwable)object).getMessage());
-      return "//EX[2,1,[\"java.lang.Exception/1920171873\"," + escapedStr + "],0," + AbstractSerializationStream.SERIALIZATION_STREAM_VERSION + "]";
+      CRC32 crc = new CRC32();
+      try {
+        crc.update(SerializabilityUtil.getSerializedTypeName(object.getClass()).getBytes(SerializabilityUtil.DEFAULT_ENCODING));
+        Class<?> superClass = object.getClass().getSuperclass();
+        if (superClass != null) {
+          crc.update(SerializabilityUtil.getSerializedTypeName(superClass).getBytes(SerializabilityUtil.DEFAULT_ENCODING));
+        }
+      } catch (Throwable t) {
+        return "//EX[2,1,[\"java.lang.Exception/1920171873\"," + escapedStr + "],0," + AbstractSerializationStream.SERIALIZATION_STREAM_VERSION + "]";
+      }
+      return "//EX[2,1,[\"" + object.getClass().getName() + "/" + crc.getValue() + "\"," + escapedStr + "],0," + AbstractSerializationStream.SERIALIZATION_STREAM_VERSION + "]";
     }
     
     ServerSerializationStreamWriter stream = new ServerSerializationStreamWriter(
