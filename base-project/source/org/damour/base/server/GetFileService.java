@@ -66,7 +66,6 @@ public class GetFileService extends HttpServlet {
         String filename = pi.substring(pi.lastIndexOf("/") + 1);
         int underscoreIndex = filename.indexOf("_") + 1;
         disposition = filename.substring(underscoreIndex, filename.indexOf("_", underscoreIndex));
-        System.out.println("disposition: " + disposition);
       }
 
       file = (File) session.load(File.class, new Long(fileParameter));
