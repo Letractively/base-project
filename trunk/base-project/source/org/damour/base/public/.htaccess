@@ -1,8 +1,0 @@
-RewriteEngine on
-RewriteRule ^(.*)\.cache\.(.*)$ /resourcecache.jsp?filename=$1.cache.$2
-RewriteRule ^images/(.*)$ /resourcecache.jsp?filename=/images/$1
-RewriteRule ^files/(.*)_inline_(.*)$ /servlet/org.damour.base.server.GetFileService?file=$1&disposition=inline&name=$3
-RewriteRule ^files/(.*)_attachment_(.*)$ /servlet/org.damour.base.server.GetFileService?file=$1&disposition=attachment&name=$3
-
-AddHandler x-httpd-php5 .php
-AddHandler x-httpd-php .php4
