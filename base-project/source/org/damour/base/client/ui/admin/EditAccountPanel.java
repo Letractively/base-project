@@ -8,15 +8,15 @@ import org.damour.base.client.ui.IGenericCallback;
 import org.damour.base.client.ui.buttons.Button;
 import org.damour.base.client.ui.dialogs.MessageDialogBox;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.datepicker.client.DateBox;
 import com.google.gwt.user.datepicker.client.DatePicker;
 import com.google.gwt.user.datepicker.client.DateBox.DefaultFormat;
@@ -42,21 +42,21 @@ public class EditAccountPanel extends FlexTable {
     firstnameTextBox.setText(user.getFirstname());
     lastnameTextBox.setText(user.getLastname());
     emailTextBox.setText(user.getEmail());
-    validatedCheckBox.setChecked(user.isValidated());
-    administratorCheckBox.setChecked(user.isAdministrator());
+    validatedCheckBox.setValue(user.isValidated());
+    administratorCheckBox.setValue(user.isAdministrator());
     birthdayPicker.setValue(birthday);
 
     Button applyButton = new Button("Apply");
-    applyButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    applyButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         user.setUsername(usernameTextBox.getText());
         user.setPasswordHint(passwordHintTextBox.getText());
         user.setFirstname(firstnameTextBox.getText());
         user.setLastname(lastnameTextBox.getText());
         user.setEmail(emailTextBox.getText());
-        user.setBirthday(birthdayPicker.getDatePicker().getHighlightedDate().getTime());
-        user.setAdministrator(administratorCheckBox.isChecked());
-        user.setValidated(validatedCheckBox.isChecked());
+        user.setBirthday(birthdayPicker.getValue().getTime());
+        user.setAdministrator(administratorCheckBox.getValue());
+        user.setValidated(validatedCheckBox.getValue());
         final AsyncCallback<User> loginCallback = new AsyncCallback<User>() {
           public void onFailure(Throwable caught) {
             MessageDialogBox dialog = new MessageDialogBox("Error", "Could not edit account.", true, true, true);
