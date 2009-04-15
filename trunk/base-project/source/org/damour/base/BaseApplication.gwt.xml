@@ -7,7 +7,6 @@
 	<inherits name='net.auroris.ColorPicker.ColorPicker' />
 
 	<stylesheet src="base.css"/>
-	<stylesheet src="datePicker.css"/>
 
 	<!-- Specify the app entry point class.                   -->
 	<entry-point class='org.damour.base.client.BaseApplication'/>
