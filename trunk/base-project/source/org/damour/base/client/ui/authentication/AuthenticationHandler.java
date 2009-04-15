@@ -314,7 +314,7 @@ public class AuthenticationHandler {
           validationMessage += "You must enter a valid email address.<BR>";
           validationFailed = true;
         }
-        if (dateBox.getDatePicker().getHighlightedDate() == null) {
+        if (dateBox.getValue() == null) {
           validationMessage += "You must enter your birthdate.<BR>";
           validationFailed = true;
         }
@@ -336,7 +336,7 @@ public class AuthenticationHandler {
           return;
         }
         createNewAccount(username.getText(), firstname.getText(), lastname.getText(), password.getText(), passwordHint.getText(), emailAddress.getText(),
-            dateBox.getDatePicker().getHighlightedDate().getTime());
+            dateBox.getValue().getTime());
       }
 
       public void cancelPressed() {
@@ -412,7 +412,7 @@ public class AuthenticationHandler {
     contentPanel.setWidget(row, 0, birthdayLabel);
 
     Date date = new Date(user.getBirthday());
-    dateBox.getDatePicker().setValue(date);
+    dateBox.setValue(date);
     contentPanel.setWidget(row++, 1, dateBox);
 
     accountDialog.setCallback(new IDialogCallback() {
@@ -428,7 +428,7 @@ public class AuthenticationHandler {
           validationMessage += "<BR>You must enter a valid email address.";
           validationFailed = true;
         }
-        if (dateBox.getDatePicker().getHighlightedDate() == null) {
+        if (dateBox.getValue() == null) {
           validationMessage += "<BR>You must enter your birthdate.";
           validationFailed = true;
         }
