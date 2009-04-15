@@ -180,19 +180,19 @@ public class DemoApplication extends BaseApplication implements IAuthenticationL
         + getSettings().getString("companyName", "Your Company") + ".  All rights reserved.");
     footerGradientPanel.getCellFormatter().setHorizontalAlignment(row, linkCol, HasHorizontalAlignment.ALIGN_CENTER);
 
-    linkCol = -1;
-    final int dateRow = ++row;
-    final int dateCol = ++linkCol;
-    AsyncCallback<Date> serverStartupDateCallback = new AsyncCallback<Date>() {
-      public void onFailure(Throwable caught) {
-      }
-
-      public void onSuccess(Date result) {
-        footerGradientPanel.setHTML(dateRow, dateCol, getMessages().getString("serverUpSince", "Server Up Since") + " " + result.toLocaleString());
-        footerGradientPanel.getCellFormatter().setHorizontalAlignment(dateRow, dateCol, HasHorizontalAlignment.ALIGN_CENTER);
-      }
-    };
-    BaseServiceCache.getService().getServerStartupDate(serverStartupDateCallback);
+//    linkCol = -1;
+//    final int dateRow = ++row;
+//    final int dateCol = ++linkCol;
+//    AsyncCallback<Date> serverStartupDateCallback = new AsyncCallback<Date>() {
+//      public void onFailure(Throwable caught) {
+//      }
+//
+//      public void onSuccess(Date result) {
+//        footerGradientPanel.setHTML(dateRow, dateCol, getMessages().getString("serverUpSince", "Server Up Since") + " " + result.toLocaleString());
+//        footerGradientPanel.getCellFormatter().setHorizontalAlignment(dateRow, dateCol, HasHorizontalAlignment.ALIGN_CENTER);
+//      }
+//    };
+//    BaseServiceCache.getService().getServerStartupDate(serverStartupDateCallback);
 
     footerGradientPanelWrapper.add(footerGradientPanel);
     footerPanel.add(footerGradientPanelWrapper);
