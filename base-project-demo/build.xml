@@ -13,10 +13,9 @@
 
 	<property file="version.properties" />
 
-	<path id="classpath">
-		<fileset dir="lib" includes="**/*.jar, **/*.zip" />
-		<fileset dir="dist" includes="${project.name}-${release.major.number}.${release.minor.number}.${release.milestone.number}.jar" />
-		<fileset dir="../base-project/lib" includes="**/*.jar, **/*.zip" />
+	<path id="classpath" >
+		<fileset dir="war/WEB-INF/lib" includes="**/*.jar, **/*.zip" />
+		<fileset dir="../base-project/war/WEB-INF/lib" includes="**/*.jar, **/*.zip" />
 	</path>
 
 	<!-- ===================================================================
@@ -36,15 +35,14 @@
 		<mkdir dir="dist/bin" />
 	</target>
 
-	<target name="copy-replace-source" depends="init">
-		<mkdir dir="dist/source" />
+	<target name="copy-source" depends="init">
 		<copy todir="dist/source" overwrite="true">
 			<fileset dir="source" includes="**/*" />
 			<fileset dir="../base-project/source" includes="**/*" />
 		</copy>
 	</target>
 
-	<target name="compile" depends="copy-replace-source">
+	<target name="compile" depends="copy-source">
 		<javac destdir="dist/bin" debug="${debug}" optimize="${optimize}" deprecation="${deprecation}" compiler="modern" source="1.5" target="1.5" fork="true">
 			<src path="dist/source" />
 			<classpath refid="classpath" />
@@ -78,8 +76,8 @@
 		</copy>
 		<unzip dest="dist/${target.webapp.name}/WEB-INF/classes">
 			<fileset dir="dist" includes="${project.name}*.jar" />
-			<fileset dir="lib" includes="*.zip, *.jar" excludes="**/*gwt-dev-windows.jar, **/*gwt-user.jar, **/*googlemaps*.jar, **/gwtchismes*, **/*colorpicker*" />
-			<fileset dir="../base-project/lib" includes="**/*.zip, **/*.jar" excludes="**/*gwt-dev-windows.jar, **/*gwt-user.jar, **/*googlemaps*.jar, **/gwtchismes*, **/*colorpicker*" />
+			<fileset dir="war/WEB-INF/lib" includes="*.zip, *.jar" excludes="**/*gwt-dev-windows.jar, **/*gwt-user.jar, **/*googlemaps*.jar, **/gwtchismes*, **/*colorpicker*" />
+			<fileset dir="../base-project/war/WEB-INF/lib" includes="**/*.zip, **/*.jar" excludes="**/*gwt-dev-windows.jar, **/*gwt-user.jar, **/*googlemaps*.jar, **/gwtchismes*, **/*colorpicker*" />
 		</unzip>
 		<delete file="dist/${project.name}.war" />
 		<zip destfile="dist/${project.name}.war" basedir="dist/${target.webapp.name}" />
