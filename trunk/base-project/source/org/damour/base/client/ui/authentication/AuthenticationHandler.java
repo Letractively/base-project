@@ -8,6 +8,7 @@ import org.damour.base.client.BaseApplication;
 import org.damour.base.client.objects.User;
 import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.buttons.Button;
+import org.damour.base.client.ui.datepicker.MyDatePicker;
 import org.damour.base.client.ui.dialogs.IDialogCallback;
 import org.damour.base.client.ui.dialogs.IDialogValidatorCallback;
 import org.damour.base.client.ui.dialogs.MessageDialogBox;
@@ -46,7 +47,7 @@ public class AuthenticationHandler {
   TextBox lastname = new TextBox();
   CheckBox disclaimerCheckBox = new CheckBox("I have read and agree with the disclaimer statement");
   DefaultFormat format = new DefaultFormat(DateTimeFormat.getMediumDateFormat());
-  DateBox dateBox = new DateBox(new DatePicker(), new Date(), format);
+  DateBox dateBox = new DateBox(new MyDatePicker(), new Date(), format);
   
   final Button signupButton = new Button("Signup");
   PromptDialogBox loginDialog = new PromptDialogBox("Login", "Login", signupButton, "Cancel", false, true);
