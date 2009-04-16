@@ -25,7 +25,7 @@ public class Logger {
     }
   }
 
-  private static String getLogName() {
+  public static String getLogName() {
     if (logName == null) {
       logName = BaseSystem.getTempDir() + logFileDateFormat.format(new Date()) + ".log.txt";
       DEBUG = "true".equalsIgnoreCase((String) BaseSystem.getSettings().get("debug"));
