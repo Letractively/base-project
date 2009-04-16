@@ -442,7 +442,7 @@ public class AuthenticationHandler {
         user.setLastname(lastname.getText());
         user.setPasswordHint(passwordHint.getText());
         user.setEmail(emailAddress.getText());
-        user.setBirthday(dateBox.getDatePicker().getHighlightedDate().getTime());
+        user.setBirthday(dateBox.getValue().getTime());
         editAccount(user, password.getText());
       }
 
