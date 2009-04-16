@@ -32,3 +32,7 @@ http://base-project.googlecode.com/files/base-project-demo-advisory.png
 = Comment Widget =
 
 http://base-project.googlecode.com/files/base-project-comment-widget.png
+
+= Date Picker with Year Selector (extends GWT 1.6) =
+
+http://base-project.googlecode.com/files/base-project-date-picker.png
