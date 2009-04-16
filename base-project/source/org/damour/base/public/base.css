@@ -757,25 +757,27 @@ a:focus {
 
 
 
-.gwt-DatePicker {
-  border: 1px solid #888;
-  cursor: default;
+.gwt-DateBox input {
+  width: 8em;
+}
+.dateBoxFormatError {
+  background: #ffcccc;
+}
+.dateBoxPopup {
 }
 
+.gwt-DatePicker {
+  border: 1px solid #A2BBDD;
+  cursor: default;
+}
 .gwt-DatePicker td,
 .datePickerMonthSelector td:focus {
   outline: none
 }
-
-.datePickerMonthSelector td:focus {
-  outline: none
-}
-
 .datePickerDays {
   width: 100%;
   background: white;
 }
-
 .datePickerDay,
 .datePickerWeekdayLabel,
 .datePickerWeekendLabel {
@@ -784,79 +786,58 @@ a:focus {
   padding: 4px;
   outline: none;
 }
-
 .datePickerWeekdayLabel,
 .datePickerWeekendLabel {
-  background: #c1c1c1;
+  background: #C3D9FF;
   padding: 0px 4px 2px;
   cursor: default;
 }
-
 .datePickerDay {
   padding: 4px;
   cursor: hand;
   cursor: pointer;
 }
-
 .datePickerDayIsToday {
   border: 1px solid black;
   padding: 3px;
 }
-
 .datePickerDayIsWeekend {
   background: #EEEEEE;
 }
-
 .datePickerDayIsFiller {
   color: #888888;
 }
-
 .datePickerDayIsValue {
-  background: #abf;
+  background: #aaccee;
 }
-
 .datePickerDayIsDisabled {
   color: #AAAAAA;
   font-style: italic;
 }
-
 .datePickerDayIsHighlighted {
-  background: #dde;
+  background: #F0E68C;
 }
-
 .datePickerDayIsValueAndHighlighted {
-  background: #ccf;
+  background: #bbddd9;
 }
-
 .datePickerMonthSelector {
-  background: #c1c1c1;
+  background: #C3D9FF;
   width: 100%;
 }
-
-.datePickerPreviousButton,
-.datePickerNextButton {
-  font-size: 120%;
-  line-height: 1em;
-  cursor: hand;
-  cursor: pointer;
-  padding: 0px 4px;
-}
-
 td.datePickerMonth {
   text-align: center;
   vertical-align: center;
   white-space: nowrap;
   font-size: 70%;
   font-weight: bold;
+  color: blue;
 }
-
-.gwt-DateBox input {
-  width: 8em;
-}
-
-.dateBoxFormatError {
-  background: #eed6d6;
-}
-
-.dateBoxPopup {
+.datePickerPreviousButton,
+.datePickerNextButton {
+  font-size: 120%;
+  line-height: 1em;
+  color: blue;
+  cursor: hand;
+  cursor: pointer;
+  padding: 0px 4px;
 }
