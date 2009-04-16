@@ -6,6 +6,7 @@ import org.damour.base.client.objects.User;
 import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.IGenericCallback;
 import org.damour.base.client.ui.buttons.Button;
+import org.damour.base.client.ui.datepicker.MyDatePicker;
 import org.damour.base.client.ui.dialogs.MessageDialogBox;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -18,7 +19,6 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.datepicker.client.DateBox;
-import com.google.gwt.user.datepicker.client.DatePicker;
 import com.google.gwt.user.datepicker.client.DateBox.DefaultFormat;
 
 public class EditAccountPanel extends FlexTable {
@@ -33,7 +33,7 @@ public class EditAccountPanel extends FlexTable {
     final TextBox emailTextBox = new TextBox();
     Date birthday = new Date(user.getBirthday());
     DefaultFormat format = new DefaultFormat(DateTimeFormat.getMediumDateFormat());
-    final DateBox birthdayPicker = new DateBox(new DatePicker(), birthday, format);
+    final DateBox birthdayPicker = new DateBox(new MyDatePicker(), birthday, format);
     final CheckBox validatedCheckBox = new CheckBox("Validated");
     final CheckBox administratorCheckBox = new CheckBox("Administrator");
 
