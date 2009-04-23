@@ -56,7 +56,7 @@
 				<pathelement location="dist/source" />
 			</classpath>
 			<arg value="-localWorkers" />
-			<arg value="2" />
+			<arg value="4" />
 			<arg value="${gwt.app}" />
 		</java>
 	</target>
