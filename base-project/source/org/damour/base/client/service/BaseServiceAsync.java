@@ -57,9 +57,9 @@ public interface BaseServiceAsync {
   // file/content/permissions methods
   public void getFile(Long id, AsyncCallback<File> callback);
   public void getRepositoryTree(AsyncCallback<RepositoryTreeNode> callback);
+  public void savePermissibleObject(PermissibleObject permissibleObject, AsyncCallback<PermissibleObject> callback);
+  public void deletePermissibleObject(PermissibleObject permissibleObject, AsyncCallback<Void> callback);
   public void createNewFolder(Folder newFolder, AsyncCallback<Folder> callback);
-  public void deleteFile(File file, AsyncCallback<Void> callback);
-  public void deleteFolder(Folder folder, AsyncCallback<Void> callback);
   public void renameFile(File file, AsyncCallback<Void> callback);
   public void renameFolder(Folder folder, AsyncCallback<Void> callback);
   public void getPermissions(PermissibleObject permissibleObject, AsyncCallback<List<Permission>> callback);

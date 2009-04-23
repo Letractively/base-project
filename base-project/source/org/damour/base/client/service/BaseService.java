@@ -57,9 +57,9 @@ public interface BaseService extends RemoteService {
   // file/content/permissions methods
   public File getFile(Long id) throws Exception;
   public RepositoryTreeNode getRepositoryTree() throws Exception;
+  public PermissibleObject savePermissibleObject(PermissibleObject permissibleObject) throws Exception;
+  public void deletePermissibleObject(PermissibleObject permissibleObject) throws Exception;
   public Folder createNewFolder(Folder newFolder) throws Exception;
-  public void deleteFile(File file) throws Exception;
-  public void deleteFolder(Folder folder) throws Exception;
   public void renameFile(File file) throws Exception;
   public void renameFolder(Folder folder) throws Exception;
   public List<Permission> getPermissions(PermissibleObject permissibleObject) throws Exception;

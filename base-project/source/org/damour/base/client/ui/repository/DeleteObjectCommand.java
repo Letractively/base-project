@@ -1,7 +1,5 @@
 package org.damour.base.client.ui.repository;
 
-import org.damour.base.client.objects.File;
-import org.damour.base.client.objects.Folder;
 import org.damour.base.client.objects.PermissibleObject;
 import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.dialogs.IDialogCallback;
@@ -37,12 +35,7 @@ public class DeleteObjectCommand implements Command {
             repositoryCallback.fileDeleted();
           }
         };
-
-        if (permissibleObject != null && permissibleObject instanceof File) {
-          BaseServiceCache.getService().deleteFile((File) permissibleObject, deleteCallback);
-        } else if (permissibleObject != null && permissibleObject instanceof Folder) {
-          BaseServiceCache.getService().deleteFolder((Folder) permissibleObject, deleteCallback);
-        }
+        BaseServiceCache.getService().deletePermissibleObject(permissibleObject, deleteCallback);
       }
 
       public void cancelPressed() {
