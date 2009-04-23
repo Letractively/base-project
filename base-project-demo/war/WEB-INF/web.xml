@@ -58,5 +58,13 @@
 		<url-pattern>/servlet/org.damour.base.server.CaptchaImageGeneratorService</url-pattern>
 	</servlet-mapping>
 
+	<servlet>
+		<servlet-name>FileUploadService</servlet-name>
+		<servlet-class>org.damour.base.server.FileUploadService</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>FileUploadService</servlet-name>
+		<url-pattern>/servlet/org.damour.base.server.FileUploadService</url-pattern>
+	</servlet-mapping>
 
 </web-app>
