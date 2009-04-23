@@ -43,6 +43,7 @@ import org.damour.base.server.hibernate.helpers.CommentHelper;
 import org.damour.base.server.hibernate.helpers.FileObjectHelper;
 import org.damour.base.server.hibernate.helpers.FolderHelper;
 import org.damour.base.server.hibernate.helpers.GenericPage;
+import org.damour.base.server.hibernate.helpers.PermissibleObjectHelper;
 import org.damour.base.server.hibernate.helpers.RatingHelper;
 import org.damour.base.server.hibernate.helpers.RepositoryHelper;
 import org.damour.base.server.hibernate.helpers.SecurityHelper;
@@ -1014,6 +1015,87 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     }
   }
 
+  public PermissibleObject savePermissibleObject(PermissibleObject permissibleObject) throws Exception {
+    if (permissibleObject == null) {
+      throw new RuntimeException("Object not supplied.");
+    }
+    User authUser = getAuthenticatedUser(session.get());
+    if (authUser == null) {
+      throw new RuntimeException("User is not authenticated.");
+    }
+
+    Transaction tx = session.get().beginTransaction();
+    try {
+      if (permissibleObject.getParent() != null) {
+        permissibleObject.setParent((PermissibleObject) session.get().load(PermissibleObject.class, permissibleObject.getParent().getId()));
+      }
+      if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, permissibleObject.getParent(), PERM.WRITE)) {
+        throw new RuntimeException("User is not authorized to write to parent folder.");
+      }
+      if (permissibleObject.getId() != null) {
+        PermissibleObject hibNewObject = (PermissibleObject) session.get().load(PermissibleObject.class, permissibleObject.getId());
+        if (hibNewObject != null) {
+          if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, hibNewObject, PERM.WRITE)) {
+            throw new RuntimeException("User is not authorized to overwrite object.");
+          }
+          hibNewObject.setName(permissibleObject.getName());
+          hibNewObject.setDescription(permissibleObject.getDescription());
+          hibNewObject.setParent(permissibleObject.getParent());
+          permissibleObject = hibNewObject;
+        }
+      }
+
+      permissibleObject.setOwner(authUser);
+      session.get().save(permissibleObject);
+      tx.commit();
+      return permissibleObject;
+    } catch (Throwable t) {
+      Logger.log(t);
+      try {
+        tx.rollback();
+      } catch (Throwable tt) {
+      }
+      throw new RuntimeException(t.getMessage());
+    }
+  }
+
+  public void deletePermissibleObject(PermissibleObject permissibleObject) throws Exception {
+    if (permissibleObject == null) {
+      throw new RuntimeException("Object not supplied.");
+    }
+    User authUser = getAuthenticatedUser(session.get());
+    if (authUser == null) {
+      throw new RuntimeException("User is not authenticated.");
+    }
+    Transaction tx = session.get().beginTransaction();
+    
+    permissibleObject = ((PermissibleObject) session.get().load(PermissibleObject.class, permissibleObject.getId()));
+    
+    try {
+      if (permissibleObject instanceof Folder) {
+        Folder folder = (Folder) permissibleObject;
+        if (!authUser.isAdministrator() && !authUser.equals(folder.getOwner())) {
+          throw new RuntimeException("User is not authorized to delete this object.");
+        }
+        FolderHelper.deleteFolder(session.get(), folder);
+      } else {
+        if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, permissibleObject, PERM.WRITE)) {
+          throw new RuntimeException("User is not authorized to delete this object.");
+        }
+        // just try to delete the object, hopefully it has no children
+        PermissibleObjectHelper.deletePermissibleObject(session.get(), permissibleObject);
+      }
+      tx.commit();
+    } catch (Throwable t) {
+      Logger.log(t);
+      try {
+        tx.rollback();
+      } catch (Throwable tt) {
+      }
+      throw new RuntimeException(t.getMessage());
+    }
+  }
+
   public Folder createNewFolder(Folder newFolder) throws Exception {
     if (newFolder == null) {
       throw new RuntimeException("Folder not supplied.");
@@ -1047,58 +1129,6 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       session.get().save(newFolder);
       tx.commit();
       return newFolder;
-    } catch (Throwable t) {
-      Logger.log(t);
-      try {
-        tx.rollback();
-      } catch (Throwable tt) {
-      }
-      throw new RuntimeException(t.getMessage());
-    }
-  }
-
-  public void deleteFile(File file) throws Exception {
-    if (file == null) {
-      throw new RuntimeException("File not supplied.");
-    }
-    User authUser = getAuthenticatedUser(session.get());
-    if (authUser == null) {
-      throw new RuntimeException("User is not authenticated.");
-    }
-    Transaction tx = session.get().beginTransaction();
-    try {
-      file = (File) session.get().load(File.class, file.getId());
-      if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, file, PERM.WRITE)) {
-        throw new RuntimeException("User is not authorized to delete this file.");
-      }
-      FileObjectHelper.deleteFile(session.get(), file);
-      tx.commit();
-    } catch (Throwable t) {
-      Logger.log(t);
-      try {
-        tx.rollback();
-      } catch (Throwable tt) {
-      }
-      throw new RuntimeException(t.getMessage());
-    }
-  }
-
-  public void deleteFolder(Folder folder) throws Exception {
-    if (folder == null) {
-      throw new RuntimeException("Folder not supplied.");
-    }
-    User authUser = getAuthenticatedUser(session.get());
-    if (authUser == null) {
-      throw new RuntimeException("User is not authenticated.");
-    }
-    Transaction tx = session.get().beginTransaction();
-    try {
-      folder = (Folder) session.get().load(Folder.class, folder.getId());
-      if (!authUser.isAdministrator() && !authUser.equals(folder.getOwner())) {
-        throw new RuntimeException("User is not authorized to delete this folder.");
-      }
-      FolderHelper.deleteFolder(session.get(), folder);
-      tx.commit();
     } catch (Throwable t) {
       Logger.log(t);
       try {
@@ -1209,8 +1239,8 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       Field fields[] = ReflectionCache.getFields(hibPermissibleObject.getClass());
       for (Field field : fields) {
         try {
-          Object obj = field.get(hibPermissibleObject);
-          if (obj instanceof PermissibleObject) {
+          if (!field.getName().equals("parent") && PermissibleObject.class.isAssignableFrom(field.getType())) {
+            Object obj = field.get(hibPermissibleObject);
             PermissibleObject childObj = (PermissibleObject) obj;
             childObj.setGlobalRead(hibPermissibleObject.isGlobalRead());
             childObj.setGlobalWrite(hibPermissibleObject.isGlobalWrite());
@@ -1263,21 +1293,24 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       Field fields[] = ReflectionCache.getFields(permissibleObject.getClass());
       for (Field field : fields) {
         try {
-          Object obj = field.get(permissibleObject);
-          if (obj instanceof PermissibleObject) {
-            PermissibleObject childObj = (PermissibleObject) obj;
-            childObj.setGlobalRead(permissibleObject.isGlobalRead());
-            childObj.setGlobalWrite(permissibleObject.isGlobalWrite());
-            childObj.setGlobalExecute(permissibleObject.isGlobalExecute());
-            SecurityHelper.deletePermissions(session.get(), childObj);
-            for (Permission permission : permissions) {
-              Permission newPerm = new Permission();
-              newPerm.setPermissibleObject(childObj);
-              newPerm.setSecurityPrincipal(permission.getSecurityPrincipal());
-              newPerm.setReadPerm(permission.isReadPerm());
-              newPerm.setWritePerm(permission.isWritePerm());
-              newPerm.setExecutePerm(permission.isExecutePerm());
-              session.get().save(newPerm);
+          // do not update parent permission only our 'owned' objects
+          if (!"parent".equals(field.getName())) {
+            Object obj = field.get(permissibleObject);
+            if (obj instanceof PermissibleObject) {
+              PermissibleObject childObj = (PermissibleObject) obj;
+              childObj.setGlobalRead(permissibleObject.isGlobalRead());
+              childObj.setGlobalWrite(permissibleObject.isGlobalWrite());
+              childObj.setGlobalExecute(permissibleObject.isGlobalExecute());
+              SecurityHelper.deletePermissions(session.get(), childObj);
+              for (Permission permission : permissions) {
+                Permission newPerm = new Permission();
+                newPerm.setPermissibleObject(childObj);
+                newPerm.setSecurityPrincipal(permission.getSecurityPrincipal());
+                newPerm.setReadPerm(permission.isReadPerm());
+                newPerm.setWritePerm(permission.isWritePerm());
+                newPerm.setExecutePerm(permission.isExecutePerm());
+                session.get().save(newPerm);
+              }
             }
           }
         } catch (Exception e) {

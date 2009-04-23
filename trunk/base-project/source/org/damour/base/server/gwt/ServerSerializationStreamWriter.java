@@ -363,6 +363,9 @@ public final class ServerSerializationStreamWriter extends
    * than 1.3 that supports unicode strings.
    */
   public static String escapeString(String toEscape) {
+    if (toEscape == null) {
+      toEscape = "";
+    }
     // make output big enough to escape every character (plus the quotes)
     char[] input = toEscape.toCharArray();
     CharVector charVector = new CharVector(input.length * 2 + 2, input.length);
