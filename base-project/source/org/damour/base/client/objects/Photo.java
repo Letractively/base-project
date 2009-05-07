@@ -5,6 +5,7 @@ import java.io.Serializable;
 public class Photo extends File implements Serializable, IHibernateFriendly {
 
   public PhotoThumbnail slideshowImage;
+  public PhotoThumbnail previewImage;
   public PhotoThumbnail thumbnailImage;
   public int height;
   public int width;
@@ -18,6 +19,14 @@ public class Photo extends File implements Serializable, IHibernateFriendly {
 
   public void setSlideshowImage(PhotoThumbnail slideshowImage) {
     this.slideshowImage = slideshowImage;
+  }
+
+  public void setWidth(int width) {
+    this.width = width;
+  }
+
+  public PhotoThumbnail getPreviewImage() {
+    return previewImage;
   }
 
   public PhotoThumbnail getThumbnailImage() {
@@ -40,8 +49,8 @@ public class Photo extends File implements Serializable, IHibernateFriendly {
     return width;
   }
 
-  public void setWidth(int width) {
-    this.width = width;
+  public void setPreviewImage(PhotoThumbnail previewImage) {
+    this.previewImage = previewImage;
   }
 
 }

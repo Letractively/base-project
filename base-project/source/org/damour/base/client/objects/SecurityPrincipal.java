@@ -24,16 +24,22 @@ public class SecurityPrincipal implements Serializable, IHibernateFriendly {
   public String getSqlUpdate() {
     return null;
   }
-  
+
   public String getCachePolicy() {
     return "nonstrict-read-write";
   }
-  
+
   public boolean isLazy() {
     return false;
   }
 
-  /* (non-Javadoc)
+  public boolean isFieldMapped(String fieldName) {
+    return true;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#hashCode()
    */
   @Override
@@ -44,7 +50,9 @@ public class SecurityPrincipal implements Serializable, IHibernateFriendly {
     return result;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#equals(java.lang.Object)
    */
   @Override
@@ -64,6 +72,4 @@ public class SecurityPrincipal implements Serializable, IHibernateFriendly {
     return true;
   }
 
-
-  
 }

@@ -75,8 +75,13 @@ public class GroupMembership implements Serializable, IHibernateFriendly {
   public String getCachePolicy() {
     return "nonstrict-read-write";
   }
-  
+
   public boolean isLazy() {
     return false;
   }
+
+  public boolean isFieldMapped(String fieldName) {
+    return true;
+  }
+
 }

@@ -30,6 +30,10 @@ public class Category implements Serializable, IHibernateFriendly {
     return null;
   }
 
+  public boolean isFieldMapped(String fieldName) {
+    return true;
+  }
+  
   public Category getParentCategory() {
     return parentCategory;
   }
@@ -46,4 +50,6 @@ public class Category implements Serializable, IHibernateFriendly {
     this.id = id;
   }
 
+  
+  
 }

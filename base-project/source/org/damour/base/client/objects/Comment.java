@@ -41,6 +41,10 @@ public class Comment implements Serializable, IHibernateFriendly {
     return false;
   }
 
+  public boolean isFieldMapped(String fieldName) {
+    return true;
+  }
+
   /**
    * @return the id
    */
@@ -124,7 +128,8 @@ public class Comment implements Serializable, IHibernateFriendly {
   }
 
   /**
-   * @param email the email to set
+   * @param email
+   *          the email to set
    */
   public void setEmail(String email) {
     this.email = email;
@@ -138,7 +143,8 @@ public class Comment implements Serializable, IHibernateFriendly {
   }
 
   /**
-   * @param authorIP the authorIP to set
+   * @param authorIP
+   *          the authorIP to set
    */
   public void setAuthorIP(String authorIP) {
     this.authorIP = authorIP;
@@ -152,7 +158,8 @@ public class Comment implements Serializable, IHibernateFriendly {
   }
 
   /**
-   * @param comment the comment to set
+   * @param comment
+   *          the comment to set
    */
   public void setComment(String comment) {
     this.comment = comment;
@@ -166,7 +173,8 @@ public class Comment implements Serializable, IHibernateFriendly {
   }
 
   /**
-   * @param parentComment the parentComment to set
+   * @param parentComment
+   *          the parentComment to set
    */
   public void setParentComment(Comment parentComment) {
     this.parentComment = parentComment;

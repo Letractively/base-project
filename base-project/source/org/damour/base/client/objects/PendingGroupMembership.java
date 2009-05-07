@@ -81,4 +81,9 @@ public class PendingGroupMembership implements Serializable, IHibernateFriendly 
   public boolean isLazy() {
     return false;
   }
+
+  public boolean isFieldMapped(String fieldName) {
+    return true;
+  }
+
 }

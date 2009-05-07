@@ -16,8 +16,8 @@ public class PermissibleObject implements Serializable, IHibernateFriendly {
   public float averageRating = 0f;
   public long numRatingVotes = 0;
 
-  public float averageAdvisory;
-  public int numAdvisoryVotes;
+  public float averageAdvisory = 0f;
+  public long numAdvisoryVotes = 0;
 
   public boolean allowComments = true;
   public boolean moderateComments = false;
@@ -214,7 +214,7 @@ public class PermissibleObject implements Serializable, IHibernateFriendly {
   /**
    * @return the numAdvisoryVotes
    */
-  public int getNumAdvisoryVotes() {
+  public long getNumAdvisoryVotes() {
     return numAdvisoryVotes;
   }
 
@@ -222,7 +222,7 @@ public class PermissibleObject implements Serializable, IHibernateFriendly {
    * @param numAdvisoryVotes
    *          the numAdvisoryVotes to set
    */
-  public void setNumAdvisoryVotes(int numAdvisoryVotes) {
+  public void setNumAdvisoryVotes(long numAdvisoryVotes) {
     this.numAdvisoryVotes = numAdvisoryVotes;
   }
 
@@ -262,6 +262,10 @@ public class PermissibleObject implements Serializable, IHibernateFriendly {
 
   public void setHidden(boolean hidden) {
     this.hidden = hidden;
+  }
+
+  public boolean isFieldMapped(String fieldName) {
+    return true;
   }
 
 }
