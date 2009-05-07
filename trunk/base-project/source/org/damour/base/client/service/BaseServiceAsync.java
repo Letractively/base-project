@@ -55,10 +55,12 @@ public interface BaseServiceAsync {
   public void submitPendingGroupMembershipApproval(User user, Set<PendingGroupMembership> memberships, boolean approve, AsyncCallback<List<PendingGroupMembership>> callback);
 
   // file/content/permissions methods
-  public void getFile(Long id, AsyncCallback<File> callback);
+  public void getPermissibleObject(Long id, AsyncCallback<PermissibleObject> callback);
   public void getRepositoryTree(AsyncCallback<RepositoryTreeNode> callback);
   public void savePermissibleObject(PermissibleObject permissibleObject, AsyncCallback<PermissibleObject> callback);
   public void deletePermissibleObject(PermissibleObject permissibleObject, AsyncCallback<Void> callback);
+  public void deletePermissibleObjects(Set<PermissibleObject> permissibleObjects, AsyncCallback<Void> callback);
+  public void getMyPermissibleObjects(PermissibleObject parent, AsyncCallback<List<PermissibleObject>> callback);
   public void createNewFolder(Folder newFolder, AsyncCallback<Folder> callback);
   public void renameFile(File file, AsyncCallback<Void> callback);
   public void renameFolder(Folder folder, AsyncCallback<Void> callback);
@@ -66,6 +68,8 @@ public interface BaseServiceAsync {
   public void setPermissions(PermissibleObject permissibleObject, List<Permission> permissions, AsyncCallback<Void> callback);
   public void updatePermissibleObject(PermissibleObject permissibleObject, AsyncCallback<PermissibleObject> callback);
   public void getFileUploadStatus(AsyncCallback<FileUploadStatus> callback);
+  // for debug purposes: simply return what was given, proving the serialization of the desired object
+  public void echoPermissibleObject(PermissibleObject permissibleObject, AsyncCallback<PermissibleObject> callback);
 
   // category methods
   public void getCategories(AsyncCallback<List<Category>> callback) throws Exception;
@@ -78,6 +82,7 @@ public interface BaseServiceAsync {
   // content rating & advisory
   public void setUserRating(PermissibleObject permissibleObject, int rating, AsyncCallback<UserRating> callback);
   public void getUserRating(PermissibleObject permissibleObject, AsyncCallback<UserRating> callback);
+  public void getNextUnratedPermissibleObject(String objectType, AsyncCallback<PermissibleObject> callback);
   public void setUserAdvisory(PermissibleObject permissibleObject, int advisory, AsyncCallback<UserAdvisory> callback);
   public void getUserAdvisory(PermissibleObject permissibleObject, AsyncCallback<UserAdvisory> callback);
   
