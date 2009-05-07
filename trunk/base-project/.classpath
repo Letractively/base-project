@@ -9,7 +9,6 @@
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/antlr-2.7.6.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/asm-attrs.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/asm.jar"/>
-	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/auroris-colorpicker-2008-10-09.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/c3p0-0.9.1.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/captcha-at.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/cglib.jar"/>
@@ -34,5 +33,7 @@
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/mysql-connector-java-5.1.6-bin.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/pop3.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/smtp.jar"/>
+	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/gwt-incubator-march-02-2009.jar"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/auroris-colorpicker-2008-10-09.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>
