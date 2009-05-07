@@ -9,21 +9,19 @@ import org.damour.base.client.ui.progressbar.ProgressBar;
 import org.damour.base.client.ui.progressbar.ProgressBar.TextFormatter;
 
 import com.google.gwt.user.client.Cookies;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.FileUpload;
-import com.google.gwt.user.client.ui.FlexTable;
-import com.google.gwt.user.client.ui.FormHandler;
 import com.google.gwt.user.client.ui.FormPanel;
-import com.google.gwt.user.client.ui.FormSubmitCompleteEvent;
-import com.google.gwt.user.client.ui.FormSubmitEvent;
-import com.google.gwt.user.client.ui.VerticalPanel;
 
-public class FileUploadPanel extends FlexTable {
+public class FileUploadPanel extends FormPanel {
   private int STATUS_UPDATE_INTERVAL = 1000;
-  private FormPanel form = new FormPanel();
   private PopupPanel progressPopup = new PopupPanel(false, true);
   private ProgressBar progressMeter = new ProgressBar(0, 5);
+  // Create a FileUpload widget.
+  private FileUpload upload = new FileUpload();
+
   FileUploadStatus result;
 
   private Timer uploadStatusTimer = new Timer() {
@@ -64,36 +62,24 @@ public class FileUploadPanel extends FlexTable {
       formActionUrl += "?parentFolder=" + parentFolder.getId();
     }
 
-    form.setAction(formActionUrl);
+    setAction(formActionUrl);
     // Because we're going to add a FileUpload widget, we'll need to set the
     // form to use the POST method, and multipart MIME encoding.
-    form.setEncoding(FormPanel.ENCODING_MULTIPART);
-    form.setMethod(FormPanel.METHOD_POST);
+    setEncoding(FormPanel.ENCODING_MULTIPART);
+    setMethod(FormPanel.METHOD_POST);
 
-    final VerticalPanel uploadPanel = new VerticalPanel();
-
-    // Create a FileUpload widget.
-    final FileUpload upload = new FileUpload();
+    upload.getElement().setAttribute("size", "50");
     upload.setName("userfile");
 
-    form.addFormHandler(new FormHandler() {
-
-      public void onSubmitComplete(FormSubmitCompleteEvent event) {
-        progressPopup.hide();
-        uploadStatusTimer.cancel();
-        String id = Cookies.getCookie(upload.getName());
-        if (callback != null) {
-          callback.fileUploaded(id);
-        }
-      }
-
-      public void onSubmit(FormSubmitEvent event) {
+    addSubmitHandler(new SubmitHandler() {
+      public void onSubmit(SubmitEvent event) {
+        Cookies.removeCookie(upload.getName());
         // This event is fired just before the form is submitted. We can take
         // this opportunity to perform validation.
         if (upload.getFilename().length() == 0) {
           MessageDialogBox dialog = new MessageDialogBox("Info", "The filename must not be empty", false, true, true);
           dialog.center();
-          event.setCancelled(true);
+          event.cancel();
         } else {
           progressMeter.setWidth("300px");
           progressPopup.setWidget(progressMeter);
@@ -103,13 +89,37 @@ public class FileUploadPanel extends FlexTable {
       }
     });
 
-    uploadPanel.add(upload);
-    form.setWidget(uploadPanel);
+    addSubmitCompleteHandler(new SubmitCompleteHandler() {
+      public void onSubmitComplete(SubmitCompleteEvent event) {
+        progressPopup.hide();
+        uploadStatusTimer.cancel();
+        String id = Cookies.getCookie(upload.getName());
+        if (callback != null && id != null) {
+          callback.fileUploaded(id);
+        } else if (callback != null) {
+          callback.uploadFailed();
+        }
+      }
+    });
 
-    setWidget(0, 0, form);
+    DOM.setStyleAttribute(getElement(), "margin", "0px");
+    setWidth("100%");
+    setWidget(upload);
   }
 
   public void submit() {
-    form.submit();
+    try {
+      super.submit();
+    } catch (Throwable t) {
+      progressPopup.hide();
+      uploadStatusTimer.cancel();
+      MessageDialogBox messageDialog = new MessageDialogBox("Error", "Upload failed, check file permissions or filename.", false, true, true);
+      messageDialog.center();
+    }
   }
+
+  public String getFilename() {
+    return upload.getFilename();
+  }
+
 }
