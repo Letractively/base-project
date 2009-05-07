@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.mail.Message;
 import javax.mail.Transport;
@@ -35,6 +36,7 @@ import org.damour.base.client.objects.UserAdvisory;
 import org.damour.base.client.objects.UserGroup;
 import org.damour.base.client.objects.UserRating;
 import org.damour.base.client.objects.Permission.PERM;
+import org.damour.base.client.utils.StringUtils;
 import org.damour.base.server.gwt.RemoteServiceServlet;
 import org.damour.base.server.hibernate.HibernateUtil;
 import org.damour.base.server.hibernate.ReflectionCache;
@@ -214,16 +216,20 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       Cookie userAuthCookie = new Cookie("auth", internal ? password : passwordHash);
       userAuthCookie.setPath("/");
       userAuthCookie.setMaxAge(COOKIE_TIMEOUT);
+      Cookie voterCookie = new Cookie("voterGUID", UUID.randomUUID().toString());
+      voterCookie.setPath("/");
+      voterCookie.setMaxAge(COOKIE_TIMEOUT);
       response.addCookie(userCookie);
       response.addCookie(userAuthCookie);
+      response.addCookie(voterCookie);
     } else {
-      destroyCookies(response);
+      destroyAuthCookies(request, response);
       throw new RuntimeException("Could not login.  Invalid username or password.");
     }
     return user;
   }
 
-  private void destroyCookies(HttpServletResponse response) {
+  private void destroyAuthCookies(HttpServletRequest request, HttpServletResponse response) {
     Cookie userCookie = new Cookie("user", "");
     userCookie.setMaxAge(0);
     userCookie.setPath("/");
@@ -232,6 +238,14 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     userAuthCookie.setPath("/");
     response.addCookie(userCookie);
     response.addCookie(userAuthCookie);
+  }
+
+  private void destroyAllCookies(HttpServletRequest request, HttpServletResponse response) {
+    for (Cookie cookie : getThreadLocalRequest().getCookies()) {
+      cookie.setMaxAge(0);
+      cookie.setPath("/");
+      getThreadLocalResponse().addCookie(cookie);
+    }
   }
 
   public User getAuthenticatedUser(org.hibernate.Session session, HttpServletRequest request, HttpServletResponse response) {
@@ -276,14 +290,14 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     }
     User user = getAuthenticatedUser(session.get());
     if (user == null) {
-      destroyCookies(getThreadLocalResponse());
-      throw new RuntimeException("Could not get authenticated user.");
+      destroyAuthCookies(getThreadLocalRequest(), getThreadLocalResponse());
+      throw new LoginException("Could not get authenticated user.");
     }
     return user;
   }
 
   public void logout() throws Exception {
-    destroyCookies(getThreadLocalResponse());
+    destroyAllCookies(getThreadLocalRequest(), getThreadLocalResponse());
   }
 
   // create or edit account
@@ -341,7 +355,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
 
         // if we are a true new unauthenticated user, create a new account
         if (authUser == null) {
-          destroyCookies(getThreadLocalResponse());
+          destroyAuthCookies(getThreadLocalRequest(), getThreadLocalResponse());
           if (login(session.get(), getThreadLocalRequest(), getThreadLocalResponse(), newUser.getUsername(), newUser.getPasswordHash(), true) != null) {
             return newUser;
           }
@@ -374,7 +388,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
 
         // if we are editing our own account, then re-authenticate
         if (authUser.getId().equals(dbUser.getId())) {
-          destroyCookies(getThreadLocalResponse());
+          destroyAuthCookies(getThreadLocalRequest(), getThreadLocalResponse());
           if (login(session.get(), getThreadLocalRequest(), getThreadLocalResponse(), dbUser.getUsername(), dbUser.getPasswordHash(), true) != null) {
             return dbUser;
           }
@@ -740,7 +754,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         throw new RuntimeException("User is not authorized to get rating on this content.");
       }
       // find rating based on remote address if needed
-      return RatingHelper.getUserRating(session.get(), permissibleObject, authUser, getThreadLocalRequest().getRemoteAddr());
+      return RatingHelper.getUserRating(session.get(), permissibleObject, authUser, getVoterGUID());
     } catch (Throwable t) {
       Logger.log(t);
       throw new RuntimeException(t.getMessage());
@@ -760,6 +774,14 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         throw new RuntimeException("User is not authorized to set rating on this content.");
       }
 
+      UserRating userRating = RatingHelper.getUserRating(session.get(), permissibleObject, authUser, getThreadLocalRequest().getRemoteAddr());
+      // check if rating already exists
+      if (userRating != null) {
+        // TODO: consider changing the vote
+        // simply subtract the previous amount and decrement the numRatingVotes and redivide
+        throw new RuntimeException("Already voted.");
+      }
+
       float totalRating = (float) permissibleObject.getNumRatingVotes() * permissibleObject.getAverageRating();
       totalRating += rating;
       permissibleObject.setNumRatingVotes(permissibleObject.getNumRatingVotes() + 1);
@@ -767,18 +789,11 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       permissibleObject.setAverageRating(newAvg);
       session.get().save(permissibleObject);
 
-      UserRating userRating = RatingHelper.getUserRating(session.get(), permissibleObject, authUser, getThreadLocalRequest().getRemoteAddr());
-
-      if (userRating != null) {
-        throw new RuntimeException("Already voted.");
-      }
-
-      // check if rating already exists
       userRating = new UserRating();
       userRating.setPermissibleObject(permissibleObject);
       userRating.setRating(rating);
       userRating.setVoter(authUser);
-      userRating.setVoterIP(getThreadLocalRequest().getRemoteAddr());
+      userRating.setVoterGUID(getVoterGUID());
 
       session.get().save(userRating);
       tx.commit();
@@ -793,6 +808,37 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     }
   }
 
+  private String getVoterGUID() {
+    Cookie cookies[] = getThreadLocalRequest().getCookies();
+    String voterGUID = UUID.randomUUID().toString();
+    boolean hasVoterGUID = false;
+    if (cookies != null) {
+      for (Cookie cookie : cookies) {
+        if ("voterGUID".equals(cookie.getName())) {
+          hasVoterGUID = true;
+          voterGUID = cookie.getValue();
+        }
+      }
+    }
+    if (!hasVoterGUID) {
+      Cookie voterGUIDCookie = new Cookie("voterGUID", voterGUID);
+      voterGUIDCookie.setPath("/");
+      voterGUIDCookie.setMaxAge(COOKIE_TIMEOUT);
+      getThreadLocalResponse().addCookie(voterGUIDCookie);
+    }
+    return voterGUID;
+  }
+
+  public PermissibleObject getNextUnratedPermissibleObject(String objectType) throws Exception {
+    if (StringUtils.isEmpty(objectType)) {
+      throw new RuntimeException("Type not supplied.");
+    }
+    PermissibleObject object = null;
+    User authUser = getAuthenticatedUser(session.get());
+    object = RatingHelper.getNextUnratedPermissibleObject(session.get(), objectType, authUser, getVoterGUID());
+    return object;
+  }
+
   public UserAdvisory getUserAdvisory(PermissibleObject permissibleObject) throws Exception {
     if (permissibleObject == null) {
       throw new RuntimeException("PermissibleObject not supplied.");
@@ -805,7 +851,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         throw new RuntimeException("User is not authorized to get advisory on this content.");
       }
       // find rating based on remote address if needed
-      return AdvisoryHelper.getUserAdvisory(session.get(), permissibleObject, authUser, getThreadLocalRequest().getRemoteAddr());
+      return AdvisoryHelper.getUserAdvisory(session.get(), permissibleObject, authUser, getVoterGUID());
     } catch (Throwable t) {
       Logger.log(t);
       throw new RuntimeException(t.getMessage());
@@ -825,6 +871,12 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         throw new RuntimeException("User is not authorized to set advisory on this content.");
       }
 
+      // check if rating already exists
+      UserAdvisory userAdvisory = AdvisoryHelper.getUserAdvisory(session.get(), permissibleObject, authUser, getThreadLocalRequest().getRemoteAddr());
+      if (userAdvisory != null) {
+        throw new RuntimeException("Already voted.");
+      }
+
       float totalAdvisory = (float) permissibleObject.getNumAdvisoryVotes() * permissibleObject.getAverageAdvisory();
       totalAdvisory += advisory;
       permissibleObject.setNumAdvisoryVotes(permissibleObject.getNumAdvisoryVotes() + 1);
@@ -832,18 +884,11 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       permissibleObject.setAverageAdvisory(newAvg);
       session.get().save(permissibleObject);
 
-      UserAdvisory userAdvisory = AdvisoryHelper.getUserAdvisory(session.get(), permissibleObject, authUser, getThreadLocalRequest().getRemoteAddr());
-
-      if (userAdvisory != null) {
-        throw new RuntimeException("Already voted.");
-      }
-
-      // check if rating already exists
       userAdvisory = new UserAdvisory();
       userAdvisory.setPermissibleObject(permissibleObject);
       userAdvisory.setRating(advisory);
       userAdvisory.setVoter(authUser);
-      userAdvisory.setVoterIP(getThreadLocalRequest().getRemoteAddr());
+      userAdvisory.setVoterGUID(getVoterGUID());
 
       session.get().save(userAdvisory);
       tx.commit();
@@ -877,7 +922,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
 
   public Page<Comment> getCommentPage(PermissibleObject permissibleObject, boolean sortDescending, int pageNumber, int pageSize) throws Exception {
     if (permissibleObject == null) {
-      throw new RuntimeException("File not supplied.");
+      throw new RuntimeException("Object not supplied.");
     }
     User authUser = getAuthenticatedUser(session.get());
     try {
@@ -908,11 +953,11 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, comment.getPermissibleObject(), PERM.READ)) {
         throw new RuntimeException("User is not authorized to make comments on this content.");
       }
-      if (!comment.permissibleObject.isAllowComments()) {
+      if (!comment.getPermissibleObject().isAllowComments()) {
         throw new RuntimeException("Comments are not allowed on this content.");
       }
       // the comment is approved if we are not moderating or if the commenter is the file owner
-      comment.setApproved(!comment.permissibleObject.isModerateComments() || comment.getPermissibleObject().getOwner().equals(authUser));
+      comment.setApproved(!comment.getPermissibleObject().isModerateComments() || comment.getPermissibleObject().getOwner().equals(authUser));
       session.get().save(comment);
       tx.commit();
       return true;
@@ -982,17 +1027,17 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     }
   }
 
-  public File getFile(Long id) throws Exception {
+  public PermissibleObject getPermissibleObject(Long id) throws Exception {
     if (id == null) {
       throw new RuntimeException("Id not supplied.");
     }
     User authUser = getAuthenticatedUser(session.get());
     try {
-      File file = (File) session.get().load(File.class, id);
-      if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, file, PERM.READ)) {
+      PermissibleObject permissibleObject = (PermissibleObject) session.get().load(PermissibleObject.class, id);
+      if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, permissibleObject, PERM.READ)) {
         throw new RuntimeException("User is not authorized to get this content.");
       }
-      return file;
+      return permissibleObject;
     } catch (Throwable t) {
       Logger.log(t);
       throw new RuntimeException(t.getMessage());
@@ -1037,10 +1082,36 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
           if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, hibNewObject, PERM.WRITE)) {
             throw new RuntimeException("User is not authorized to overwrite object.");
           }
+          hibNewObject.setGlobalRead(permissibleObject.isGlobalRead());
+          hibNewObject.setGlobalWrite(permissibleObject.isGlobalWrite());
+          hibNewObject.setGlobalExecute(permissibleObject.isGlobalExecute());
           hibNewObject.setName(permissibleObject.getName());
           hibNewObject.setDescription(permissibleObject.getDescription());
           hibNewObject.setParent(permissibleObject.getParent());
           permissibleObject = hibNewObject;
+        }
+      } else {
+        System.out.println("it was null");
+      }
+
+      Field fields[] = ReflectionCache.getFields(permissibleObject.getClass());
+      for (Field field : fields) {
+        try {
+          // do not update parent permission only our 'owned' objects
+          if (!"parent".equals(field.getName())) {
+            Object obj = field.get(permissibleObject);
+            if (obj instanceof PermissibleObject) {
+              System.out.println("updating: " + field.getName());
+              PermissibleObject childObj = (PermissibleObject) obj;
+              PermissibleObject hibChild = (PermissibleObject) session.get().load(PermissibleObject.class, childObj.getId());
+              hibChild.setGlobalRead(permissibleObject.isGlobalRead());
+              hibChild.setGlobalWrite(permissibleObject.isGlobalWrite());
+              hibChild.setGlobalExecute(permissibleObject.isGlobalExecute());
+              field.set(permissibleObject, hibChild);
+            }
+          }
+        } catch (Exception e) {
+          Logger.log(e);
         }
       }
 
@@ -1067,9 +1138,9 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       throw new RuntimeException("User is not authenticated.");
     }
     Transaction tx = session.get().beginTransaction();
-    
+
     permissibleObject = ((PermissibleObject) session.get().load(PermissibleObject.class, permissibleObject.getId()));
-    
+
     try {
       if (permissibleObject instanceof Folder) {
         Folder folder = (Folder) permissibleObject;
@@ -1093,6 +1164,27 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       }
       throw new RuntimeException(t.getMessage());
     }
+  }
+
+  public void deletePermissibleObjects(Set<PermissibleObject> permissibleObjects) throws Exception {
+    if (permissibleObjects == null) {
+      throw new RuntimeException("Objects not supplied.");
+    }
+    User authUser = getAuthenticatedUser(session.get());
+    if (authUser == null) {
+      throw new RuntimeException("User is not authenticated.");
+    }
+    for (PermissibleObject permissibleObject : permissibleObjects) {
+      deletePermissibleObject(permissibleObject);
+    }
+  }
+
+  public List<PermissibleObject> getMyPermissibleObjects(PermissibleObject parent) throws Exception {
+    User authUser = getAuthenticatedUser(session.get());
+    if (authUser == null) {
+      throw new RuntimeException("User is not authenticated.");
+    }
+    return PermissibleObjectHelper.getMyPermissibleObjects(session.get(), authUser, parent);
   }
 
   public Folder createNewFolder(Folder newFolder) throws Exception {
@@ -1325,6 +1417,10 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       }
       throw new RuntimeException(t.getMessage());
     }
+  }
+
+  public PermissibleObject echoPermissibleObject(PermissibleObject permissibleObject) throws Exception {
+    return permissibleObject;
   }
 
   public FileUploadStatus getFileUploadStatus() throws Exception {
