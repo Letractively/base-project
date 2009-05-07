@@ -22,11 +22,10 @@ public class ToolBar extends HorizontalPanel {
     setCellWidth(padder, padding + "px");
   }
 
-  public void addFiller() {
+  public void addFiller(int percent) {
     HTML filler = new HTML("");
-    filler.setWidth("100%");
     super.add(filler);
-    setCellWidth(filler, "100%");
+    setCellWidth(filler, percent + "%");
   }
 
 }
