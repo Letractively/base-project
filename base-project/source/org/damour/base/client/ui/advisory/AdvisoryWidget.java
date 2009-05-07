@@ -57,7 +57,7 @@ public class AdvisoryWidget extends VerticalPanel {
       if (fileAdvisory == null) {
         // bring up content advisory popup
         if (!popupShowing) {
-          contentAdvisoryPopup.setPopupPosition(sender.getAbsoluteLeft() + x + 10, sender.getAbsoluteTop() + y + 10);
+          contentAdvisoryPopup.setPopupPosition(sender.getAbsoluteLeft() + x + 5, sender.getAbsoluteTop() + y + 5);
           contentAdvisoryPopup.show();
           popupShowing = true;
           Timer timer = new Timer() {
