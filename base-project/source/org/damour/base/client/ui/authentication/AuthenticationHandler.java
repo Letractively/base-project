@@ -30,7 +30,6 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.datepicker.client.DateBox;
-import com.google.gwt.user.datepicker.client.DatePicker;
 import com.google.gwt.user.datepicker.client.DateBox.DefaultFormat;
 
 public class AuthenticationHandler {
@@ -46,7 +45,7 @@ public class AuthenticationHandler {
   TextBox firstname = new TextBox();
   TextBox lastname = new TextBox();
   CheckBox disclaimerCheckBox = new CheckBox("I have read and agree with the disclaimer statement");
-  DefaultFormat format = new DefaultFormat(DateTimeFormat.getMediumDateFormat());
+  DefaultFormat format = new DefaultFormat(DateTimeFormat.getLongDateFormat());
   DateBox dateBox = new DateBox(new MyDatePicker(), new Date(), format);
   
   final Button signupButton = new Button("Signup");
