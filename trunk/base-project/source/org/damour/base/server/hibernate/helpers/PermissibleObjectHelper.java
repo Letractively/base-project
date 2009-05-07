@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.damour.base.client.objects.Comment;
 import org.damour.base.client.objects.PermissibleObject;
+import org.damour.base.client.objects.User;
 import org.damour.base.client.objects.UserAdvisory;
 import org.damour.base.client.objects.UserRating;
 import org.damour.base.server.hibernate.ReflectionCache;
@@ -57,4 +58,13 @@ public class PermissibleObjectHelper {
       return session.createQuery("from PermissibleObject where parent.id = " + parent.id).list();
     }
   }
+
+  public static List<PermissibleObject> getMyPermissibleObjects(Session session, User owner, PermissibleObject parent) {
+    if (parent == null) {
+      return session.createQuery("from PermissibleObject where owner.id = " + owner.id + " order by creationDate desc").setCacheable(true).list();
+    } else {
+      return session.createQuery("from PermissibleObject where parent.id = " + parent.id + " and owner.id = " + owner.id + " order by creationDate desc").setCacheable(true).list();
+    }
+  }
+
 }
