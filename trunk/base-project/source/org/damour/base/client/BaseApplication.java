@@ -43,7 +43,7 @@ public class BaseApplication implements EntryPoint {
       loading = true;
       // load settings, then messages
       loadSettings(new IGenericCallback<Void>() {
-        public void invokeGenericCallback(Void object) {
+        public void invoke(Void object) {
           // now load messages
           loadMessages();
         }
@@ -68,7 +68,7 @@ public class BaseApplication implements EntryPoint {
             if (!StringUtils.isEmpty(serviceEntryPoint)) {
               ((ServiceDefTarget) BaseServiceCache.getServiceUnsafe()).setServiceEntryPoint(serviceEntryPoint);
             }
-            callback.invokeGenericCallback(null);
+            callback.invoke(null);
           }
         });
       }
