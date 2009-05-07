@@ -150,7 +150,7 @@ public class EditGroupPanel extends FlexTable {
           MessageDialogBox dialog = new MessageDialogBox("Error", "Could not save group.", true, true, true);
           dialog.center();
         } else if (callback != null) {
-          callback.invokeGenericCallback(group);
+          callback.invoke(group);
         }
       };
     };

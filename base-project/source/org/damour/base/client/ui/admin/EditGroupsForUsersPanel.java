@@ -142,7 +142,7 @@ public class EditGroupsForUsersPanel extends FlexTable implements IAdminPanel, C
     }
   }
 
-  public void invokeGenericCallback(User user) {
+  public void invoke(User user) {
     userMap.put(user.getUsername(), user);
     usersList.setItemText(usersList.getSelectedIndex(), user.getUsername());
 
