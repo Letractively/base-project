@@ -20,6 +20,10 @@ import org.damour.base.client.utils.StringUtils;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.WindowResizeListener;
 import com.google.gwt.user.client.ui.DeckPanel;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -44,16 +48,26 @@ public class BaseApplicationUI extends BaseApplication implements IAuthenticatio
   public void loadModule() {
     applicationPanel.setWidth("100%");
     applicationPanel.setHeight("100%");
-
     applicationContentDeck.setHeight("100%");
-    final ScrollPanel scroll = new ScrollPanel(applicationContentDeck);
-    scroll.setHeight("100%");
+    applicationContentDeck.setAnimationEnabled(true);
 
     if ("true".equals(getSettings().getString("showApplicationToolbar"))) {
       applicationPanel.add(buildApplicationToolBar());
-    }
+    }    
+    
+    final ScrollPanel scroll = new ScrollPanel(applicationContentDeck);
     applicationPanel.add(scroll);
-    applicationPanel.setCellHeight(scroll, "100%");
+    Window.addResizeHandler(new ResizeHandler() {
+      public void onResize(ResizeEvent event) {
+        int newHeight = event.getHeight() - 90;
+        if (newHeight >= 0) {
+          scroll.setHeight(newHeight + "px");
+          applicationPanel.setCellHeight(scroll, newHeight + "px");
+        }
+      }
+    });
+    scroll.setHeight((Window.getClientHeight() - 90) + "px");
+    applicationPanel.setCellHeight(scroll, (Window.getClientHeight() - 90) + "px");
 
     if ("true".equals(getSettings().getString("showApplicationFooter"))) {
       applicationPanel.add(buildFooterPanel());
@@ -101,7 +115,20 @@ public class BaseApplicationUI extends BaseApplication implements IAuthenticatio
     return welcomeLabel;
   }
 
-  public ComboMenuButton buildProfileButton(boolean enabled) {
+  public Widget buildProfileButton(boolean enabled) {
+
+    if ("true".equals(getSettings().getString("showProfileAsButton", "false"))) {
+      ToolbarButton profileButton = new ToolbarButton("Profile");
+      profileButton.addClickHandler(new ClickHandler() {
+        public void onClick(ClickEvent event) {
+          // it is possible the user is 'stale', but HIGHLY unlikely
+          AuthenticationHandler.getInstance().showEditAccountDialog(getAuthenticatedUser());
+        }
+      });
+      profileButton.setEnabled(enabled);
+      return profileButton;
+    }
+
     MenuBar profileMenu = new MenuBar(true);
 
     MenuItem editAccountMenuItem = new MenuItem(getMessages().getString("account", "Account"), new MenuButtonCommand() {
@@ -237,19 +264,32 @@ public class BaseApplicationUI extends BaseApplication implements IAuthenticatio
     applicationToolBar.add(buildWelcomeLabel());
     applicationToolBar.addPadding(5);
     applicationToolBar.add(buildProfileButton(isAuthenticated()));
-    applicationToolBar.add(buildManageGroupsButton(isAuthenticated()));
+    if ("true".equals(getSettings().getString("showGroupsOnToolbar", "true"))) {
+      applicationToolBar.add(buildManageGroupsButton(isAuthenticated()));
+    }
+
+    customizeApplicationToolBarLeft(applicationToolBar);
+    applicationToolBar.addFiller(100);
+    customizeApplicationToolBarRight(applicationToolBar);
+
     if (isAuthenticated()) {
-      applicationToolBar.addFiller();
       if (getAuthenticatedUser().isAdministrator()) {
         applicationToolBar.add(buildAdminButton());
       }
       applicationToolBar.add(buildLogoutButton());
     } else {
-      applicationToolBar.addFiller();
       applicationToolBar.add(buildLoginButton());
     }
     applicationToolBar.addPadding(5);
     return applicationToolBar;
+  }
+
+  // override
+  public void customizeApplicationToolBarLeft(final ToolBar toolbar) {
+  }
+
+  // override
+  public void customizeApplicationToolBarRight(final ToolBar toolbar) {
   }
 
   public DeckPanel getApplicationContentDeck() {
