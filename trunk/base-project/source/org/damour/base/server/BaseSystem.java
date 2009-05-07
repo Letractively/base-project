@@ -65,6 +65,9 @@ public class BaseSystem {
   }
 
   public static ClassLoader getBaseClassLoader() {
+    if (classLoader == null) {
+      return BaseSystem.class.getClassLoader();
+    }
     return classLoader;
   }
 
