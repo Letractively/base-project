@@ -38,7 +38,7 @@ public class OpenFileCommand implements Command {
         Image image = new Image(url);
         image.setHeight(photo.getHeight() + "px");
         image.setWidth(photo.getWidth() + "px");
-        final PromptDialogBox promptDialog = new PromptDialogBox("Preview", "Close", null, null, false, false);
+        final PromptDialogBox promptDialog = new PromptDialogBox("Preview", "Close", null, null, true, false);
         promptDialog.setContent(image);
         promptDialog.center();
       } else if ("audio/mpeg".equals(object.getContentType())) {
