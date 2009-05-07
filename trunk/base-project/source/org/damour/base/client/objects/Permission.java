@@ -82,6 +82,10 @@ public class Permission implements Serializable, IHibernateFriendly {
     return false;
   }
 
+  public boolean isFieldMapped(String fieldName) {
+    return true;
+  }
+
   @Override
   public int hashCode() {
     final int prime = 31;

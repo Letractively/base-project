@@ -31,6 +31,10 @@ public class CategoryMembership implements Serializable, IHibernateFriendly {
     return null;
   }
 
+  public boolean isFieldMapped(String fieldName) {
+    return true;
+  }
+
   public Category getCategory() {
     return category;
   }

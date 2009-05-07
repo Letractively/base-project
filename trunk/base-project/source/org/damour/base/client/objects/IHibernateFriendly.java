@@ -6,4 +6,5 @@ public interface IHibernateFriendly {
   public String getSqlUpdate();
   public String getCachePolicy();
   public boolean isLazy();
+  public boolean isFieldMapped(String fieldName);
 }

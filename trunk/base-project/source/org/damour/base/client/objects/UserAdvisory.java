@@ -7,7 +7,7 @@ public class UserAdvisory implements Serializable, IHibernateFriendly {
   public Long id;
   public User voter;
   public PermissibleObject permissibleObject;
-  public String voterIP;
+  public String voterGUID;
   public int rating = 0; // 0-5
   public long ratingDate = System.currentTimeMillis();
 
@@ -38,6 +38,10 @@ public class UserAdvisory implements Serializable, IHibernateFriendly {
 
   public String getCachePolicy() {
     return "nonstrict-read-write";
+  }
+
+  public boolean isFieldMapped(String fieldName) {
+    return true;
   }
 
   public User getVoter() {
@@ -72,21 +76,19 @@ public class UserAdvisory implements Serializable, IHibernateFriendly {
     this.rating = rating;
   }
 
-
-
   /**
    * @return the voterIP
    */
-  public String getVoterIP() {
-    return voterIP;
+  public String getVoterGUID() {
+    return voterGUID;
   }
 
   /**
    * @param voterIP
    *          the voterIP to set
    */
-  public void setVoterIP(String voterIP) {
-    this.voterIP = voterIP;
+  public void setVoterGUID(String voterGUID) {
+    this.voterGUID = voterGUID;
   }
 
   /**
@@ -104,7 +106,9 @@ public class UserAdvisory implements Serializable, IHibernateFriendly {
     this.id = id;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#hashCode()
    */
   @Override
@@ -115,7 +119,9 @@ public class UserAdvisory implements Serializable, IHibernateFriendly {
     return result;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#equals(java.lang.Object)
    */
   @Override
