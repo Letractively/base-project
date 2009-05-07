@@ -24,8 +24,17 @@ public class ToolTip extends PopupPanel implements MouseListener {
     }
   };
 
+  public ToolTip() {
+    super(true, false);
+  }
+  
   public ToolTip(SourcesMouseEvents widget, String previewImageURL, String html) {
     super(true, false);
+    init(widget, previewImageURL, html);
+  }
+
+  protected void init(SourcesMouseEvents widget, String previewImageURL, String html) {
+
     widget.addMouseListener(this);
 
     HorizontalPanel hp = new HorizontalPanel();
