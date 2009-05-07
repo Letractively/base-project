@@ -43,7 +43,6 @@ public class HibernateUtil {
   private Document mappingDocument = DocumentHelper.createDocument();
   private Element mappingRoot = null;
   private String tablePrefix = "";
-  private String columnPrefix = "";
   private boolean showSQL = true;
   private String hbm2ddlMode = "update";
 
@@ -56,7 +55,6 @@ public class HibernateUtil {
     setPassword(rb.getProperty("password"));
     setConnectString(rb.getProperty("connectString"));
     setTablePrefix(rb.getProperty("tablePrefix"));
-    setColumnPrefix(rb.getProperty("columnPrefix"));
     setHbm2ddlMode(getResource(rb, "hbm2ddlMode", "" + hbm2ddlMode));
     showSQL = "true".equalsIgnoreCase(getResource(rb, "showSQL", "" + showSQL));
 
@@ -308,7 +306,7 @@ public class HibernateUtil {
         mappingElement.addAttribute("table", getTablePrefix() + clazz.getSimpleName().toLowerCase());
         // key
         Element keyElement = mappingElement.addElement("key");
-        keyElement.addAttribute("column", getColumnPrefix() + "id");
+        keyElement.addAttribute("column", "id");
         idElementMap.put(clazz, keyElement);
       } else {
         mappingElement = mappingRootElement.addElement("class");
@@ -318,7 +316,7 @@ public class HibernateUtil {
         Element keyElement = mappingElement.addElement("id");
         keyElement.addAttribute("name", "id");
         keyElement.addAttribute("type", "long");
-        keyElement.addAttribute("column", getColumnPrefix() + "id");
+        keyElement.addAttribute("column", "id");
         // generator
         Element generatorElement = keyElement.addElement("generator");
         generatorElement.addAttribute("class", "native");
@@ -356,12 +354,25 @@ public class HibernateUtil {
 
         String name = field.getName();
 
+        // check if the field is hibernate managed
+        try {
+          Method isFieldMappedMethod = clazz.getMethod("isFieldMapped", String.class);
+          boolean isFieldMapped = (Boolean) isFieldMappedMethod.invoke(clazz.newInstance(), name);
+          if (!isFieldMapped) {
+            // skip it
+            Logger.log("  -" + name + ":" + field.getType().getName());
+            continue;
+          }
+        } catch (Throwable t) {
+          t.printStackTrace();
+        }
+
         boolean skip = false;
         Field[] parentFields = ReflectionCache.getFields(clazz.getSuperclass());
         for (Field parentField : parentFields) {
           if (field.equals(parentField)) {
             // skip duplicates
-            Logger.log("  -" + name + ":" + field.getType().getName());
+            //Logger.log("  -" + name + ":" + field.getType().getName());
             skip = true;
             break;
           }
@@ -395,11 +406,11 @@ public class HibernateUtil {
             Element keyEntry = keyElement.addElement("key-many-to-one");
             keyEntry.addAttribute("name", field.getName());
             keyEntry.addAttribute("class", field.getType().getName());
-            keyEntry.addAttribute("column", getColumnPrefix() + field.getName());
+            keyEntry.addAttribute("column", field.getName());
           } else {
             Element keyEntry = keyElement.addElement("key-property");
             keyEntry.addAttribute("name", field.getName());
-            keyEntry.addAttribute("column", getColumnPrefix() + field.getName());
+            keyEntry.addAttribute("column", field.getName());
           }
           continue;
         }
@@ -411,7 +422,7 @@ public class HibernateUtil {
             Element propertyElement = mappingElement.addElement("property");
             propertyElement.addAttribute("name", name);
             propertyElement.addAttribute("type", type);
-            propertyElement.addAttribute("column", getColumnPrefix() + name);
+            propertyElement.addAttribute("column", name);
             if (isUnique) {
               propertyElement.addAttribute("unique", "true");
             }
@@ -425,7 +436,7 @@ public class HibernateUtil {
             setElement.addAttribute("inverse", "true");
             setElement.addAttribute("lazy", "false");
             // setElement.addAttribute("cascade", "all-delete-orphan");
-            setElement.addElement("key").addAttribute("column", getColumnPrefix() + "id");
+            setElement.addElement("key").addAttribute("column", "id");
             setElement.addElement("one-to-many").addAttribute("class", ((Class) genericType.getActualTypeArguments()[0]).getName());
           } else if (byte[].class.equals(field.getType())) {
             Element propertyElement = mappingElement.addElement("property");
@@ -433,7 +444,7 @@ public class HibernateUtil {
             propertyElement.addAttribute("type", "binary");
             // BinaryBlobType.class.getName()
             // propertyElement.addAttribute("column", getColumnPrefix() + name);
-            propertyElement.addElement("column").addAttribute("name", getColumnPrefix() + name).addAttribute("sql-type", "LONGBLOB");
+            propertyElement.addElement("column").addAttribute("name", name).addAttribute("sql-type", "LONGBLOB");
             if (isUnique) {
               propertyElement.addAttribute("unique", "true");
             }
@@ -441,7 +452,7 @@ public class HibernateUtil {
             Element manyToOneElement = mappingElement.addElement("many-to-one");
             manyToOneElement.addAttribute("name", name);
             manyToOneElement.addAttribute("class", field.getType().getName());
-            manyToOneElement.addAttribute("column", getColumnPrefix() + name);
+            manyToOneElement.addAttribute("column", name);
             manyToOneElement.addAttribute("lazy", "false");
 
             if (isUnique) {
@@ -474,14 +485,6 @@ public class HibernateUtil {
 
   public void setTablePrefix(String tablePrefix) {
     this.tablePrefix = tablePrefix;
-  }
-
-  public String getColumnPrefix() {
-    return columnPrefix;
-  }
-
-  public void setColumnPrefix(String columnPrefix) {
-    this.columnPrefix = columnPrefix;
   }
 
   public String getHbm2ddlMode() {
