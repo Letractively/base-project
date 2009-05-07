@@ -23,6 +23,11 @@ public class UploadFileCommand implements Command {
   public void execute() {
     final PromptDialogBox uploadDialog = new PromptDialogBox("Upload File", "Send", null, "Cancel", false, true);
     IFileUploadCallback fileUploadCallback = new IFileUploadCallback() {
+      public void uploadFailed() {
+        uploadDialog.hide();
+        MessageDialogBox messageDialog = new MessageDialogBox("Error", "Upload failed, check file permissions.", false, true, true);
+        messageDialog.center();
+      }
       public void fileUploaded(String id) {
         uploadDialog.hide();
         if (id == null || "".equals(id)) {
