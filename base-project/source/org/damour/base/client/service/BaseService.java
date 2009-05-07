@@ -23,9 +23,11 @@ import org.damour.base.client.objects.UserAdvisory;
 import org.damour.base.client.objects.UserGroup;
 import org.damour.base.client.objects.UserRating;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.RemoteService;
 
 public interface BaseService extends RemoteService {
+  // login/auth
   public User getAuthenticatedUser() throws LoginException;
   public User createOrEditAccount(User user, String password, String captchaText) throws Exception;
   public User login(String username, String password) throws Exception;
@@ -40,8 +42,8 @@ public interface BaseService extends RemoteService {
   public MemoryStats requestGarbageCollection() throws Exception;
   public Date getServerStartupDate() throws Exception;
   
-  public List<String> getUsernames() throws Exception;
   // users/group admin methods
+  public List<String> getUsernames() throws Exception;
   public List<User> getUsers() throws Exception;
   public List<User> getUsers(UserGroup group) throws Exception;
   public List<UserGroup> getGroups() throws Exception;
@@ -55,10 +57,12 @@ public interface BaseService extends RemoteService {
   public List<PendingGroupMembership> submitPendingGroupMembershipApproval(User user, Set<PendingGroupMembership> members, boolean approve) throws Exception;
 
   // file/content/permissions methods
-  public File getFile(Long id) throws Exception;
+  public PermissibleObject getPermissibleObject(Long id) throws Exception;
   public RepositoryTreeNode getRepositoryTree() throws Exception;
   public PermissibleObject savePermissibleObject(PermissibleObject permissibleObject) throws Exception;
   public void deletePermissibleObject(PermissibleObject permissibleObject) throws Exception;
+  public void deletePermissibleObjects(Set<PermissibleObject> permissibleObjects) throws Exception;
+  public List<PermissibleObject> getMyPermissibleObjects(PermissibleObject parent) throws Exception;
   public Folder createNewFolder(Folder newFolder) throws Exception;
   public void renameFile(File file) throws Exception;
   public void renameFolder(Folder folder) throws Exception;
@@ -66,6 +70,8 @@ public interface BaseService extends RemoteService {
   public void setPermissions(PermissibleObject permissibleObject, List<Permission> permissions) throws Exception;
   public PermissibleObject updatePermissibleObject(PermissibleObject permissibleObject) throws Exception;
   public FileUploadStatus getFileUploadStatus() throws Exception;
+  // for debug purposes: simply return what was given, proving the serialization of the desired object
+  public PermissibleObject echoPermissibleObject(PermissibleObject permissibleObject) throws Exception;
   
   // category methods
   public List<Category> getCategories() throws Exception;
@@ -78,6 +84,7 @@ public interface BaseService extends RemoteService {
   // content rating & advisory
   public UserRating getUserRating(PermissibleObject permissibleObject) throws Exception;
   public UserRating setUserRating(PermissibleObject permissibleObject, int rating) throws Exception;
+  public PermissibleObject getNextUnratedPermissibleObject(String objectType) throws Exception;
   public UserAdvisory getUserAdvisory(PermissibleObject permissibleObject) throws Exception;
   public UserAdvisory setUserAdvisory(PermissibleObject permissibleObject, int advisory) throws Exception;
 
