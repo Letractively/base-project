@@ -6,6 +6,8 @@
 	<inherits name='com.google.gwt.http.HTTP' />
 	<inherits name='net.auroris.ColorPicker.ColorPicker' />
 
+	<inherits name='com.google.gwt.widgetideas.WidgetIdeas'/>
+
 	<stylesheet src="base.css"/>
 
 	<!-- Specify the app entry point class.                   -->
