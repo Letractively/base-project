@@ -71,8 +71,8 @@
 		</copy>
 		<jar basedir="dist/bin" destfile="dist/${project.name}-${release.major.number}.${release.minor.number}.${release.milestone.number}.jar" />
 		<copy todir="dist/${target.webapp.name}">
-			<fileset dir="../base-project/${gwt.output.dir}" includes="**/*" excludes="WEB-INF/classes/**/*"/>
-			<fileset dir="${gwt.output.dir}" includes="**/*" excludes="WEB-INF/classes/**/*"/>
+			<fileset dir="../base-project/${gwt.output.dir}" includes="**/*" excludes="WEB-INF/classes/**/*, WEB-INF/lib/**/*"/>
+			<fileset dir="${gwt.output.dir}" includes="**/*" excludes="WEB-INF/classes/**/*, WEB-INF/lib/**/*"/>
 		</copy>
 		<unzip dest="dist/${target.webapp.name}/WEB-INF/classes">
 			<fileset dir="dist" includes="${project.name}*.jar" />
