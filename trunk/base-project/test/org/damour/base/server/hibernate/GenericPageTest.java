@@ -67,7 +67,6 @@ public class GenericPageTest {
     HibernateUtil.getInstance().setShowSQL(true);
     HibernateUtil.getInstance().setHbm2ddlMode("create-drop");
     HibernateUtil.getInstance().setTablePrefix("test_");
-    HibernateUtil.getInstance().setColumnPrefix("test_");
     HibernateUtil.getInstance().resetHibernate();
     HibernateUtil.getInstance().generateHibernateMapping(User.class);
     HibernateUtil.getInstance().generateHibernateMapping(UserGroup.class);
