@@ -99,8 +99,9 @@ public class RatingWidget extends VerticalPanel {
     }
     if (fileRating == null) {
       getUserRating(permissibleObject);
+    } else {
+      setStars();
     }
-    setStars();
   }
 
   public void starMoused(Widget sender) {
