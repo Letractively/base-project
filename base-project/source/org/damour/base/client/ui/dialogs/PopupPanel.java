@@ -1,14 +1,18 @@
 package org.damour.base.client.ui.dialogs;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.logical.shared.CloseEvent;
+import com.google.gwt.event.logical.shared.CloseHandler;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.FocusWidget;
-import com.google.gwt.user.client.ui.PopupListener;
 import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.Widget;
 
-public class PopupPanel extends com.google.gwt.user.client.ui.PopupPanel implements PopupListener {
+public class PopupPanel extends com.google.gwt.user.client.ui.PopupPanel implements CloseHandler<com.google.gwt.user.client.ui.PopupPanel> {
 
   private FocusPanel pageBackground = null;
   private int clickCount = 0;
@@ -21,7 +25,25 @@ public class PopupPanel extends com.google.gwt.user.client.ui.PopupPanel impleme
     super(autoHide, modal);
     this.autoHide = autoHide;
     this.modal = modal;
-    addPopupListener(this);
+    addCloseHandler(this);
+    Window.addResizeHandler(new ResizeHandler() {
+      public void onResize(ResizeEvent event) {
+        if (pageBackground != null) {
+          pageBackground.setSize("100%", Window.getClientHeight() + Window.getScrollTop() + "px"); //$NON-NLS-1$
+        }
+      }
+    });
+  }
+
+  public boolean onKeyDownPreview(char key, int modifiers) {
+    // Use the popup's key preview hooks to close the dialog when either
+    // enter or escape is pressed.
+    switch (key) {
+    case KeyCodes.KEY_ESCAPE:
+      hide();
+      break;
+    }
+    return true;
   }
 
   public void center() {
@@ -30,9 +52,9 @@ public class PopupPanel extends com.google.gwt.user.client.ui.PopupPanel impleme
     if (pageBackground == null) {
       pageBackground = new FocusPanel();
       pageBackground.setStyleName("modalDialogPageBackground"); //$NON-NLS-1$
-      pageBackground.addClickListener(new ClickListener() {
+      pageBackground.addClickHandler(new ClickHandler() {
 
-        public void onClick(Widget sender) {
+        public void onClick(ClickEvent event) {
           clickCount++;
           if (clickCount > 2) {
             clickCount = 0;
@@ -67,7 +89,7 @@ public class PopupPanel extends com.google.gwt.user.client.ui.PopupPanel impleme
     }
   }
 
-  public void onPopupClosed(com.google.gwt.user.client.ui.PopupPanel sender, boolean autoClosed) {
+  public void onClose(CloseEvent<com.google.gwt.user.client.ui.PopupPanel> event) {
     if (modal) {
       centerCalled = false;
       pageBackground.setVisible(false);
