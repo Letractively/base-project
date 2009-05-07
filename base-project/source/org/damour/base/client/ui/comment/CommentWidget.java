@@ -17,6 +17,7 @@ import org.damour.base.client.ui.dialogs.IDialogCallback;
 import org.damour.base.client.ui.dialogs.IDialogValidatorCallback;
 import org.damour.base.client.ui.dialogs.MessageDialogBox;
 import org.damour.base.client.ui.dialogs.PromptDialogBox;
+import org.damour.base.client.utils.StringUtils;
 
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Timer;
@@ -51,6 +52,7 @@ public class CommentWidget extends VerticalPanel {
   private int pageSize = 10;
   private long numComments = 0;
   private long lastPageNumber = 0;
+  private boolean paginate = true;
 
   HashMap<Integer, Page<Comment>> pageCache = new HashMap<Integer, Page<Comment>>();
 
@@ -100,13 +102,25 @@ public class CommentWidget extends VerticalPanel {
       numComments = page.getTotalRowCount();
       lastPageNumber = page.getLastPageNumber();
       if (page.getResults().size() == 0) {
-        if (pageNumber != lastPageNumber) {
-          pageNumber = (int) lastPageNumber;
-          fetchPage();
-        }
+        pageNumber = 0;
+        lastPageNumber = 0;
       }
       loadCommentWidget(true);
       prefetchPages();
+    }
+
+    public void onFailure(Throwable caught) {
+      MessageDialogBox dialog = new MessageDialogBox("Error", caught.getMessage(), false, true, true);
+      dialog.center();
+    }
+  };
+
+  private AsyncCallback<List<Comment>> allCommentsCallback = new AsyncCallback<List<Comment>>() {
+
+    public void onSuccess(List<Comment> comments) {
+      CommentWidget.this.comments = comments;
+      numComments = comments.size();
+      loadCommentWidget(true);
     }
 
     public void onFailure(Throwable caught) {
@@ -127,9 +141,10 @@ public class CommentWidget extends VerticalPanel {
     }
   };
 
-  public CommentWidget(final PermissibleObject permissibleObject, final List<Comment> comments) {
+  public CommentWidget(final PermissibleObject permissibleObject, final List<Comment> comments, boolean paginate) {
     this.permissibleObject = permissibleObject;
     this.comments = comments;
+    this.paginate = paginate;
 
     maxCommentDepthListBox.addItem("None", "999999");
     maxCommentDepthListBox.addItem("1");
@@ -168,7 +183,9 @@ public class CommentWidget extends VerticalPanel {
 
       VerticalPanel commentsPanel = new VerticalPanel();
       commentsPanel.setSpacing(0);
-      commentsPanel.setStyleName("commentsPanel");
+      if (numComments > 0) {
+        commentsPanel.setStyleName("commentsPanel");
+      }
       commentsPanel.setWidth("100%");
 
       int renderedComments = 0;
@@ -176,7 +193,9 @@ public class CommentWidget extends VerticalPanel {
           && (AuthenticationHandler.getInstance().getUser().isAdministrator() || AuthenticationHandler.getInstance().getUser().equals(
               permissibleObject.getOwner()));
       List<Comment> sortedComments = new ArrayList<Comment>();
-      sortedComments.addAll(comments);
+      if (comments != null) {
+        sortedComments.addAll(comments);
+      }
       if (!flatten) {
         sortedComments = sortComments(sortedComments);
       }
@@ -333,10 +352,13 @@ public class CommentWidget extends VerticalPanel {
 
       final FlexTable mainPanel = new FlexTable();
       mainPanel.setWidth("100%");
-      mainPanel.setWidget(0, 0, createButtonPanel(mainPanel, forceOpen));
-      mainPanel.getCellFormatter().setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_LEFT);
-      mainPanel.setWidget(1, 0, commentsPanel);
-      mainPanel.getCellFormatter().setWidth(1, 0, "100%");
+      int row = 0;
+      if (paginate) {
+        mainPanel.setWidget(row, 0, createButtonPanel(mainPanel, forceOpen));
+        mainPanel.getCellFormatter().setHorizontalAlignment(row++, 0, HasHorizontalAlignment.ALIGN_LEFT);
+      }
+      mainPanel.setWidget(row, 0, commentsPanel);
+      mainPanel.getCellFormatter().setWidth(row++, 0, "100%");
 
       commentDisclosurePanel.setContent(mainPanel);
       commentDisclosurePanel.setOpen(renderedComments == 0 || forceOpen);
@@ -457,7 +479,7 @@ public class CommentWidget extends VerticalPanel {
     buttonPanel.add(reloadImageButton);
     buttonPanel.add(sortImageButton);
     buttonPanel.add(flattenImageButton);
-    Label maxCommentDepthLabel = new Label("Max Depth");
+    Label maxCommentDepthLabel = new Label("Max Depth", false);
     maxCommentDepthLabel.setTitle("Set the maximum depth of comments to show");
     Label spacer2 = new Label();
     buttonPanel.add(spacer2);
@@ -528,7 +550,14 @@ public class CommentWidget extends VerticalPanel {
   }
 
   private void replyToComment(final Comment parentComment) {
-    PromptDialogBox dialog = new PromptDialogBox("Reply To: " + parentComment.getAuthor().getUsername(), "Submit", null, "Cancel", false, true);
+    String replyPromptMessage = "Reply";
+    if (parentComment.getAuthor() != null) {
+      replyPromptMessage = "Reply To: " + parentComment.getAuthor().getUsername();
+    } else if (!StringUtils.isEmpty(parentComment.getEmail())) {
+      replyPromptMessage = "Reply To: " + parentComment.getEmail();
+    }
+    PromptDialogBox dialog = new PromptDialogBox(replyPromptMessage, "Submit", null, "Cancel", false, true);
+    dialog.setAllowKeyboardEvents(false);
     VerticalPanel replyPanel = new VerticalPanel();
 
     final TextArea textArea = new TextArea();
@@ -631,11 +660,15 @@ public class CommentWidget extends VerticalPanel {
   }
 
   private void fetchPage() {
-    Page<Comment> page = pageCache.get(pageNumber);
-    if (page != null) {
-      pageCallback.onSuccess(page);
+    if (paginate) {
+      Page<Comment> page = pageCache.get(pageNumber);
+      if (page != null) {
+        pageCallback.onSuccess(page);
+      } else {
+        BaseServiceCache.getService().getCommentPage(permissibleObject, sortDescending, pageNumber, pageSize, pageCallback);
+      }
     } else {
-      BaseServiceCache.getService().getCommentPage(permissibleObject, sortDescending, pageNumber, pageSize, pageCallback);
+      BaseServiceCache.getService().getComments(permissibleObject, allCommentsCallback);
     }
   }
 
@@ -649,5 +682,14 @@ public class CommentWidget extends VerticalPanel {
 
   private void deleteComment(Comment comment) {
     BaseServiceCache.getService().deleteComment(comment, deleteCommentCallback);
+  }
+
+  public boolean isFlatten() {
+    return flatten;
+  }
+
+  public void setFlatten(boolean flatten) {
+    this.flatten = flatten;
+    loadCommentWidget(true);
   }
 }
