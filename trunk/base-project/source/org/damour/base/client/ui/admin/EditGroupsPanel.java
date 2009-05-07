@@ -268,7 +268,7 @@ public class EditGroupsPanel extends FlexTable implements IAdminPanel, ChangeLis
     }
   }
 
-  public void invokeGenericCallback(UserGroup group) {
+  public void invoke(UserGroup group) {
     groupMap.put(group.getName(), group);
     lastListSelection = group.getName();
 

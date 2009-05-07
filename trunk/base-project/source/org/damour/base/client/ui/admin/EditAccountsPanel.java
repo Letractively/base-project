@@ -126,7 +126,7 @@ public class EditAccountsPanel extends FlexTable implements IAdminPanel, ChangeL
     }
   }
 
-  public void invokeGenericCallback(User user) {
+  public void invoke(User user) {
     userMap.put(user.getUsername(), user);
     usersList.setItemText(usersList.getSelectedIndex(), user.getUsername());
 

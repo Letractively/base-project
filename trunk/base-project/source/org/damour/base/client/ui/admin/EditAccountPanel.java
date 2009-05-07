@@ -70,7 +70,7 @@ public class EditAccountPanel extends FlexTable {
             } else {
               MessageDialogBox dialog = new MessageDialogBox("Success", "Account modified.", true, true, true);
               dialog.center();
-              callback.invokeGenericCallback(user);
+              callback.invoke(user);
             }
           };
         };
