@@ -3,7 +3,6 @@ package org.damour.base.server;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -37,7 +36,6 @@ public class GetFileService extends HttpServlet {
     Session session = HibernateUtil.getInstance().getSession();
     response.setBufferSize(65536);
     ServletOutputStream outStream = response.getOutputStream();
-    InputStream inputStream = null;
     File file = null;
     FileData fileData = null;
     try {
@@ -153,7 +151,7 @@ public class GetFileService extends HttpServlet {
           } catch (Throwable t) {
           }
         }
-        
+
         IOUtils.write(fileData.getData(), outStream);
       }
     } catch (Throwable t) {
