@@ -9,7 +9,7 @@ import org.hibernate.Session;
 
 public class AdvisoryHelper {
 
-  public static UserAdvisory getUserAdvisory(Session session, PermissibleObject permissibleObject, User voter, String voterIP) {
+  public static UserAdvisory getUserAdvisory(Session session, PermissibleObject permissibleObject, User voter, String voterGUID) {
     if (voter != null) {
       List<UserAdvisory> ratings = session.createQuery("from " + UserAdvisory.class.getSimpleName() + " where permissibleObject.id = " + permissibleObject.id + " and voter.id = " + voter.id).setCacheable(true).list();
       if (ratings != null && ratings.size() > 0) {
@@ -17,7 +17,7 @@ public class AdvisoryHelper {
       }
       return null;
     }
-    List<UserAdvisory> ratings = session.createQuery("from " + UserAdvisory.class.getSimpleName() + " where permissibleObject.id = " + permissibleObject.id + " and voterIP = '" + voterIP + "'").setCacheable(true).list();
+    List<UserAdvisory> ratings = session.createQuery("from " + UserAdvisory.class.getSimpleName() + " where permissibleObject.id = " + permissibleObject.id + " and voterGUID = '" + voterGUID + "'").setCacheable(true).list();
     if (ratings != null && ratings.size() > 0) {
       return ratings.get(0);
     }
