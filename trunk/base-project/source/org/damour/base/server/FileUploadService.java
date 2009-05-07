@@ -160,17 +160,28 @@ public class FileUploadService extends HttpServlet {
             thumbFile.setDescription("Thumbnail for " + name);
             session.save(thumbFile);
 
+            PhotoThumbnail previewFile = new PhotoThumbnail();
+            previewFile.setHidden(true);
+            previewFile.setOwner(owner);
+            previewFile.setParent(parentFolder);
+            previewFile.setName(createFileName("", name, "_preview"));
+            previewFile.setDescription("Preview image for " + name);
+            session.save(previewFile);
+            
             PhotoThumbnail slideFile = new PhotoThumbnail();
             slideFile.setHidden(true);
             slideFile.setOwner(owner);
             slideFile.setParent(parentFolder);
-            slideFile.setName(createFileName("", name, "_slide"));
-            slideFile.setDescription("Medium image for " + name);
+            slideFile.setName(createFileName("", name, "_slideshow"));
+            slideFile.setDescription("Slideshow image for " + name);
             session.save(slideFile);
 
+            
             photo.setThumbnailImage(thumbFile);
             photo.setSlideshowImage(slideFile);
+            photo.setPreviewImage(previewFile);
 
+            
             ByteArrayInputStream pngIn = new ByteArrayInputStream(pngOut.toByteArray());
 
             ByteArrayOutputStream thumbOutStream = new ByteArrayOutputStream();
@@ -199,21 +210,36 @@ public class FileUploadService extends HttpServlet {
             IIOImage slideimage = new IIOImage(convertedSlideImage, null, null);
             writer.write(null, slideimage, iwp);
 
+            pngIn.reset();
+            ByteArrayOutputStream previewOutStream = new ByteArrayOutputStream();
+            BufferedImage previewbi = ImageIO.read(pngIn);
+            BufferedImage convertedPreviewImage = createThumbnail(previewbi, 320, 200, true);
+            previewFile.setWidth(convertedPreviewImage.getWidth());
+            previewFile.setHeight(convertedPreviewImage.getHeight());
+            writer.setOutput(new MemoryCacheImageOutputStream(previewOutStream));
+            IIOImage previewimage = new IIOImage(convertedPreviewImage, null, null);
+            writer.write(null, previewimage, iwp);            
+            
             thumbFile.setContentType("image/jpeg");
             slideFile.setContentType("image/jpeg");
+            previewFile.setContentType("image/jpeg");
             thumbFile.setSize(thumbOutStream.size());
             slideFile.setSize(slideOutStream.size());
+            previewFile.setSize(previewOutStream.size());
             session.save(thumbFile);
             session.save(slideFile);
+            session.save(previewFile);
             tx.commit();
 
             tx = session.beginTransaction();
             thumbFile.setNameOnDisk(createFileName(thumbFile.getId().toString() + "_", name, "_thumb"));
             slideFile.setNameOnDisk(createFileName(slideFile.getId().toString() + "_", name, "_slide"));
+            previewFile.setNameOnDisk(createFileName(previewFile.getId().toString() + "_", name, "_preview"));
             tx.commit();
 
             saveFileFromStream(thumbFile, new ByteArrayInputStream(thumbOutStream.toByteArray()));
             saveFileFromStream(slideFile, new ByteArrayInputStream(slideOutStream.toByteArray()));
+            saveFileFromStream(previewFile, new ByteArrayInputStream(previewOutStream.toByteArray()));
           }
 
           status.setStatus(FileUploadStatus.FINISHED);
@@ -225,6 +251,9 @@ public class FileUploadService extends HttpServlet {
         cookie.setPath("/");
         cookie.setMaxAge(BaseService.COOKIE_TIMEOUT);
         response.addCookie(cookie);
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.getOutputStream().close();
+        response.flushBuffer();
       }
     } catch (Throwable t) {
       Logger.log(t);
@@ -255,7 +284,7 @@ public class FileUploadService extends HttpServlet {
       dbprops.setProperty("password", HibernateUtil.getInstance().getPassword());
 
       conn = (Connection) DriverManager.getConnection(HibernateUtil.getInstance().getConnectString(), dbprops);
-      String insert_data = "insert into " + FileData.class.getSimpleName().toLowerCase() + " (permissibleObject, data) values (?, ?)";
+      String insert_data = "insert into " + HibernateUtil.getInstance().getTablePrefix() + FileData.class.getSimpleName().toLowerCase() + " (permissibleObject, data) values (?, ?)";
       conn.setAutoCommit(false);
       if (conn instanceof com.mysql.jdbc.Connection) {
         // this gets around mysql limits (blob send check size)
