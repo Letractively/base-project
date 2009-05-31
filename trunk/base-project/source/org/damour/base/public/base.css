@@ -798,6 +798,7 @@ a:focus {
   background: #ffcccc;
 }
 .dateBoxPopup {
+  z-index: 3;
 }
 
 .gwt-DatePicker {
