@@ -23,7 +23,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.WindowResizeListener;
 import com.google.gwt.user.client.ui.DeckPanel;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -51,26 +50,40 @@ public class BaseApplicationUI extends BaseApplication implements IAuthenticatio
     applicationContentDeck.setHeight("100%");
     applicationContentDeck.setAnimationEnabled(true);
 
-    if ("true".equals(getSettings().getString("showApplicationToolbar"))) {
-      applicationPanel.add(buildApplicationToolBar());
-    }    
-    
-    final ScrollPanel scroll = new ScrollPanel(applicationContentDeck);
-    applicationPanel.add(scroll);
-    Window.addResizeHandler(new ResizeHandler() {
-      public void onResize(ResizeEvent event) {
-        int newHeight = event.getHeight() - 90;
-        if (newHeight >= 0) {
-          scroll.setHeight(newHeight + "px");
-          applicationPanel.setCellHeight(scroll, newHeight + "px");
-        }
+    if ("true".equals(getSettings().getString("dockToolbars"))) {
+      if ("true".equals(getSettings().getString("showApplicationToolbar"))) {
+        applicationPanel.add(buildApplicationToolBar());
       }
-    });
-    scroll.setHeight((Window.getClientHeight() - 90) + "px");
-    applicationPanel.setCellHeight(scroll, (Window.getClientHeight() - 90) + "px");
 
-    if ("true".equals(getSettings().getString("showApplicationFooter"))) {
-      applicationPanel.add(buildFooterPanel());
+      final ScrollPanel scroll = new ScrollPanel(applicationContentDeck);
+      applicationPanel.add(scroll);
+      Window.addResizeHandler(new ResizeHandler() {
+        public void onResize(ResizeEvent event) {
+          int newHeight = event.getHeight() - 90;
+          if (newHeight >= 0) {
+            scroll.setHeight(newHeight + "px");
+            applicationPanel.setCellHeight(scroll, newHeight + "px");
+          }
+        }
+      });
+      scroll.setHeight((Window.getClientHeight() - 90) + "px");
+      applicationPanel.setCellHeight(scroll, (Window.getClientHeight() - 90) + "px");
+
+      if ("true".equals(getSettings().getString("showApplicationFooter"))) {
+        applicationPanel.add(buildFooterPanel());
+      }
+    } else {
+      if ("true".equals(getSettings().getString("showApplicationToolbar"))) {
+        applicationPanel.add(buildApplicationToolBar());
+      }
+
+      applicationPanel.add(applicationContentDeck);
+      applicationPanel.setCellHeight(applicationContentDeck, "100%");
+      applicationContentDeck.setHeight("100%");
+
+      if ("true".equals(getSettings().getString("showApplicationFooter"))) {
+        applicationPanel.add(buildFooterPanel());
+      }
     }
 
     RootPanel.get("content").clear();
