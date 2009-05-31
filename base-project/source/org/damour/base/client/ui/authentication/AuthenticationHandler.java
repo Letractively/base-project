@@ -267,33 +267,71 @@ public class AuthenticationHandler {
     contentPanel.setWidget(row, 0, new HTML("&nbsp;"));
     contentPanel.getFlexCellFormatter().setColSpan(row++, 0, 2);
     contentPanel.setWidget(row, 0, usernameLabel);
-    contentPanel.setWidget(row++, 1, username);
+    contentPanel.setWidget(row, 1, username);
+    contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
+    row++;
+    
     contentPanel.setWidget(row, 0, passwordLabel);
-    contentPanel.setWidget(row++, 1, password);
-    contentPanel.setWidget(row, 0, passwordConfirmLabel);
-    contentPanel.setWidget(row++, 1, passwordConfirm);
-    contentPanel.setWidget(row, 0, passwordHintLabel);
-    contentPanel.setWidget(row++, 1, passwordHint);
-    contentPanel.setWidget(row, 0, firstnameLabel);
-    contentPanel.setWidget(row++, 1, firstname);
-    contentPanel.setWidget(row, 0, lastnameLabel);
-    contentPanel.setWidget(row++, 1, lastname);
-    contentPanel.setWidget(row, 0, emailLabel);
-    contentPanel.setWidget(row++, 1, emailAddress);
-    contentPanel.setWidget(row, 0, birthdayLabel);
-    contentPanel.setWidget(row++, 1, dateBox);
+    contentPanel.setWidget(row, 1, password);
+    contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
+    row++;
 
+    contentPanel.setWidget(row, 0, passwordConfirmLabel);
+    contentPanel.setWidget(row, 1, passwordConfirm);
+    contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
+    row++;
+    
+    contentPanel.setWidget(row, 0, passwordHintLabel);
+    contentPanel.setWidget(row, 1, passwordHint);
+    contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
+    row++;
+    
+    contentPanel.setWidget(row, 0, firstnameLabel);
+    contentPanel.setWidget(row, 1, firstname);
+    contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
+    row++;
+
+    contentPanel.setWidget(row, 0, lastnameLabel);
+    contentPanel.setWidget(row, 1, lastname);
+    contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
+    row++;
+    
+    contentPanel.setWidget(row, 0, emailLabel);
+    contentPanel.setWidget(row, 1, emailAddress);
+    contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
+    row++;
+    
+    contentPanel.setWidget(row, 0, birthdayLabel);
+    contentPanel.setWidget(row, 1, dateBox);
+    contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
+    row++;
+    
     contentPanel.setWidget(row++, 1, new HTML("<HR>"));
-    contentPanel.setText(row++, 1, "Type the characters you see in the picture below.");
+    contentPanel.setText(row, 1, "Type the characters you see in the picture below.");
+    contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
+    row++;
+    
     createCaptchaImage();
     captchaValidationImage.setTitle("Click to load a new validation image");
     captchaValidationImage.setStyleName("captchaImage");
-    contentPanel.setWidget(row++, 1, captchaValidationImage);
-    contentPanel.setWidget(row++, 1, captchaValidationTextBox);
-    contentPanel.setWidget(row++, 1, new HTML("<HR>"));
-    contentPanel.setWidget(row++, 1, readDisclaimer);
-    contentPanel.setWidget(row++, 1, disclaimerCheckBox);
+    contentPanel.setWidget(row, 1, captchaValidationImage);
+    contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
+    row++;
 
+    contentPanel.setWidget(row, 1, captchaValidationTextBox);
+    contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
+    row++;
+
+    contentPanel.setWidget(row++, 1, new HTML("<HR>"));
+    contentPanel.setWidget(row, 1, readDisclaimer);
+    contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
+    row++;
+
+    contentPanel.setWidget(row, 1, disclaimerCheckBox);
+    contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
+    row++;
+
+    
     accountDialog.setCallback(new IDialogCallback() {
       public void okPressed() {
         boolean validationFailed = false;
@@ -391,30 +429,53 @@ public class AuthenticationHandler {
     contentPanel.setWidget(row, 0, new HTML("&nbsp;"));
     contentPanel.getFlexCellFormatter().setColSpan(row++, 0, 2);
     contentPanel.setWidget(row, 0, usernameLabel);
-    contentPanel.setWidget(row++, 1, username);
+    contentPanel.setWidget(row, 1, username);
     username.setText(user.getUsername());
+    contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
+    row++;
+    
     contentPanel.setWidget(row, 0, passwordLabel);
-    contentPanel.setWidget(row++, 1, password);
+    contentPanel.setWidget(row, 1, password);
+    contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
+    row++;
+    
     contentPanel.setWidget(row, 0, passwordConfirmLabel);
-    contentPanel.setWidget(row++, 1, passwordConfirm);
+    contentPanel.setWidget(row, 1, passwordConfirm);
+    contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
+    row++;
+    
     contentPanel.setWidget(row, 0, passwordHintLabel);
-    contentPanel.setWidget(row++, 1, passwordHint);
+    contentPanel.setWidget(row, 1, passwordHint);
     passwordHint.setText(user.getPasswordHint());
+    contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
+    row++;
+    
     contentPanel.setWidget(row, 0, firstnameLabel);
-    contentPanel.setWidget(row++, 1, firstname);
+    contentPanel.setWidget(row, 1, firstname);
     firstname.setText(user.getFirstname());
+    contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
+    row++;
+
     contentPanel.setWidget(row, 0, lastnameLabel);
-    contentPanel.setWidget(row++, 1, lastname);
+    contentPanel.setWidget(row, 1, lastname);
     lastname.setText(user.getLastname());
+    contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
+    row++;
+    
     contentPanel.setWidget(row, 0, emailLabel);
-    contentPanel.setWidget(row++, 1, emailAddress);
+    contentPanel.setWidget(row, 1, emailAddress);
     emailAddress.setText(user.getEmail());
+    contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
+    row++;
+    
     contentPanel.setWidget(row, 0, birthdayLabel);
 
     Date date = new Date(user.getBirthday());
     dateBox.setValue(date);
-    contentPanel.setWidget(row++, 1, dateBox);
-
+    contentPanel.setWidget(row, 1, dateBox);
+    contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
+    row++;
+    
     accountDialog.setCallback(new IDialogCallback() {
       public void okPressed() {
         boolean validationFailed = false;
