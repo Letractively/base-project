@@ -294,7 +294,7 @@ public class FileUploadService extends HttpServlet {
       } else {
         ps = conn.prepareStatement(insert_data);
         try {
-          ps.setBinaryStream(2, inputStream);
+          ps.setBinaryStream(2, inputStream, (int)fileObj.getSize());
         } catch (Throwable t) {
           ps.setBytes(2, IOUtils.toByteArray(inputStream));
         }
