@@ -15,7 +15,7 @@ This document will outline and describe the steps needed to get the base-project
 == Installation Steps ==
   # Download MySQL and perform a typical installation
   # Download mysql-gui-tools
-  # Using MySQL Administrator create a new catalog for the base-project
+  # Using MySQL Administrator (from mysql-gui-tools) create a new catalog for the base-project
   # Using the Administrator, create a base-project user for mysql and give the user all available privileges (Schema Privileges tab under User Administration)
   # Download Eclipse (for Java) and run it, create a new workspace if desired
   # Install the subversion plugin for Eclipse
