@@ -10,9 +10,13 @@ import org.damour.base.client.ui.admin.commands.ManageMyGroupsCommand;
 import org.damour.base.client.ui.admin.commands.ManagePendingGroupJoinsCommand;
 import org.damour.base.client.ui.authentication.AuthenticationHandler;
 import org.damour.base.client.ui.authentication.IAuthenticationListener;
+import org.damour.base.client.ui.buttons.Button;
 import org.damour.base.client.ui.buttons.ComboMenuButton;
 import org.damour.base.client.ui.buttons.MenuButtonCommand;
 import org.damour.base.client.ui.buttons.ToolbarButton;
+import org.damour.base.client.ui.dialogs.AdvertiseDialog;
+import org.damour.base.client.ui.dialogs.FeedbackDialog;
+import org.damour.base.client.ui.dialogs.PrivacyPolicyDialog;
 import org.damour.base.client.ui.dialogs.PromptDialogBox;
 import org.damour.base.client.ui.repository.FileManagerPanel;
 import org.damour.base.client.ui.toolbar.ToolBar;
@@ -219,14 +223,38 @@ public class BaseApplicationUI extends BaseApplication implements IAuthenticatio
     footerLinkPanel.setCellSpacing(5);
     footerLinkPanel.setStyleName("footerLinkPanel");
 
-    Label advertiseLink = new Label(getMessages().getString("advertiseWithUs", "Advertise with Us"), false);
+    Label advertiseLink = new Label(getMessages().getString("advertise", "Advertise"), false);
+    advertiseLink.setTitle(getMessages().getString("advertiseTitle", "Advertise With Us"));
     advertiseLink.setStyleName("footerLink");
+    advertiseLink.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
+        // show advertise with us dialog
+        AdvertiseDialog ad = new AdvertiseDialog();
+        ad.center();
+      }
+    });
 
     Label feedbackLink = new Label(getMessages().getString("feedback", "Feedback"), false);
+    feedbackLink.setTitle(getMessages().getString("feedbackTitle", "Give Us Feedback"));
     feedbackLink.setStyleName("footerLink");
+    feedbackLink.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
+        // show advertise with us dialog
+        FeedbackDialog fd = new FeedbackDialog();
+        fd.center();
+      }
+    });
 
     Label privacyLink = new Label(getMessages().getString("privacy", "Privacy"), false);
+    privacyLink.setTitle(getMessages().getString("privacyTitle", "View Our Privacy Policy"));
     privacyLink.setStyleName("footerLink");
+    privacyLink.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
+        // show privacy dialog
+        PrivacyPolicyDialog ppd = new PrivacyPolicyDialog();
+        ppd.center();
+      }
+    });
 
     int linkCol = -1;
     footerLinkPanel.setWidth("100%");
@@ -262,7 +290,7 @@ public class BaseApplicationUI extends BaseApplication implements IAuthenticatio
     linkCol = -1;
     int row = -1;
     footerGradientPanel.setHTML(++row, ++linkCol, "Copyright &#169 2007-" + ((new Date()).getYear() + 1900) + " "
-        + BaseApplication.getSettings().getString("companyName", "Your Company") + ".  All rights reserved.");
+        + BaseApplication.getMessages().getString("companyName", "Your Company") + ".  All rights reserved.");
     footerGradientPanel.getCellFormatter().setHorizontalAlignment(row, linkCol, HasHorizontalAlignment.ALIGN_CENTER);
 
     footerGradientPanelWrapper.add(footerGradientPanel);
@@ -285,6 +313,8 @@ public class BaseApplicationUI extends BaseApplication implements IAuthenticatio
     applicationToolBar.addFiller(100);
     customizeApplicationToolBarRight(applicationToolBar);
 
+    applicationToolBar.add(new Button("Blah"));
+    
     if (isAuthenticated()) {
       if (getAuthenticatedUser().isAdministrator()) {
         applicationToolBar.add(buildAdminButton());
