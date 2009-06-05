@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import org.damour.base.client.exceptions.SimpleMessageException;
 import org.damour.base.client.objects.Category;
 import org.damour.base.client.objects.Comment;
 import org.damour.base.client.objects.File;
@@ -72,12 +73,12 @@ public interface BaseServiceAsync {
   public void echoPermissibleObject(PermissibleObject permissibleObject, AsyncCallback<PermissibleObject> callback);
 
   // category methods
-  public void getCategories(AsyncCallback<List<Category>> callback) throws Exception;
-  public void getCategories(PermissibleObject permissibleObject, AsyncCallback<List<Category>> callback) throws Exception;
-  public void createCategory(String categoryName, String categoryDescription, Category parentCategory, AsyncCallback<Void> callback) throws Exception;
-  public void deleteCategory(Category category, AsyncCallback<Void> callback) throws Exception;
-  public void removeFromCategory(Category category, PermissibleObject permissibleObject, AsyncCallback<Void> callback) throws Exception;
-  public void addToCategory(Category category, PermissibleObject permissibleObject, AsyncCallback<Void> callback) throws Exception;
+  public void getCategories(AsyncCallback<List<Category>> callback);
+  public void getCategories(PermissibleObject permissibleObject, AsyncCallback<List<Category>> callback);
+  public void createCategory(String categoryName, String categoryDescription, Category parentCategory, AsyncCallback<Void> callback);
+  public void deleteCategory(Category category, AsyncCallback<Void> callback);
+  public void removeFromCategory(Category category, PermissibleObject permissibleObject, AsyncCallback<Void> callback);
+  public void addToCategory(Category category, PermissibleObject permissibleObject, AsyncCallback<Void> callback);
   
   // content rating & advisory
   public void setUserRating(PermissibleObject permissibleObject, int rating, AsyncCallback<UserRating> callback);
@@ -92,5 +93,9 @@ public interface BaseServiceAsync {
   public void submitComment(Comment comment, AsyncCallback<Boolean> callback);
   public void approveComment(Comment comment, AsyncCallback<Boolean> callback);
   public void deleteComment(Comment comment, AsyncCallback<Boolean> callback);
+
+  // advertising/feedback rpc
+  public void submitAdvertisingInfo(String contactName, String email, String company, String phone, String comments, AsyncCallback<Boolean> callback);
+  public void submitFeedback(String contactName, String email, String phone, String comments, AsyncCallback<Boolean> callback);
   
 }

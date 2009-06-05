@@ -1,6 +1,6 @@
 package org.damour.base.client.exceptions;
 
-public class LoginException extends Exception {
+public class LoginException extends RuntimeException {
 
   public LoginException() {
     super("Login failed");
