@@ -9,7 +9,7 @@ public class ToolBar extends HorizontalPanel {
 
   public ToolBar() {
     setHeight("29px");
-    setStyleName("linkBar");
+    setStyleName("toolBar");
     setWidth("100%");
     setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
     setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
