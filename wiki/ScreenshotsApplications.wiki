@@ -1,7 +1,8 @@
 #summary Screenshots of actual applications using base-project.
 
-== Please send us your screenshots of your applications! ==
+== Please send us screenshots of your applications! ==
 
 === Agelizer.com ===
 
 
+http://base-project.googlecode.com/files/agelizer.png
