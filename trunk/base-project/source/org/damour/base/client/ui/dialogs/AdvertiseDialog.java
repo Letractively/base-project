@@ -7,6 +7,7 @@ import org.damour.base.client.utils.StringUtils;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Label;
@@ -39,12 +40,12 @@ public class AdvertiseDialog extends PromptDialogBox implements IDialogValidator
     Label advertLabel = new Label(BaseApplication.getMessages().getString("advertiseWithUs", "Advertise With Us!"));
     DOM.setStyleAttribute(advertLabel.getElement(), "fontWeight", "bold");
     vp.add(advertLabel);
-    Label advertiseDescription = new Label(
+    HTML advertiseDescription = new HTML(
         BaseApplication
             .getMessages()
             .getString(
                 "advertiseDescription",
-                "If you are interested in advertising on this website please fill out the form below. We will be happy to work with you regarding cost, ad placement and frequency."));
+                "<BR>If you are interested in advertising on this website please fill out the form below. We will be happy to work with you regarding cost, ad placement and frequency.<BR><BR>"));
     vp.add(advertiseDescription);
 
     FlexTable formTable = new FlexTable();
