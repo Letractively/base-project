@@ -20,7 +20,7 @@ import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
 
 public class ComboMenuButton extends FlexTable implements MouseListener {
 
-  public static final String STYLE = "menuButton";
+  public static final String STYLE = "toolBarButton";
 
   private MenuBar menuBar;
   private Command command;
@@ -36,7 +36,7 @@ public class ComboMenuButton extends FlexTable implements MouseListener {
     setCellSpacing(0);
 
     Label label = new Label(labelText, true);
-    label.setStyleName("menuButtonLabel");
+    label.setStyleName("toolBarButtonLabel");
     label.addMouseListener(this);
     setWidget(0, 0, label);
     // prevent double-click from selecting text
@@ -44,9 +44,9 @@ public class ComboMenuButton extends FlexTable implements MouseListener {
 
     BaseImageBundle.images.downArrow().applyTo(arrowImage);
     arrowImage.addMouseListener(this);
-    arrowImage.setStyleName("menuButtonImage");
+    arrowImage.setStyleName("toolBarButtonImage");
     setWidget(0, 1, arrowImage);
-    getCellFormatter().setStyleName(0, 1, "menuButtonImage");
+    getCellFormatter().setStyleName(0, 1, "toolBarButtonImage");
 
     getCellFormatter().setVerticalAlignment(0, 0, HasVerticalAlignment.ALIGN_MIDDLE);
     getCellFormatter().setVerticalAlignment(0, 1, HasVerticalAlignment.ALIGN_MIDDLE);

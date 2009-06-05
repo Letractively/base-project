@@ -148,7 +148,7 @@ public class AuthenticationHandler {
 
       public void onClick(final ClickEvent event) {
 
-        String companyName = BaseApplication.getSettings().getString("companyName", "the Company");
+        String companyName = BaseApplication.getMessages().getString("companyName", "the Company");
 
         String disclaimerText = new String(
             "By using this website, you acknowledge that you have read and agree to these terms.  Department staff may revise these terms periodically.  If you continue to use this website after changes are made to these terms, it will mean that you accept such changes.  If at any time you do not wish to accept the Terms, you may choose not to use this website.");

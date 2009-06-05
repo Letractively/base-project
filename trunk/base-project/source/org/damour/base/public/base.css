@@ -84,6 +84,8 @@
 
 .commentHeader {
   background-image: url(images/menubar_bg.png);
+  background-color: #d3d3d3;
+  color: black;
 }
 
 .commentsPanel {
@@ -108,6 +110,9 @@
   cursor: pointer;
   cursor: hand;
 }
+
+
+
 
 .advisoryPopup {
   background-color: #e3e3e3;
@@ -143,6 +148,7 @@
   border-bottom: 1px solid #838383;
   border-right: 1px solid #838383;
   background-image: url(images/menubar_bg.png);
+  background-color: #aaaaaa;
   font-weight: bold;
 }
 
@@ -164,8 +170,14 @@
 
 
 
+.toolBar {
+  background-color: #d3d3d3;
+  background-image: url(images/subtoolbar_bg.png);
+  background-repeat: repeat-x;
+  border-bottom: 1px solid #707070;
+}
 
-.menuButton {
+.toolBarButton {
   color: black;
   background-color: #d3d3d3;
   border: 1px solid #a3a3a3;
@@ -175,39 +187,73 @@
   padding: 0 1px 0 1px;
 }
 
-.menuButton-hover {
+.toolBarButton-hover {
   background-color: #f3f3f3;
   border: 1px solid #838383;
 }
 
-.menuButton-pressed {
+.toolBarButton-pressed {
   border: 1px solid #535353;
 }
 
-.menuButton-disabled {
+.toolBarButton-disabled {
   color: gray;
   cursor: default;
 }
 
-.menuButtonLabel {
+.toolBarButtonLabel {
   margin: 2px 1px 2px 2px;
 }
 
-.menuButtonImage {
+.toolBarButtonImage {
   margin: 3px 2px 2px 1px;
 }
 
 
 
-
-
-
-
-.linkBar {
+.commentToolBarButton {
   background-image: url(images/subtoolbar_bg.png);
   background-repeat: repeat-x;
-  border-bottom: 1px solid #707070;
+  background-position: center;
+  background-color: #d3d3d3;
+  color: black;
+  border: 1px solid #a3a3a3;
+  cursor: pointer;
+  cursor: hand;
+  margin: 0 1px 0 0;
+  padding: 0 1px 0 1px;
 }
+
+.commentToolBarButtonImage {
+  margin: 3px 2px 2px 1px;
+}
+
+.commentToolBarButtonLabel {
+  margin: 2px 1px 2px 2px;
+}
+
+.commentToolBarButton-hover {
+  background-color: #a0a0a0;
+  border: 1px solid #838383;
+}
+
+.commentToolBarButton-pressed {
+  border: 1px solid #535353;
+}
+
+.commentToolBarButton-disabled {
+  color: gray;
+  cursor: default;
+}
+
+
+
+
+
+
+
+
+
 
 .welcomeLabel {
 	font-size:14px;
@@ -237,11 +283,12 @@
 }
 
 .my-button {
-   background-image:url(images/buttonbg.gif);
+   background-image:url(images/button_bg.png);
+   background-color: #d3d3d3;
    font-weight: plain;
    border: 1px solid black;
    margin: 1px;
-   padding: 1px;
+   padding: 2px 5px;
    cursor: pointer;
    cursor: hand;
 }
@@ -251,16 +298,17 @@
    font-weight: plain;
    border: 1px solid black;
    margin: 1px;
-   padding: 1px;
+   padding: 2px 5px;
    cursor: pointer;
-   cursor: hand;}
+   cursor: hand;
+}
 
 .my-button-hover {
    background-image:url(images/buttonhoverbg.gif);
    font-weight: plain;
    border: 1px solid black;
    margin: 1px;
-   padding: 1px;
+   padding: 2px 5px;
    cursor: pointer;
    cursor: hand;
 }
@@ -570,7 +618,8 @@ a:focus {
 }
 
 .gwt-DialogBox .dialogTopCenter {
-  background-image: url(images/menubar_bg.png);
+  background-image: url(images/subtoolbar_bg.png);
+  background-color: #d3d3d3;
   background-repeat: repeat-x;
   color: black;
   cursor: move;
@@ -672,11 +721,17 @@ a:focus {
 
 
 
+.gwt-PasswordTextBox {
+	border: 1px solid #838383;
+}
 
+.gwt-TextArea {
+	border: 1px solid #838383;
+}
 
-
-
-
+.gwt-TextBox {
+	border: 1px solid #838383;
+}
 
 .gwt-TextBox-readonly {
   color: #888;

@@ -16,7 +16,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 public class IconButton extends FlexTable implements MouseListener {
 
-  public static final String STYLE = "menuButton";
+  private String STYLE = "toolBarButton";
 
   private Command command;
   private boolean enabled = true;
@@ -31,7 +31,8 @@ public class IconButton extends FlexTable implements MouseListener {
   private AbstractImagePrototype disabledImage;
   private AbstractImagePrototype pressedImage;
 
-  public IconButton(String labelText, boolean labelOnLeft, AbstractImagePrototype defaultImage, AbstractImagePrototype hoverImage, AbstractImagePrototype pressedImage, AbstractImagePrototype disabledImage) {
+  public IconButton(String labelText, boolean labelOnLeft, AbstractImagePrototype defaultImage, AbstractImagePrototype hoverImage,
+      AbstractImagePrototype pressedImage, AbstractImagePrototype disabledImage) {
     this.defaultImage = defaultImage;
     this.hoverImage = hoverImage;
     this.pressedImage = pressedImage;
@@ -42,11 +43,11 @@ public class IconButton extends FlexTable implements MouseListener {
 
     label.setWordWrap(false);
     label.setText(labelText);
-    label.setStyleName("menuButtonLabel");
+    label.setStyleName(STYLE + "Label");
     label.addMouseListener(this);
 
     defaultImage.applyTo(image);
-    image.setStyleName("menuButtonImage");
+    image.setStyleName(STYLE + "Image");
     image.addMouseListener(this);
 
     if (labelText != null) {
@@ -120,9 +121,9 @@ public class IconButton extends FlexTable implements MouseListener {
   }
 
   private static native void preventTextSelection(Element ele) /*-{
-            ele.onselectstart=function() {return false};
-            ele.ondragstart=function() {return false};
-          }-*/;
+             ele.onselectstart=function() {return false};
+             ele.ondragstart=function() {return false};
+           }-*/;
 
   public boolean isEnabled() {
     return enabled;
@@ -157,6 +158,17 @@ public class IconButton extends FlexTable implements MouseListener {
 
   public void setUserObject(Object userObject) {
     this.userObject = userObject;
+  }
+
+  public String getSTYLE() {
+    return STYLE;
+  }
+
+  public void setSTYLE(String style) {
+    STYLE = style;
+    setStyleName(STYLE);
+    label.setStyleName(STYLE + "Label");
+    image.setStyleName(STYLE + "Image");
   }
 
 }

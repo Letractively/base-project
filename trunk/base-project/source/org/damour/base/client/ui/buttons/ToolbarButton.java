@@ -14,7 +14,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 public class ToolbarButton extends FlexTable implements MouseListener {
 
-  public static final String STYLE = "menuButton";
+  public static final String STYLE = "toolBarButton";
 
   private Label label = new Label();
   private Command command;
@@ -27,7 +27,7 @@ public class ToolbarButton extends FlexTable implements MouseListener {
 
     label.setText(labelText);
     label.setWordWrap(false);
-    label.setStyleName("menuButtonLabel");
+    label.setStyleName("toolBarButtonLabel");
     label.addMouseListener(this);
     setWidget(0, 0, label);
     // prevent double-click from selecting text
@@ -93,10 +93,11 @@ public class ToolbarButton extends FlexTable implements MouseListener {
     listeners.remove(listener);
   }
 
-  private static native void preventTextSelection(Element ele) /*-{
-          ele.onselectstart=function() {return false};
-          ele.ondragstart=function() {return false};
-        }-*/;
+  private static native void preventTextSelection(Element ele)
+  /*-{
+    ele.onselectstart=function() {return false};
+    ele.ondragstart=function() {return false};
+  }-*/;
 
   public boolean isEnabled() {
     return enabled;
