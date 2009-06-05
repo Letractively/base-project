@@ -140,8 +140,12 @@ public class GetFileService extends HttpServlet {
         // consider copying to /tmp to read from later rather than from database
         // depending on performance of the database
         // DONE
-        FileOutputStream fileOutputStream = new FileOutputStream(possibleDataFile);
+
+        FileOutputStream fileOutputStream = null;
         try {
+          java.io.File tmpDir = new java.io.File(BaseSystem.getTempDir());
+          tmpDir.mkdirs();
+          fileOutputStream = new FileOutputStream(possibleDataFile);
           IOUtils.write(fileData.getData(), fileOutputStream);
         } catch (Throwable t) {
           Logger.log(t);
