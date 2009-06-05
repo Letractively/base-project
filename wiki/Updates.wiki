@@ -1,6 +1,10 @@
 #summary Project News & Updates.
 #labels Featured
 
+= June 3, 2009 =
+
+  * Quick fix for use of java.sql call only available with Java 1.6, found 1.5 workaround
+
 = April 15, 2009 =
 
   * Moved settings/logging flags out of HibernateUtil and into BaseSystem
