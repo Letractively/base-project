@@ -2,7 +2,6 @@
 
 == Please send us screenshots of your applications! ==
 
-=== Agelizer.com ===
-
 
 http://base-project.googlecode.com/files/agelizer.png
+=== Agelizer.com ===
