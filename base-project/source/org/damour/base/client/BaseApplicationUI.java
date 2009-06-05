@@ -313,8 +313,6 @@ public class BaseApplicationUI extends BaseApplication implements IAuthenticatio
     applicationToolBar.addFiller(100);
     customizeApplicationToolBarRight(applicationToolBar);
 
-    applicationToolBar.add(new Button("Blah"));
-    
     if (isAuthenticated()) {
       if (getAuthenticatedUser().isAdministrator()) {
         applicationToolBar.add(buildAdminButton());
