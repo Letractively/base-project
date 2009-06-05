@@ -371,6 +371,7 @@ public class CommentWidget extends VerticalPanel {
   private Widget createPageControllerPanel(final FlexTable mainPanel) {
     final IconButton nextPageImageButton = new IconButton(null, true, BaseImageBundle.images.next(), BaseImageBundle.images.next(), BaseImageBundle.images
         .next(), BaseImageBundle.images.next());
+    nextPageImageButton.setSTYLE("commentToolBarButton");
     nextPageImageButton.addClickListener(new ClickListener() {
       public void onClick(Widget sender) {
         if (pageNumber == lastPageNumber) {
@@ -382,6 +383,7 @@ public class CommentWidget extends VerticalPanel {
     });
     final IconButton previousPageImageButton = new IconButton(null, false, BaseImageBundle.images.previous(), BaseImageBundle.images.previous(),
         BaseImageBundle.images.previous(), BaseImageBundle.images.previous());
+    previousPageImageButton.setSTYLE("commentToolBarButton");
     previousPageImageButton.addClickListener(new ClickListener() {
       public void onClick(Widget sender) {
         if (pageNumber == 0) {
@@ -393,6 +395,7 @@ public class CommentWidget extends VerticalPanel {
     });
     final IconButton lastPageImageButton = new IconButton(null, false, BaseImageBundle.images.last(), BaseImageBundle.images.last(), BaseImageBundle.images
         .last(), BaseImageBundle.images.last());
+    lastPageImageButton.setSTYLE("commentToolBarButton");
     lastPageImageButton.addClickListener(new ClickListener() {
       public void onClick(Widget sender) {
         pageNumber = (int) lastPageNumber;
@@ -401,6 +404,7 @@ public class CommentWidget extends VerticalPanel {
     });
     final IconButton firstPageImageButton = new IconButton(null, false, BaseImageBundle.images.first(), BaseImageBundle.images.first(), BaseImageBundle.images
         .first(), BaseImageBundle.images.first());
+    firstPageImageButton.setSTYLE("commentToolBarButton");
     firstPageImageButton.addClickListener(new ClickListener() {
       public void onClick(Widget sender) {
         pageNumber = 0;
@@ -432,6 +436,7 @@ public class CommentWidget extends VerticalPanel {
   private Widget createButtonPanel(final FlexTable mainPanel, final boolean forceOpen) {
     final IconButton reloadImageButton = new IconButton("Refresh", true, BaseImageBundle.images.refresh_16(), BaseImageBundle.images.refresh_16(),
         BaseImageBundle.images.refresh_16(), BaseImageBundle.images.refresh_disabled_16());
+    reloadImageButton.setSTYLE("commentToolBarButton");
     reloadImageButton.setTitle("Refresh comments");
     reloadImageButton.addClickListener(new ClickListener() {
       public void onClick(Widget sender) {
@@ -442,6 +447,7 @@ public class CommentWidget extends VerticalPanel {
 
     final IconButton sortImageButton = new IconButton("Sort " + (sortDescending ? "Ascending" : "Descending"), true, BaseImageBundle.images.sort(),
         BaseImageBundle.images.sort(), BaseImageBundle.images.sort(), BaseImageBundle.images.sort());
+    sortImageButton.setSTYLE("commentToolBarButton");
     sortImageButton.setTitle(sortDescending ? "Show oldest comments first" : "Show most recent comments first");
     sortImageButton.addClickListener(new ClickListener() {
       public void onClick(Widget sender) {
@@ -463,6 +469,7 @@ public class CommentWidget extends VerticalPanel {
           BaseImageBundle.images.flatten(), BaseImageBundle.images.flatten());
       flattenImageButton.setTitle("Flatten the comment hierarchy");
     }
+    flattenImageButton.setSTYLE("commentToolBarButton");
     flattenImageButton.addClickListener(new ClickListener() {
       public void onClick(Widget sender) {
         flatten = !flatten;
@@ -506,7 +513,7 @@ public class CommentWidget extends VerticalPanel {
     HorizontalPanel buttonPanelWrapper = new HorizontalPanel();
     buttonPanelWrapper.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
     buttonPanelWrapper.setWidth("500px");
-    FlowPanel buttonPanel = new FlowPanel();
+    HorizontalPanel buttonPanel = new HorizontalPanel();
     // create buttons
     final Button submitButton = new Button("Submit");
     submitButton.addClickListener(new ClickListener() {
