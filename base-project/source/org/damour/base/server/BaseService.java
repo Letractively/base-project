@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.damour.base.client.exceptions.LoginException;
+import org.damour.base.client.exceptions.SimpleMessageException;
 import org.damour.base.client.objects.Category;
 import org.damour.base.client.objects.Comment;
 import org.damour.base.client.objects.File;
@@ -100,7 +101,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     sendMessage(smtpHost, from, from, to, subject, message);
   }
 
-  protected void sendMessage(String smtpHost, String fromAddress, String fromName, String to, String subject, String text) {
+  protected boolean sendMessage(String smtpHost, String fromAddress, String fromName, String to, String subject, String text) {
     try {
       // Get system properties
       Properties props = System.getProperties();
@@ -120,7 +121,10 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       message.setContent(text, "text/html");
       // Send message
       Transport.send(message);
+      return true;
     } catch (Exception e) {
+      Logger.log(e);
+      return false;
     }
   }
 
@@ -188,21 +192,21 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       return login(session.get(), request, response, username, password, false);
     } catch (Throwable t) {
       Logger.log(t);
-      throw new RuntimeException("Could not login.  Invalid username or password.");
+      throw new SimpleMessageException("Could not login.  Invalid username or password.");
     }
   }
 
-  public User login(String username, String password) throws Exception {
+  public User login(String username, String password) throws SimpleMessageException {
     try {
       return login(session.get(), getThreadLocalRequest(), getThreadLocalResponse(), username, password, false);
     } catch (Throwable t) {
       Logger.log(t);
-      throw new RuntimeException("Could not login.  Invalid username or password.");
+      throw new SimpleMessageException("Could not login.  Invalid username or password.");
     }
   }
 
   private User login(org.hibernate.Session session, HttpServletRequest request, HttpServletResponse response, String username, String password, boolean internal)
-      throws Exception {
+      throws SimpleMessageException {
     username = username.toLowerCase();
     User user = UserHelper.getUser(session, username);
     MD5 md5 = new MD5();
@@ -224,7 +228,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       response.addCookie(voterCookie);
     } else {
       destroyAuthCookies(request, response);
-      throw new RuntimeException("Could not login.  Invalid username or password.");
+      throw new SimpleMessageException("Could not login.  Invalid username or password.");
     }
     return user;
   }
@@ -296,12 +300,12 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     return user;
   }
 
-  public void logout() throws Exception {
+  public void logout() throws SimpleMessageException {
     destroyAllCookies(getThreadLocalRequest(), getThreadLocalResponse());
   }
 
   // create or edit account
-  public User createOrEditAccount(User inUser, String password, String captchaText) throws Exception {
+  public User createOrEditAccount(User inUser, String password, String captchaText) throws SimpleMessageException {
     Transaction tx = session.get().beginTransaction();
     try {
       User possibleAuthUser = getAuthenticatedUser(session.get());
@@ -322,7 +326,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         if (captchaText != null && !"".equals(captchaText)) {
           Captcha captcha = (Captcha) getThreadLocalRequest().getSession().getAttribute("captcha");
           if (!captcha.isValid(captchaText)) {
-            throw new RuntimeException("Could not create account: validation failed.");
+            throw new SimpleMessageException("Could not create account: validation failed.");
           }
         }
 
@@ -395,35 +399,35 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         }
         return dbUser;
       }
-      throw new RuntimeException("Could not edit account.");
+      throw new SimpleMessageException("Could not edit account.");
     } catch (Exception ex) {
       Logger.log(ex);
       try {
         tx.rollback();
       } catch (Exception exx) {
       }
-      throw new RuntimeException(ex.getMessage());
+      throw new SimpleMessageException(ex.getMessage());
     }
   }
 
-  public String getLoginHint(String username) throws Exception {
+  public String getLoginHint(String username) throws SimpleMessageException {
     User user = UserHelper.getUser(session.get(), username.toLowerCase());
     if (user == null) {
-      throw new RuntimeException("Could not get login hint.");
+      throw new SimpleMessageException("Could not get login hint.");
     }
     return user.getPasswordHint();
   }
 
-  public List<String> getUsernames() throws Exception {
+  public List<String> getUsernames() throws SimpleMessageException {
     // this is a non-admin function
     return SecurityHelper.getUsernames(session.get());
   }
 
-  public List<User> getUsers() throws Exception {
+  public List<User> getUsers() throws SimpleMessageException {
     return SecurityHelper.getUsers(session.get());
   }
 
-  public List<UserGroup> getGroups(User user) throws Exception {
+  public List<UserGroup> getGroups(User user) throws SimpleMessageException {
     User authUser = getAuthenticatedUser(session.get());
     // the admin & actual user can list all groups for the user
     if (authUser != null && (authUser.isAdministrator() || authUser.equals(user))) {
@@ -433,7 +437,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     return SecurityHelper.getVisibleUserGroups(session.get(), user);
   }
 
-  public List<UserGroup> getOwnedGroups(User user) throws Exception {
+  public List<UserGroup> getOwnedGroups(User user) throws SimpleMessageException {
     User authUser = getAuthenticatedUser(session.get());
     // if we are the admin, and we are asking to list owned admin groups,
     // we show all groups to the admin
@@ -449,7 +453,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     return SecurityHelper.getOwnedVisibleUserGroups(session.get(), user);
   }
 
-  public List<UserGroup> getGroups() throws Exception {
+  public List<UserGroup> getGroups() throws SimpleMessageException {
     User authUser = getAuthenticatedUser(session.get());
     // the admin can list all groups
     if (authUser != null && authUser.isAdministrator()) {
@@ -458,10 +462,10 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     return SecurityHelper.getVisibleUserGroups(session.get());
   }
 
-  public List<User> getUsers(UserGroup group) throws Exception {
+  public List<User> getUsers(UserGroup group) throws SimpleMessageException {
     User authUser = getAuthenticatedUser(session.get());
     if (authUser == null) {
-      throw new RuntimeException("User is not authenticated.");
+      throw new SimpleMessageException("User is not authenticated.");
     }
     group = (UserGroup) session.get().load(UserGroup.class, group.getId());
     // only the group owner, group members and administrator can see the users in a group
@@ -473,26 +477,26 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     if (memberships.contains(group)) {
       return SecurityHelper.getUsersInUserGroup(session.get(), group);
     }
-    throw new RuntimeException("User is not authorized to list users in group.");
+    throw new SimpleMessageException("User is not authorized to list users in group.");
   }
 
-  public GroupMembership addUserToGroup(User user, UserGroup group) throws Exception {
+  public GroupMembership addUserToGroup(User user, UserGroup group) throws SimpleMessageException {
     Transaction tx = null;
     try {
       User authUser = getAuthenticatedUser(session.get());
       if (authUser == null) {
-        throw new RuntimeException("Could not join group, attempt to join with unauthorized client.");
+        throw new SimpleMessageException("Could not join group, attempt to join with unauthorized client.");
       }
       group = (UserGroup) session.get().load(UserGroup.class, group.getId());
       user = (User) session.get().load(User.class, user.getId());
 
       if (group == null || user == null) {
-        throw new RuntimeException("Could not join group, user and group not found.");
+        throw new SimpleMessageException("Could not join group, user and group not found.");
       }
 
       // the group owner and an administrator may add users to groups without obeying the 'lock'
       if (group.isLocked() && !authUser.isAdministrator() && !group.getOwner().getId().equals(authUser.getId())) {
-        throw new RuntimeException("This group is currently not accepting new members.");
+        throw new SimpleMessageException("This group is currently not accepting new members.");
       }
 
       if (authUser.isAdministrator() || group.isAutoJoin() || group.getOwner().getId().equals(authUser.getId())) {
@@ -513,57 +517,58 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         // send email to group owner
         sendMessage(getSmtpHost(), "admin@" + getDomainName(), "admin@" + getDomainName(), group.getOwner().getEmail(), "Group join request from "
             + user.getUsername(), "[" + getDomainName() + "] " + user.getUsername() + " has requested permission to join your group " + group.getName());
-        throw new RuntimeException("Could not join group, request submitted to group owner.");
+        throw new SimpleMessageException("Could not join group, request submitted to group owner.");
       }
-      throw new RuntimeException("Could not join group.");
+      throw new SimpleMessageException("Could not join group.");
     } catch (org.hibernate.exception.ConstraintViolationException e) {
       try {
         tx.rollback();
       } catch (Throwable tt) {
       }
-      throw new RuntimeException("Could not join group, user already a member or add request pending.");
+      throw new SimpleMessageException("Could not join group, user already a member or add request pending.");
     }
   }
 
-  public List<PendingGroupMembership> getPendingGroupMemberships(User user) throws Exception {
+  public List<PendingGroupMembership> getPendingGroupMemberships(User user) throws SimpleMessageException {
     try {
       User authUser = getAuthenticatedUser(session.get());
       if (authUser == null) {
-        throw new RuntimeException("Could not join group, attempt to join with unauthorized client.");
+        throw new SimpleMessageException("Could not join group, attempt to join with unauthorized client.");
       }
       user = (User) session.get().load(User.class, user.getId());
 
       if (user == null) {
-        throw new RuntimeException("Could not get pending groups for supplied user.");
+        throw new SimpleMessageException("Could not get pending groups for supplied user.");
       }
 
       if (authUser.isAdministrator() || user.getId().equals(authUser.getId())) {
         // remember, administrator owns all
         return SecurityHelper.getPendingGroupMemberships(session.get(), user);
       } else {
-        throw new RuntimeException("Could not get pending group memberships.");
+        throw new SimpleMessageException("Could not get pending group memberships.");
       }
 
     } catch (Throwable t) {
-      throw new RuntimeException(t.getMessage());
+      throw new SimpleMessageException(t.getMessage());
     }
   }
 
-  public List<PendingGroupMembership> submitPendingGroupMembershipApproval(User user, Set<PendingGroupMembership> members, boolean approve) throws Exception {
+  public List<PendingGroupMembership> submitPendingGroupMembershipApproval(User user, Set<PendingGroupMembership> members, boolean approve)
+      throws SimpleMessageException {
 
     if (members == null || members.size() == 0) {
-      throw new RuntimeException("List of members provided was empty.");
+      throw new SimpleMessageException("List of members provided was empty.");
     }
 
     if (user == null) {
-      throw new RuntimeException("User not supplied.");
+      throw new SimpleMessageException("User not supplied.");
     }
 
     Transaction tx = session.get().beginTransaction();
     try {
       User authUser = getAuthenticatedUser(session.get());
       if (authUser == null) {
-        throw new RuntimeException("Cannot approve or deny requests without authentication.");
+        throw new SimpleMessageException("Cannot approve or deny requests without authentication.");
       }
 
       // only the authenticated: admin or user themselves
@@ -585,7 +590,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         // send back the new list
         return SecurityHelper.getPendingGroupMemberships(session.get(), user);
       } else {
-        throw new RuntimeException("Cannot approve or deny requests without proper authentication.");
+        throw new SimpleMessageException("Cannot approve or deny requests without proper authentication.");
       }
     } catch (Throwable t) {
       Logger.log(t);
@@ -593,11 +598,11 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         tx.rollback();
       } catch (Throwable tt) {
       }
-      throw new RuntimeException(t.getMessage());
+      throw new SimpleMessageException(t.getMessage());
     }
   }
 
-  public UserGroup createOrEditGroup(UserGroup group) throws Exception {
+  public UserGroup createOrEditGroup(UserGroup group) throws SimpleMessageException {
     Transaction tx = session.get().beginTransaction();
     try {
       User authUser = getAuthenticatedUser(session.get());
@@ -614,7 +619,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
           List<UserGroup> existingGroups = SecurityHelper.getOwnedUserGroups(session.get(), group.getOwner());
           for (UserGroup existingGroup : existingGroups) {
             if (existingGroup.getName().equalsIgnoreCase(group.getName())) {
-              throw new RuntimeException("A group already exists with this name.");
+              throw new SimpleMessageException("A group already exists with this name.");
             }
           }
           session.get().save(group);
@@ -638,20 +643,20 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         tx.rollback();
       } catch (Throwable tt) {
       }
-      throw new RuntimeException(t.getMessage());
+      throw new SimpleMessageException(t.getMessage());
     }
   }
 
-  public void deleteUser(User user, UserGroup group) throws Exception {
+  public void deleteUser(User user, UserGroup group) throws SimpleMessageException {
     User authUser = getAuthenticatedUser(session.get());
     if (authUser == null) {
-      throw new RuntimeException("Could not remove user from group, attempt made with unauthorized client.");
+      throw new SimpleMessageException("Could not remove user from group, attempt made with unauthorized client.");
     }
     group = (UserGroup) session.get().load(UserGroup.class, group.getId());
     user = (User) session.get().load(User.class, user.getId());
 
     if (group == null || user == null) {
-      throw new RuntimeException("Could not remove user from group, user or group not found.");
+      throw new SimpleMessageException("Could not remove user from group, user or group not found.");
     }
 
     if (authUser.isAdministrator() || group.isAutoJoin() || group.getOwner().getId().equals(authUser.getId())) {
@@ -664,7 +669,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     }
   }
 
-  public void deleteGroup(UserGroup group) throws Exception {
+  public void deleteGroup(UserGroup group) throws SimpleMessageException {
     User authUser = getAuthenticatedUser(session.get());
     if (authUser != null && (authUser.isAdministrator() || group.getOwner().getId().equals(authUser.getId()))) {
       Transaction tx = session.get().beginTransaction();
@@ -672,11 +677,11 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       SecurityHelper.deleteUserGroup(session.get(), group);
       tx.commit();
     } else {
-      throw new RuntimeException("Could not delete group, insufficient privilidges.");
+      throw new SimpleMessageException("Could not delete group, insufficient privilidges.");
     }
   }
 
-  public List<HibernateStat> getHibernateStats() throws Exception {
+  public List<HibernateStat> getHibernateStats() throws SimpleMessageException {
     List<HibernateStat> statsList = new ArrayList<HibernateStat>();
 
     Statistics stats = HibernateUtil.getInstance().getSessionFactory().getStatistics();
@@ -699,14 +704,14 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     return statsList;
   }
 
-  public void resetHibernate() throws Exception {
+  public void resetHibernate() throws SimpleMessageException {
     User authUser = getAuthenticatedUser(session.get());
     if (authUser != null && authUser.isAdministrator()) {
       HibernateUtil.resetHibernate();
     }
   }
 
-  public void evictClassFromCache(String className) throws Exception {
+  public void evictClassFromCache(String className) throws SimpleMessageException {
     User authUser = getAuthenticatedUser(session.get());
     if (authUser != null && authUser.isAdministrator()) {
       try {
@@ -719,7 +724,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     }
   }
 
-  public MemoryStats getMemoryStats() throws Exception {
+  public MemoryStats getMemoryStats() throws SimpleMessageException {
     MemoryStats stats = new MemoryStats();
     stats.setMaxMemory(Runtime.getRuntime().maxMemory());
     stats.setTotalMemory(Runtime.getRuntime().totalMemory());
@@ -727,7 +732,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     return stats;
   }
 
-  public MemoryStats requestGarbageCollection() throws Exception {
+  public MemoryStats requestGarbageCollection() throws SimpleMessageException {
     User authUser = getAuthenticatedUser(session.get());
     if (authUser != null && authUser.isAdministrator()) {
       try {
@@ -739,31 +744,31 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     return getMemoryStats();
   }
 
-  public Date getServerStartupDate() throws Exception {
+  public Date getServerStartupDate() throws SimpleMessageException {
     return new Date(BaseSystem.getStartupDate());
   }
 
-  public UserRating getUserRating(PermissibleObject permissibleObject) throws Exception {
+  public UserRating getUserRating(PermissibleObject permissibleObject) throws SimpleMessageException {
     if (permissibleObject == null) {
-      throw new RuntimeException("PermissibleObject not supplied.");
+      throw new SimpleMessageException("PermissibleObject not supplied.");
     }
     User authUser = getAuthenticatedUser(session.get());
     try {
       permissibleObject = (PermissibleObject) session.get().load(PermissibleObject.class, permissibleObject.getId());
       if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, permissibleObject, PERM.READ)) {
-        throw new RuntimeException("User is not authorized to get rating on this content.");
+        throw new SimpleMessageException("User is not authorized to get rating on this content.");
       }
       // find rating based on remote address if needed
       return RatingHelper.getUserRating(session.get(), permissibleObject, authUser, getVoterGUID());
     } catch (Throwable t) {
       Logger.log(t);
-      throw new RuntimeException(t.getMessage());
+      throw new SimpleMessageException(t.getMessage());
     }
   }
 
-  public UserRating setUserRating(PermissibleObject permissibleObject, int rating) throws Exception {
+  public UserRating setUserRating(PermissibleObject permissibleObject, int rating) throws SimpleMessageException {
     if (permissibleObject == null) {
-      throw new RuntimeException("PermissibleObject not supplied.");
+      throw new SimpleMessageException("PermissibleObject not supplied.");
     }
     User authUser = getAuthenticatedUser(session.get());
     Transaction tx = session.get().beginTransaction();
@@ -771,7 +776,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       permissibleObject = (PermissibleObject) session.get().load(PermissibleObject.class, permissibleObject.getId());
 
       if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, permissibleObject, PERM.READ)) {
-        throw new RuntimeException("User is not authorized to set rating on this content.");
+        throw new SimpleMessageException("User is not authorized to set rating on this content.");
       }
 
       UserRating userRating = RatingHelper.getUserRating(session.get(), permissibleObject, authUser, getThreadLocalRequest().getRemoteAddr());
@@ -779,7 +784,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       if (userRating != null) {
         // TODO: consider changing the vote
         // simply subtract the previous amount and decrement the numRatingVotes and redivide
-        throw new RuntimeException("Already voted.");
+        throw new SimpleMessageException("Already voted.");
       }
 
       float totalRating = (float) permissibleObject.getNumRatingVotes() * permissibleObject.getAverageRating();
@@ -804,7 +809,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         tx.rollback();
       } catch (Throwable tt) {
       }
-      throw new RuntimeException(t.getMessage());
+      throw new SimpleMessageException(t.getMessage());
     }
   }
 
@@ -829,9 +834,9 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     return voterGUID;
   }
 
-  public PermissibleObject getNextUnratedPermissibleObject(String objectType) throws Exception {
+  public PermissibleObject getNextUnratedPermissibleObject(String objectType) throws SimpleMessageException {
     if (StringUtils.isEmpty(objectType)) {
-      throw new RuntimeException("Type not supplied.");
+      throw new SimpleMessageException("Type not supplied.");
     }
     PermissibleObject object = null;
     User authUser = getAuthenticatedUser(session.get());
@@ -839,28 +844,28 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     return object;
   }
 
-  public UserAdvisory getUserAdvisory(PermissibleObject permissibleObject) throws Exception {
+  public UserAdvisory getUserAdvisory(PermissibleObject permissibleObject) throws SimpleMessageException {
     if (permissibleObject == null) {
-      throw new RuntimeException("PermissibleObject not supplied.");
+      throw new SimpleMessageException("PermissibleObject not supplied.");
     }
     User authUser = getAuthenticatedUser(session.get());
     try {
       permissibleObject = (PermissibleObject) session.get().load(PermissibleObject.class, permissibleObject.getId());
 
       if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, permissibleObject, PERM.READ)) {
-        throw new RuntimeException("User is not authorized to get advisory on this content.");
+        throw new SimpleMessageException("User is not authorized to get advisory on this content.");
       }
       // find rating based on remote address if needed
       return AdvisoryHelper.getUserAdvisory(session.get(), permissibleObject, authUser, getVoterGUID());
     } catch (Throwable t) {
       Logger.log(t);
-      throw new RuntimeException(t.getMessage());
+      throw new SimpleMessageException(t.getMessage());
     }
   }
 
-  public UserAdvisory setUserAdvisory(PermissibleObject permissibleObject, int advisory) throws Exception {
+  public UserAdvisory setUserAdvisory(PermissibleObject permissibleObject, int advisory) throws SimpleMessageException {
     if (permissibleObject == null) {
-      throw new RuntimeException("PermissibleObject not supplied.");
+      throw new SimpleMessageException("PermissibleObject not supplied.");
     }
     User authUser = getAuthenticatedUser(session.get());
     Transaction tx = session.get().beginTransaction();
@@ -868,13 +873,13 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       permissibleObject = (PermissibleObject) session.get().load(PermissibleObject.class, permissibleObject.getId());
 
       if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, permissibleObject, PERM.READ)) {
-        throw new RuntimeException("User is not authorized to set advisory on this content.");
+        throw new SimpleMessageException("User is not authorized to set advisory on this content.");
       }
 
       // check if rating already exists
       UserAdvisory userAdvisory = AdvisoryHelper.getUserAdvisory(session.get(), permissibleObject, authUser, getThreadLocalRequest().getRemoteAddr());
       if (userAdvisory != null) {
-        throw new RuntimeException("Already voted.");
+        throw new SimpleMessageException("Already voted.");
       }
 
       float totalAdvisory = (float) permissibleObject.getNumAdvisoryVotes() * permissibleObject.getAverageAdvisory();
@@ -899,62 +904,62 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         tx.rollback();
       } catch (Throwable tt) {
       }
-      throw new RuntimeException(t.getMessage());
+      throw new SimpleMessageException(t.getMessage());
     }
   }
 
-  public List<Comment> getComments(PermissibleObject permissibleObject) throws Exception {
+  public List<Comment> getComments(PermissibleObject permissibleObject) throws SimpleMessageException {
     if (permissibleObject == null) {
-      throw new RuntimeException("File not supplied.");
+      throw new SimpleMessageException("File not supplied.");
     }
     User authUser = getAuthenticatedUser(session.get());
     try {
       permissibleObject = ((PermissibleObject) session.get().load(File.class, permissibleObject.getId()));
       if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, permissibleObject, PERM.READ)) {
-        throw new RuntimeException("User is not authorized to get comments on this content.");
+        throw new SimpleMessageException("User is not authorized to get comments on this content.");
       }
       return CommentHelper.getComments(session.get(), permissibleObject);
     } catch (Throwable t) {
       Logger.log(t);
-      throw new RuntimeException(t.getMessage());
+      throw new SimpleMessageException(t.getMessage());
     }
   }
 
-  public Page<Comment> getCommentPage(PermissibleObject permissibleObject, boolean sortDescending, int pageNumber, int pageSize) throws Exception {
+  public Page<Comment> getCommentPage(PermissibleObject permissibleObject, boolean sortDescending, int pageNumber, int pageSize) throws SimpleMessageException {
     if (permissibleObject == null) {
-      throw new RuntimeException("Object not supplied.");
+      throw new SimpleMessageException("Object not supplied.");
     }
     User authUser = getAuthenticatedUser(session.get());
     try {
       permissibleObject = ((PermissibleObject) session.get().load(File.class, permissibleObject.getId()));
       if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, permissibleObject, PERM.READ)) {
-        throw new RuntimeException("User is not authorized to get comments on this content.");
+        throw new SimpleMessageException("User is not authorized to get comments on this content.");
       }
       GenericPage<Comment> gPage = new GenericPage<Comment>(session.get(), "from " + Comment.class.getSimpleName() + " where permissibleObject.id = "
           + permissibleObject.getId() + " order by id " + (sortDescending ? "desc" : "asc"), pageNumber, pageSize);
       return new Page<Comment>(gPage.getList(), pageNumber, gPage.getLastPageNumber(), gPage.getRowCount());
     } catch (Throwable t) {
       Logger.log(t);
-      throw new RuntimeException(t.getMessage());
+      throw new SimpleMessageException(t.getMessage());
     }
   }
 
-  public Boolean submitComment(Comment comment) throws Exception {
+  public Boolean submitComment(Comment comment) throws SimpleMessageException {
     if (comment == null) {
-      throw new RuntimeException("Comment not supplied.");
+      throw new SimpleMessageException("Comment not supplied.");
     }
     if (comment.getPermissibleObject() == null) {
-      throw new RuntimeException("PermissibleObject not supplied with comment.");
+      throw new SimpleMessageException("PermissibleObject not supplied with comment.");
     }
     User authUser = getAuthenticatedUser(session.get());
     Transaction tx = session.get().beginTransaction();
     try {
       comment.setPermissibleObject((PermissibleObject) session.get().load(PermissibleObject.class, comment.getPermissibleObject().getId()));
       if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, comment.getPermissibleObject(), PERM.READ)) {
-        throw new RuntimeException("User is not authorized to make comments on this content.");
+        throw new SimpleMessageException("User is not authorized to make comments on this content.");
       }
       if (!comment.getPermissibleObject().isAllowComments()) {
-        throw new RuntimeException("Comments are not allowed on this content.");
+        throw new SimpleMessageException("Comments are not allowed on this content.");
       }
       // the comment is approved if we are not moderating or if the commenter is the file owner
       comment.setApproved(!comment.getPermissibleObject().isModerateComments() || comment.getPermissibleObject().getOwner().equals(authUser));
@@ -967,23 +972,23 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         tx.rollback();
       } catch (Throwable tt) {
       }
-      throw new RuntimeException(t.getMessage());
+      throw new SimpleMessageException(t.getMessage());
     }
   }
 
-  public Boolean approveComment(Comment comment) throws Exception {
+  public Boolean approveComment(Comment comment) throws SimpleMessageException {
     if (comment == null) {
-      throw new RuntimeException("Comment not supplied.");
+      throw new SimpleMessageException("Comment not supplied.");
     }
     User authUser = getAuthenticatedUser(session.get());
     if (authUser == null) {
-      throw new RuntimeException(".");
+      throw new SimpleMessageException(".");
     }
     Transaction tx = session.get().beginTransaction();
     try {
       comment = ((Comment) session.get().load(Comment.class, comment.getId()));
       if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, comment.getPermissibleObject(), PERM.WRITE)) {
-        throw new RuntimeException("User is not authorized to approve comments for this content.");
+        throw new SimpleMessageException("User is not authorized to approve comments for this content.");
       }
       comment.setApproved(true);
       session.get().save(comment);
@@ -995,23 +1000,23 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         tx.rollback();
       } catch (Throwable tt) {
       }
-      throw new RuntimeException(t.getMessage());
+      throw new SimpleMessageException(t.getMessage());
     }
   }
 
-  public Boolean deleteComment(Comment comment) throws Exception {
+  public Boolean deleteComment(Comment comment) throws SimpleMessageException {
     if (comment == null) {
-      throw new RuntimeException("Comment not supplied.");
+      throw new SimpleMessageException("Comment not supplied.");
     }
     User authUser = getAuthenticatedUser(session.get());
     if (authUser == null) {
-      throw new RuntimeException("User is not authenticated.");
+      throw new SimpleMessageException("User is not authenticated.");
     }
     Transaction tx = session.get().beginTransaction();
     try {
       comment = ((Comment) session.get().load(Comment.class, comment.getId()));
       if (!comment.getAuthor().equals(authUser) && !SecurityHelper.doesUserHavePermission(session.get(), authUser, comment.getPermissibleObject(), PERM.WRITE)) {
-        throw new RuntimeException("User is not authorized to delete comments for this content.");
+        throw new SimpleMessageException("User is not authorized to delete comments for this content.");
       }
       // we can't delete this comment until we delete all the child comments
       CommentHelper.deleteComment(session.get(), comment);
@@ -1023,31 +1028,31 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         tx.rollback();
       } catch (Throwable tt) {
       }
-      throw new RuntimeException(t.getMessage());
+      throw new SimpleMessageException(t.getMessage());
     }
   }
 
-  public PermissibleObject getPermissibleObject(Long id) throws Exception {
+  public PermissibleObject getPermissibleObject(Long id) throws SimpleMessageException {
     if (id == null) {
-      throw new RuntimeException("Id not supplied.");
+      throw new SimpleMessageException("Id not supplied.");
     }
     User authUser = getAuthenticatedUser(session.get());
     try {
       PermissibleObject permissibleObject = (PermissibleObject) session.get().load(PermissibleObject.class, id);
       if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, permissibleObject, PERM.READ)) {
-        throw new RuntimeException("User is not authorized to get this content.");
+        throw new SimpleMessageException("User is not authorized to get this content.");
       }
       return permissibleObject;
     } catch (Throwable t) {
       Logger.log(t);
-      throw new RuntimeException(t.getMessage());
+      throw new SimpleMessageException(t.getMessage());
     }
   }
 
-  public RepositoryTreeNode getRepositoryTree() throws Exception {
+  public RepositoryTreeNode getRepositoryTree() throws SimpleMessageException {
     User authUser = getAuthenticatedUser(session.get());
     if (authUser == null) {
-      throw new RuntimeException("User is not authenticated.");
+      throw new SimpleMessageException("User is not authenticated.");
     }
     try {
       RepositoryTreeNode root = new RepositoryTreeNode();
@@ -1055,17 +1060,17 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       return root;
     } catch (Throwable t) {
       Logger.log(t);
-      throw new RuntimeException(t.getMessage());
+      throw new SimpleMessageException(t.getMessage());
     }
   }
 
-  public PermissibleObject savePermissibleObject(PermissibleObject permissibleObject) throws Exception {
+  public PermissibleObject savePermissibleObject(PermissibleObject permissibleObject) throws SimpleMessageException {
     if (permissibleObject == null) {
-      throw new RuntimeException("Object not supplied.");
+      throw new SimpleMessageException("Object not supplied.");
     }
     User authUser = getAuthenticatedUser(session.get());
     if (authUser == null) {
-      throw new RuntimeException("User is not authenticated.");
+      throw new SimpleMessageException("User is not authenticated.");
     }
 
     Transaction tx = session.get().beginTransaction();
@@ -1074,13 +1079,13 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         permissibleObject.setParent((PermissibleObject) session.get().load(PermissibleObject.class, permissibleObject.getParent().getId()));
       }
       if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, permissibleObject.getParent(), PERM.WRITE)) {
-        throw new RuntimeException("User is not authorized to write to parent folder.");
+        throw new SimpleMessageException("User is not authorized to write to parent folder.");
       }
       if (permissibleObject.getId() != null) {
         PermissibleObject hibNewObject = (PermissibleObject) session.get().load(PermissibleObject.class, permissibleObject.getId());
         if (hibNewObject != null) {
           if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, hibNewObject, PERM.WRITE)) {
-            throw new RuntimeException("User is not authorized to overwrite object.");
+            throw new SimpleMessageException("User is not authorized to overwrite object.");
           }
           hibNewObject.setGlobalRead(permissibleObject.isGlobalRead());
           hibNewObject.setGlobalWrite(permissibleObject.isGlobalWrite());
@@ -1125,17 +1130,17 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         tx.rollback();
       } catch (Throwable tt) {
       }
-      throw new RuntimeException(t.getMessage());
+      throw new SimpleMessageException(t.getMessage());
     }
   }
 
-  public void deletePermissibleObject(PermissibleObject permissibleObject) throws Exception {
+  public void deletePermissibleObject(PermissibleObject permissibleObject) throws SimpleMessageException {
     if (permissibleObject == null) {
-      throw new RuntimeException("Object not supplied.");
+      throw new SimpleMessageException("Object not supplied.");
     }
     User authUser = getAuthenticatedUser(session.get());
     if (authUser == null) {
-      throw new RuntimeException("User is not authenticated.");
+      throw new SimpleMessageException("User is not authenticated.");
     }
     Transaction tx = session.get().beginTransaction();
 
@@ -1145,12 +1150,12 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       if (permissibleObject instanceof Folder) {
         Folder folder = (Folder) permissibleObject;
         if (!authUser.isAdministrator() && !authUser.equals(folder.getOwner())) {
-          throw new RuntimeException("User is not authorized to delete this object.");
+          throw new SimpleMessageException("User is not authorized to delete this object.");
         }
         FolderHelper.deleteFolder(session.get(), folder);
       } else {
         if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, permissibleObject, PERM.WRITE)) {
-          throw new RuntimeException("User is not authorized to delete this object.");
+          throw new SimpleMessageException("User is not authorized to delete this object.");
         }
         // just try to delete the object, hopefully it has no children
         PermissibleObjectHelper.deletePermissibleObject(session.get(), permissibleObject);
@@ -1162,38 +1167,38 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         tx.rollback();
       } catch (Throwable tt) {
       }
-      throw new RuntimeException(t.getMessage());
+      throw new SimpleMessageException(t.getMessage());
     }
   }
 
-  public void deletePermissibleObjects(Set<PermissibleObject> permissibleObjects) throws Exception {
+  public void deletePermissibleObjects(Set<PermissibleObject> permissibleObjects) throws SimpleMessageException {
     if (permissibleObjects == null) {
-      throw new RuntimeException("Objects not supplied.");
+      throw new SimpleMessageException("Objects not supplied.");
     }
     User authUser = getAuthenticatedUser(session.get());
     if (authUser == null) {
-      throw new RuntimeException("User is not authenticated.");
+      throw new SimpleMessageException("User is not authenticated.");
     }
     for (PermissibleObject permissibleObject : permissibleObjects) {
       deletePermissibleObject(permissibleObject);
     }
   }
 
-  public List<PermissibleObject> getMyPermissibleObjects(PermissibleObject parent) throws Exception {
+  public List<PermissibleObject> getMyPermissibleObjects(PermissibleObject parent) throws SimpleMessageException {
     User authUser = getAuthenticatedUser(session.get());
     if (authUser == null) {
-      throw new RuntimeException("User is not authenticated.");
+      throw new SimpleMessageException("User is not authenticated.");
     }
     return PermissibleObjectHelper.getMyPermissibleObjects(session.get(), authUser, parent);
   }
 
-  public Folder createNewFolder(Folder newFolder) throws Exception {
+  public Folder createNewFolder(Folder newFolder) throws SimpleMessageException {
     if (newFolder == null) {
-      throw new RuntimeException("Folder not supplied.");
+      throw new SimpleMessageException("Folder not supplied.");
     }
     User authUser = getAuthenticatedUser(session.get());
     if (authUser == null) {
-      throw new RuntimeException("User is not authenticated.");
+      throw new SimpleMessageException("User is not authenticated.");
     }
     Transaction tx = session.get().beginTransaction();
     try {
@@ -1201,13 +1206,13 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         newFolder.setParent((PermissibleObject) session.get().load(PermissibleObject.class, newFolder.getParent().getId()));
       }
       if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, newFolder.getParent(), PERM.WRITE)) {
-        throw new RuntimeException("User is not authorized to create a new folder here.");
+        throw new SimpleMessageException("User is not authorized to create a new folder here.");
       }
       if (newFolder.getId() != null) {
         Folder hibNewFolder = (Folder) session.get().load(Folder.class, newFolder.getId());
         if (hibNewFolder != null) {
           if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, hibNewFolder, PERM.WRITE)) {
-            throw new RuntimeException("User is not authorized to save a new folder here.");
+            throw new SimpleMessageException("User is not authorized to save a new folder here.");
           }
           hibNewFolder.setName(newFolder.getName());
           hibNewFolder.setDescription(newFolder.getDescription());
@@ -1226,23 +1231,23 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         tx.rollback();
       } catch (Throwable tt) {
       }
-      throw new RuntimeException(t.getMessage());
+      throw new SimpleMessageException(t.getMessage());
     }
   }
 
-  public void renameFile(File file) throws Exception {
+  public void renameFile(File file) throws SimpleMessageException {
     if (file == null) {
-      throw new RuntimeException("File not supplied.");
+      throw new SimpleMessageException("File not supplied.");
     }
     User authUser = getAuthenticatedUser(session.get());
     if (authUser == null) {
-      throw new RuntimeException("User is not authenticated.");
+      throw new SimpleMessageException("User is not authenticated.");
     }
     Transaction tx = session.get().beginTransaction();
     try {
       File hibfile = (File) session.get().load(File.class, file.getId());
       if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, hibfile, PERM.WRITE)) {
-        throw new RuntimeException("User is not authorized to rename this file.");
+        throw new SimpleMessageException("User is not authorized to rename this file.");
       }
       hibfile.setName(file.getName());
       session.get().save(hibfile);
@@ -1253,23 +1258,23 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         tx.rollback();
       } catch (Throwable tt) {
       }
-      throw new RuntimeException(t.getMessage());
+      throw new SimpleMessageException(t.getMessage());
     }
   }
 
-  public void renameFolder(Folder folder) throws Exception {
+  public void renameFolder(Folder folder) throws SimpleMessageException {
     if (folder == null) {
-      throw new RuntimeException("Folder not supplied.");
+      throw new SimpleMessageException("Folder not supplied.");
     }
     User authUser = getAuthenticatedUser(session.get());
     if (authUser == null) {
-      throw new RuntimeException("User is not authenticated.");
+      throw new SimpleMessageException("User is not authenticated.");
     }
     Transaction tx = session.get().beginTransaction();
     try {
       Folder hibfolder = (Folder) session.get().load(Folder.class, folder.getId());
       if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, hibfolder, PERM.WRITE)) {
-        throw new RuntimeException("User is not authorized to rename this folder.");
+        throw new SimpleMessageException("User is not authorized to rename this folder.");
       }
       hibfolder.setName(folder.getName());
       session.get().save(hibfolder);
@@ -1280,44 +1285,44 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         tx.rollback();
       } catch (Throwable tt) {
       }
-      throw new RuntimeException(t.getMessage());
+      throw new SimpleMessageException(t.getMessage());
     }
   }
 
-  public List<Permission> getPermissions(PermissibleObject permissibleObject) throws Exception {
+  public List<Permission> getPermissions(PermissibleObject permissibleObject) throws SimpleMessageException {
     if (permissibleObject == null) {
-      throw new RuntimeException("PermissibleObject not supplied.");
+      throw new SimpleMessageException("PermissibleObject not supplied.");
     }
     User authUser = getAuthenticatedUser(session.get());
     if (authUser == null) {
-      throw new RuntimeException("User is not authenticated.");
+      throw new SimpleMessageException("User is not authenticated.");
     }
     try {
       permissibleObject = ((PermissibleObject) session.get().load(PermissibleObject.class, permissibleObject.getId()));
       if (!authUser.isAdministrator() && !permissibleObject.getOwner().equals(authUser)) {
-        throw new RuntimeException("User is not authorized to get permissions on this content.");
+        throw new SimpleMessageException("User is not authorized to get permissions on this content.");
       }
       return SecurityHelper.getPermissions(session.get(), permissibleObject);
     } catch (Throwable t) {
       Logger.log(t);
-      throw new RuntimeException(t.getMessage());
+      throw new SimpleMessageException(t.getMessage());
     }
   }
 
-  public PermissibleObject updatePermissibleObject(PermissibleObject permissibleObject) throws Exception {
+  public PermissibleObject updatePermissibleObject(PermissibleObject permissibleObject) throws SimpleMessageException {
     if (permissibleObject == null) {
-      throw new RuntimeException("PermissibleObject not supplied.");
+      throw new SimpleMessageException("PermissibleObject not supplied.");
     }
     User authUser = getAuthenticatedUser(session.get());
     if (authUser == null) {
-      throw new RuntimeException("User is not authenticated.");
+      throw new SimpleMessageException("User is not authenticated.");
     }
     Transaction tx = session.get().beginTransaction();
     try {
       User newOwner = ((User) session.get().load(User.class, permissibleObject.getOwner().getId()));
       PermissibleObject hibPermissibleObject = ((PermissibleObject) session.get().load(PermissibleObject.class, permissibleObject.getId()));
       if (!authUser.isAdministrator() && !hibPermissibleObject.getOwner().equals(authUser)) {
-        throw new RuntimeException("User is not authorized to update this object.");
+        throw new SimpleMessageException("User is not authorized to update this object.");
       }
       // otherwise hibernate will be upset:
       hibPermissibleObject.setName(permissibleObject.getName());
@@ -1353,26 +1358,26 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         tx.rollback();
       } catch (Throwable tt) {
       }
-      throw new RuntimeException(t.getMessage());
+      throw new SimpleMessageException(t.getMessage());
     }
   }
 
-  public void setPermissions(PermissibleObject permissibleObject, List<Permission> permissions) throws Exception {
+  public void setPermissions(PermissibleObject permissibleObject, List<Permission> permissions) throws SimpleMessageException {
     if (permissibleObject == null) {
-      throw new RuntimeException("PermissibleObject not supplied.");
+      throw new SimpleMessageException("PermissibleObject not supplied.");
     }
     if (permissions == null) {
-      throw new RuntimeException("Permissions not supplied.");
+      throw new SimpleMessageException("Permissions not supplied.");
     }
     User authUser = getAuthenticatedUser(session.get());
     if (authUser == null) {
-      throw new RuntimeException("User is not authenticated.");
+      throw new SimpleMessageException("User is not authenticated.");
     }
     Transaction tx = session.get().beginTransaction();
     try {
       PermissibleObject hibPermissibleObject = ((PermissibleObject) session.get().load(PermissibleObject.class, permissibleObject.getId()));
       if (!authUser.isAdministrator() && !hibPermissibleObject.getOwner().equals(authUser)) {
-        throw new RuntimeException("User is not authorized to set permissions on this object.");
+        throw new SimpleMessageException("User is not authorized to set permissions on this object.");
       }
       session.get().evict(authUser);
 
@@ -1415,49 +1420,68 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         tx.rollback();
       } catch (Throwable tt) {
       }
-      throw new RuntimeException(t.getMessage());
+      throw new SimpleMessageException(t.getMessage());
     }
   }
 
-  public PermissibleObject echoPermissibleObject(PermissibleObject permissibleObject) throws Exception {
+  public PermissibleObject echoPermissibleObject(PermissibleObject permissibleObject) throws SimpleMessageException {
     return permissibleObject;
   }
 
-  public FileUploadStatus getFileUploadStatus() throws Exception {
+  public FileUploadStatus getFileUploadStatus() throws SimpleMessageException {
     User authUser = getAuthenticatedUser(session.get());
     if (authUser == null) {
-      throw new RuntimeException("User is not authenticated.");
+      throw new SimpleMessageException("User is not authenticated.");
     }
     try {
       FileUploadStatus status = fileUploadStatusMap.get(authUser);
       if (status == null) {
-        throw new RuntimeException("No stats currently available.");
+        throw new SimpleMessageException("No stats currently available.");
       }
       return status;
     } catch (Throwable t) {
       Logger.log(t);
-      throw new RuntimeException(t.getMessage());
+      throw new SimpleMessageException(t.getMessage());
     }
   }
 
-  public void createCategory(String categoryName, String categoryDescription, Category parentCategory) throws Exception {
+  public void createCategory(String categoryName, String categoryDescription, Category parentCategory) throws SimpleMessageException {
   }
 
-  public void deleteCategory(Category category) throws Exception {
+  public void deleteCategory(Category category) throws SimpleMessageException {
   }
 
-  public List<Category> getCategories() throws Exception {
+  public List<Category> getCategories() throws SimpleMessageException {
     return null;
   }
 
-  public void addToCategory(Category category, PermissibleObject permissibleObject) throws Exception {
+  public void addToCategory(Category category, PermissibleObject permissibleObject) throws SimpleMessageException {
   }
 
-  public List<Category> getCategories(PermissibleObject permissibleObject) throws Exception {
+  public List<Category> getCategories(PermissibleObject permissibleObject) throws SimpleMessageException {
     return null;
   }
 
-  public void removeFromCategory(Category category, PermissibleObject permissibleObject) throws Exception {
+  public void removeFromCategory(Category category, PermissibleObject permissibleObject) throws SimpleMessageException {
+  }
+
+  public Boolean submitAdvertisingInfo(String contactName, String email, String company, String phone, String comments) throws SimpleMessageException {
+    String text = "Contact Name: " + contactName + "<BR>";
+    text += "E-Mail: " + email + "<BR>";
+    text += "Company: " + company + "<BR>";
+    text += "Phone: " + phone + "<BR>";
+    text += "Comments: " + comments + "<BR>";
+    return sendMessage(smtpHost, "admin@" + getDomainName(), contactName, "admin@" + getDomainName(), contactName + " is interested in advertising on "
+        + getDomainName(), text);
+  }
+
+  public Boolean submitFeedback(String contactName, String email, String phone, String comments) throws SimpleMessageException {
+    String text = "Contact Name: " + contactName + "<BR>";
+    text += "E-Mail: " + email + "<BR>";
+    text += "Phone: " + phone + "<BR>";
+    text += "Comments: " + comments + "<BR>";
+    return sendMessage(smtpHost, "admin@" + getDomainName(), contactName, "admin@" + getDomainName(), contactName + " has submitted feedback for " + getDomainName(),
+        text);
   }
 
 }
