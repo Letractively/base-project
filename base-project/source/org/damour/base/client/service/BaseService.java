@@ -24,7 +24,6 @@ import org.damour.base.client.objects.UserAdvisory;
 import org.damour.base.client.objects.UserGroup;
 import org.damour.base.client.objects.UserRating;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.RemoteService;
 
 public interface BaseService extends RemoteService {
@@ -34,6 +33,7 @@ public interface BaseService extends RemoteService {
   public User login(String username, String password) throws SimpleMessageException;
   public void logout() throws SimpleMessageException;
   public String getLoginHint(String username) throws SimpleMessageException;
+  public User submitAccountValidation(String username, String validationCode) throws SimpleMessageException;
 
   // hibernate/general admin methods
   public List<HibernateStat> getHibernateStats() throws SimpleMessageException;

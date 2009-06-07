@@ -24,6 +24,7 @@ public class DefaultData {
 			admin.setEmail("admin@domain.com");
 			admin.setSignupDate(System.currentTimeMillis());
 			admin.setAdministrator(true);
+			admin.setValidated(true);
 			session.save(admin);
 
 			UserGroup group = new UserGroup();

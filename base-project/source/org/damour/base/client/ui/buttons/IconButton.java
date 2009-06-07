@@ -51,8 +51,13 @@ public class IconButton extends FlexTable implements MouseListener {
     image.addMouseListener(this);
 
     if (labelText != null) {
-      setWidget(0, 0, labelOnLeft ? label : image);
-      setWidget(0, 1, labelOnLeft ? image : label);
+      if (labelOnLeft) {
+        setWidget(0, 0, label);
+        setWidget(0, 1, image);
+      } else {
+        setWidget(0, 0, image);
+        setWidget(0, 1, label);
+      }
       // prevent double-click from selecting text
       preventTextSelection(label.getElement());
 
@@ -120,10 +125,11 @@ public class IconButton extends FlexTable implements MouseListener {
     listeners.remove(listener);
   }
 
-  private static native void preventTextSelection(Element ele) /*-{
-             ele.onselectstart=function() {return false};
-             ele.ondragstart=function() {return false};
-           }-*/;
+  private static native void preventTextSelection(Element ele)
+  /*-{
+    ele.onselectstart=function() {return false};
+    ele.ondragstart=function() {return false};
+  }-*/;
 
   public boolean isEnabled() {
     return enabled;

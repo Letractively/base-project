@@ -7,16 +7,21 @@ import java.util.Map;
 
 import org.damour.base.client.localization.IResourceBundleLoadCallback;
 import org.damour.base.client.localization.ResourceBundle;
+import org.damour.base.client.objects.User;
 import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.IGenericCallback;
+import org.damour.base.client.ui.authentication.AuthenticationHandler;
+import org.damour.base.client.ui.dialogs.MessageDialogBox;
 import org.damour.base.client.utils.StringTokenizer;
 import org.damour.base.client.utils.StringUtils;
 
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
 import com.google.gwt.user.client.ui.RootPanel;
 
-public class BaseApplication implements EntryPoint {
+public class BaseApplication implements EntryPoint, StartupListener {
 
   public static final String BASE_SERVICE_PATH = "/servlet/org.damour.base.server.BaseService";
   public static final String CAPTCHA_SERVICE_PATH = "/servlet/org.damour.base.server.CaptchaImageGeneratorService";
@@ -25,7 +30,7 @@ public class BaseApplication implements EntryPoint {
 
   private static boolean loading = false;
   private static boolean initialized = false;
-  private static List<BaseApplication> startupListeners = new ArrayList<BaseApplication>();
+  private static List<StartupListener> startupListeners = new ArrayList<StartupListener>();
 
   private static Map<String, String> supportedLanguages = new HashMap<String, String>();
 
@@ -39,8 +44,33 @@ public class BaseApplication implements EntryPoint {
     // set default base service path
     ((ServiceDefTarget) BaseServiceCache.getServiceUnsafe()).setServiceEntryPoint(BASE_SERVICE_PATH);
     if (!loading) {
-      ResourceBundle.clearCache();
       loading = true;
+
+      // this is an account validation mode
+      if (!StringUtils.isEmpty(Window.Location.getParameter("u")) && !StringUtils.isEmpty(Window.Location.getParameter("v"))) {
+        addStartupListener(new StartupListener() {
+          public void loadModule() {
+            String username = Window.Location.getParameter("u");
+            String validationCode = Window.Location.getParameter("v");
+            BaseServiceCache.getService().submitAccountValidation(username, validationCode, new AsyncCallback<User>() {
+              public void onFailure(Throwable caught) {
+                MessageDialogBox.alert(caught.getMessage());
+              }
+
+              public void onSuccess(User user) {
+                if (user != null && user.isValidated()) {
+                  AuthenticationHandler.getInstance().setUser(user);
+                  AuthenticationHandler.getInstance().handleUserAuthentication(false);
+                  MessageDialogBox.alert("Account validation successful.");
+                } else {
+                  MessageDialogBox.alert("Could not validate account.");
+                }
+              }
+            });
+          }
+        });
+      }
+      ResourceBundle.clearCache();
       // load settings, then messages
       loadSettings(new IGenericCallback<Void>() {
         public void invoke(Void object) {
@@ -96,7 +126,7 @@ public class BaseApplication implements EntryPoint {
     });
   }
 
-  private static void addStartupListener(BaseApplication listener) {
+  private static void addStartupListener(StartupListener listener) {
     if (isInitialized()) {
       listener.loadModule();
     } else {
@@ -105,7 +135,7 @@ public class BaseApplication implements EntryPoint {
   }
 
   private static void fireStartupListeners() {
-    for (BaseApplication startupListener : startupListeners) {
+    for (StartupListener startupListener : startupListeners) {
       startupListener.loadModule();
     }
   }

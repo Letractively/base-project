@@ -25,6 +25,7 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PasswordTextBox;
@@ -47,7 +48,7 @@ public class AuthenticationHandler {
   CheckBox disclaimerCheckBox = new CheckBox("I have read and agree with the disclaimer statement");
   DefaultFormat format = new DefaultFormat(DateTimeFormat.getLongDateFormat());
   DateBox dateBox = new DateBox(new MyDatePicker(), new Date(), format);
-  
+
   final Button signupButton = new Button("Signup");
   PromptDialogBox loginDialog = new PromptDialogBox("Login", "Login", signupButton, "Cancel", false, true);
   PromptDialogBox accountDialog = new PromptDialogBox("Edit Account", "Submit", null, "Cancel", false, true);
@@ -78,7 +79,7 @@ public class AuthenticationHandler {
     final Date possibleBirthday = new Date();
     possibleBirthday.setYear(possibleBirthday.getYear() - 25);
     dateBox.setValue(possibleBirthday);
-    
+
     username.setVisibleLength(30);
     password.setVisibleLength(30);
     password.addFocusHandler(new FocusHandler() {
@@ -270,7 +271,7 @@ public class AuthenticationHandler {
     contentPanel.setWidget(row, 1, username);
     contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
     row++;
-    
+
     contentPanel.setWidget(row, 0, passwordLabel);
     contentPanel.setWidget(row, 1, password);
     contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
@@ -280,12 +281,16 @@ public class AuthenticationHandler {
     contentPanel.setWidget(row, 1, passwordConfirm);
     contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
     row++;
-    
+
+    contentPanel.setWidget(row, 1, new HTML("Building a <A HREF=\"http://www.securepasswordbuilder.com/BuildSecurePassword.html\">Secure Password</A>"));
+    contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
+    row++;
+
     contentPanel.setWidget(row, 0, passwordHintLabel);
     contentPanel.setWidget(row, 1, passwordHint);
     contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
     row++;
-    
+
     contentPanel.setWidget(row, 0, firstnameLabel);
     contentPanel.setWidget(row, 1, firstname);
     contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
@@ -295,22 +300,22 @@ public class AuthenticationHandler {
     contentPanel.setWidget(row, 1, lastname);
     contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
     row++;
-    
+
     contentPanel.setWidget(row, 0, emailLabel);
     contentPanel.setWidget(row, 1, emailAddress);
     contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
     row++;
-    
+
     contentPanel.setWidget(row, 0, birthdayLabel);
     contentPanel.setWidget(row, 1, dateBox);
     contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
     row++;
-    
+
     contentPanel.setWidget(row++, 1, new HTML("<HR>"));
     contentPanel.setText(row, 1, "Type the characters you see in the picture below.");
     contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
     row++;
-    
+
     createCaptchaImage();
     captchaValidationImage.setTitle("Click to load a new validation image");
     captchaValidationImage.setStyleName("captchaImage");
@@ -323,7 +328,9 @@ public class AuthenticationHandler {
     row++;
 
     contentPanel.setWidget(row++, 1, new HTML("<HR>"));
-    contentPanel.setWidget(row, 1, readDisclaimer);
+    HorizontalPanel disclaimerButtonPanel = new HorizontalPanel();
+    disclaimerButtonPanel.add(readDisclaimer);
+    contentPanel.setWidget(row, 1, disclaimerButtonPanel);
     contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
     row++;
 
@@ -331,7 +338,6 @@ public class AuthenticationHandler {
     contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
     row++;
 
-    
     accountDialog.setCallback(new IDialogCallback() {
       public void okPressed() {
         boolean validationFailed = false;
@@ -391,7 +397,8 @@ public class AuthenticationHandler {
   }
 
   private void createCaptchaImage() {
-    captchaValidationImage.setUrl(BaseApplication.getSettings().getString("CaptchaService", BaseApplication.CAPTCHA_SERVICE_PATH) + "?attempt=" + System.currentTimeMillis());
+    captchaValidationImage.setUrl(BaseApplication.getSettings().getString("CaptchaService", BaseApplication.CAPTCHA_SERVICE_PATH) + "?attempt="
+        + System.currentTimeMillis());
   }
 
   public void showEditAccountDialog(final User user) {
@@ -433,14 +440,18 @@ public class AuthenticationHandler {
     username.setText(user.getUsername());
     contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
     row++;
-    
+
     contentPanel.setWidget(row, 0, passwordLabel);
     contentPanel.setWidget(row, 1, password);
     contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
     row++;
-    
+
     contentPanel.setWidget(row, 0, passwordConfirmLabel);
     contentPanel.setWidget(row, 1, passwordConfirm);
+    contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
+    row++;
+
+    contentPanel.setWidget(row, 1, new HTML("Building a <A HREF=\"http://www.securepasswordbuilder.com/BuildSecurePassword.html\">Secure Password</A>"));
     contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
     row++;
     
@@ -449,7 +460,7 @@ public class AuthenticationHandler {
     passwordHint.setText(user.getPasswordHint());
     contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
     row++;
-    
+
     contentPanel.setWidget(row, 0, firstnameLabel);
     contentPanel.setWidget(row, 1, firstname);
     firstname.setText(user.getFirstname());
@@ -461,13 +472,13 @@ public class AuthenticationHandler {
     lastname.setText(user.getLastname());
     contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
     row++;
-    
+
     contentPanel.setWidget(row, 0, emailLabel);
     contentPanel.setWidget(row, 1, emailAddress);
     emailAddress.setText(user.getEmail());
     contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
     row++;
-    
+
     contentPanel.setWidget(row, 0, birthdayLabel);
 
     Date date = new Date(user.getBirthday());
@@ -475,7 +486,7 @@ public class AuthenticationHandler {
     contentPanel.setWidget(row, 1, dateBox);
     contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
     row++;
-    
+
     accountDialog.setCallback(new IDialogCallback() {
       public void okPressed() {
         boolean validationFailed = false;
@@ -550,7 +561,8 @@ public class AuthenticationHandler {
       final String email, final long birthday) {
     final AsyncCallback<User> loginCallback = new AsyncCallback<User>() {
       public void onFailure(Throwable caught) {
-        MessageDialogBox dialog = new MessageDialogBox("Error", caught.getMessage(), true, true, true);
+        //MessageDialogBox dialog = new MessageDialogBox("Error", caught.getMessage(), true, true, true);
+        MessageDialogBox dialog = new MessageDialogBox("Error", "Could not create new account.  Try entering a different username.", true, true, true);
         dialog.setCallback(new IDialogCallback() {
           public void okPressed() {
             accountDialog.center();
@@ -567,9 +579,12 @@ public class AuthenticationHandler {
         if (user == null) {
           MessageDialogBox dialog = new MessageDialogBox("Error", "Could not create new account.  Try entering a different username.", true, true, true);
           dialog.center();
-        } else {
+        } else if (user.isValidated()) {
           accountDialog.hide();
           fireSetAuthenticatedUser(user);
+        } else if (!user.isValidated()) {
+          MessageDialogBox
+              .alert("<BR>Thank you for signing up. <BR><BR>We just sent you a confirmation email. <BR><BR>Please click the link inside the email and your account will be activated.<BR><BR>");
         }
       };
     };
