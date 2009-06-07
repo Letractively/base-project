@@ -34,6 +34,6 @@
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/pop3.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/smtp.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/gwt-incubator-march-02-2009.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/auroris-colorpicker-2008-10-09.jar"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/colorpicker-2009-05-19.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>
