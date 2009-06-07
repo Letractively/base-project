@@ -10,7 +10,6 @@ import org.damour.base.client.ui.admin.commands.ManageMyGroupsCommand;
 import org.damour.base.client.ui.admin.commands.ManagePendingGroupJoinsCommand;
 import org.damour.base.client.ui.authentication.AuthenticationHandler;
 import org.damour.base.client.ui.authentication.IAuthenticationListener;
-import org.damour.base.client.ui.buttons.Button;
 import org.damour.base.client.ui.buttons.ComboMenuButton;
 import org.damour.base.client.ui.buttons.MenuButtonCommand;
 import org.damour.base.client.ui.buttons.ToolbarButton;
@@ -301,6 +300,7 @@ public class BaseApplicationUI extends BaseApplication implements IAuthenticatio
   // override if desired
   public ToolBar buildApplicationToolBar() {
     applicationToolBar.clear();
+
     applicationToolBar.addPadding(5);
     applicationToolBar.add(buildWelcomeLabel());
     applicationToolBar.addPadding(5);

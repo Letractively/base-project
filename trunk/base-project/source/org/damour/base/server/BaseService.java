@@ -201,7 +201,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       return login(session.get(), getThreadLocalRequest(), getThreadLocalResponse(), username, password, false);
     } catch (Throwable t) {
       Logger.log(t);
-      throw new SimpleMessageException("Could not login.  Invalid username or password.");
+      throw new SimpleMessageException(t.getMessage());
     }
   }
 
@@ -212,7 +212,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     MD5 md5 = new MD5();
     md5.Update(password);
     String passwordHash = md5.asHex();
-    if (user != null && user.getUsername().equals(username)
+    if (user != null && user.isValidated() && user.getUsername().equals(username)
         && ((internal && password.equals(user.getPasswordHash())) || user.getPasswordHash().equals(passwordHash))) {
       Cookie userCookie = new Cookie("user", user.getUsername());
       userCookie.setPath("/");
@@ -228,6 +228,9 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       response.addCookie(voterCookie);
     } else {
       destroyAuthCookies(request, response);
+      if (!user.isValidated()) {
+        throw new SimpleMessageException("Could not login.  Account is not validated.");
+      }
       throw new SimpleMessageException("Could not login.  Invalid username or password.");
     }
     return user;
@@ -325,7 +328,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         // validate captcha first
         if (captchaText != null && !"".equals(captchaText)) {
           Captcha captcha = (Captcha) getThreadLocalRequest().getSession().getAttribute("captcha");
-          if (!captcha.isValid(captchaText)) {
+          if (captcha != null && !captcha.isValid(captchaText)) {
             throw new SimpleMessageException("Could not create account: validation failed.");
           }
         }
@@ -345,7 +348,12 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         newUser.setEmail(inUser.getEmail());
         newUser.setBirthday(inUser.getBirthday());
         newUser.setPasswordHint(inUser.getPasswordHint());
-        newUser.setValidated(inUser.isValidated());
+
+        newUser.setValidated(!BaseSystem.requireAccountValidation());
+        if (authUser != null && authUser.isAdministrator()) {
+          // admin can automatically create/validate accounts
+          newUser.setValidated(true);
+        }
 
         session.get().save(newUser);
 
@@ -357,12 +365,26 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
 
         tx.commit();
 
-        // if we are a true new unauthenticated user, create a new account
-        if (authUser == null) {
+        // if a new user is creating a new account, login if new user account is validated
+        if (authUser == null && newUser.isValidated()) {
           destroyAuthCookies(getThreadLocalRequest(), getThreadLocalResponse());
           if (login(session.get(), getThreadLocalRequest(), getThreadLocalResponse(), newUser.getUsername(), newUser.getPasswordHash(), true) != null) {
             return newUser;
           }
+        } else if (authUser == null && !newUser.isValidated()) {
+          // send user a validation email, where, upon clicking the link, their account will be validated
+          // the validation code in the URL will simply be a hash of their email address
+          MD5 md5 = new MD5();
+          md5.Update(newUser.getEmail());
+
+          String url = getThreadLocalRequest().getScheme() + "://" + getThreadLocalRequest().getServerName() + "/?u=" + newUser.getUsername() + "&v="
+              + md5.asHex();
+
+          String text = "Thank you for signing up with " + getDomainName() + ".<BR><BR>Please confirm your account by clicking the following link:<BR><BR>";
+          text += "<A HREF=\"";
+          text += url;
+          text += "\">" + url + "</A>";
+          sendMessage(smtpHost, "admin@" + getDomainName(), getDomainName() + " validator", newUser.getEmail(), getDomainName() + " account validation", text);
         }
         return newUser;
       } else if (authUser != null && (authUser.isAdministrator() || authUser.getId().equals(dbUser.getId()))) {
@@ -385,7 +407,11 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         dbUser.setEmail(inUser.getEmail());
         dbUser.setBirthday(inUser.getBirthday());
         dbUser.setPasswordHint(inUser.getPasswordHint());
-        dbUser.setValidated(inUser.isValidated());
+
+        // only admin can validate directly
+        if (authUser.isAdministrator()) {
+          dbUser.setValidated(inUser.isValidated());
+        }
 
         session.get().save(dbUser);
         tx.commit();
@@ -406,7 +432,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         tx.rollback();
       } catch (Exception exx) {
       }
-      throw new SimpleMessageException(ex.getMessage());
+      throw new SimpleMessageException(ex.getCause().getMessage());
     }
   }
 
@@ -914,7 +940,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     }
     User authUser = getAuthenticatedUser(session.get());
     try {
-      permissibleObject = ((PermissibleObject) session.get().load(File.class, permissibleObject.getId()));
+      permissibleObject = ((PermissibleObject) session.get().load(PermissibleObject.class, permissibleObject.getId()));
       if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, permissibleObject, PERM.READ)) {
         throw new SimpleMessageException("User is not authorized to get comments on this content.");
       }
@@ -931,7 +957,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     }
     User authUser = getAuthenticatedUser(session.get());
     try {
-      permissibleObject = ((PermissibleObject) session.get().load(File.class, permissibleObject.getId()));
+      permissibleObject = ((PermissibleObject) session.get().load(PermissibleObject.class, permissibleObject.getId()));
       if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, permissibleObject, PERM.READ)) {
         throw new SimpleMessageException("User is not authorized to get comments on this content.");
       }
@@ -1480,8 +1506,38 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     text += "E-Mail: " + email + "<BR>";
     text += "Phone: " + phone + "<BR>";
     text += "Comments: " + comments + "<BR>";
-    return sendMessage(smtpHost, "admin@" + getDomainName(), contactName, "admin@" + getDomainName(), contactName + " has submitted feedback for " + getDomainName(),
-        text);
+    return sendMessage(smtpHost, "admin@" + getDomainName(), contactName, "admin@" + getDomainName(), contactName + " has submitted feedback for "
+        + getDomainName(), text);
+  }
+
+  public User submitAccountValidation(String username, String validationCode) throws SimpleMessageException {
+    Transaction tx = session.get().beginTransaction();
+    try {
+      User user = UserHelper.getUser(session.get(), username);
+      if (user != null && !user.isValidated()) {
+        MD5 md5 = new MD5();
+        md5.Update(user.getEmail());
+        if (validationCode.equals(md5.asHex())) {
+          // validation successful
+          user.setValidated(true);
+          login(session.get(), getThreadLocalRequest(), getThreadLocalResponse(), username, user.getPasswordHash(), true);
+          tx.commit();
+        } else {
+          throw new SimpleMessageException("Account could not be activated, validation code does not match our records.");
+        }
+      } else {
+        throw new SimpleMessageException("Account does not exist or is already validated.");
+      }
+      return user;
+    } catch (Throwable t) {
+      Logger.log(t);
+      throw new SimpleMessageException(t.getMessage());
+    } finally {
+      try {
+        tx.rollback();
+      } catch (Throwable t) {
+      }
+    }
   }
 
 }

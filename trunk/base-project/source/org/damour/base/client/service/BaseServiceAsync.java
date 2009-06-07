@@ -4,7 +4,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import org.damour.base.client.exceptions.SimpleMessageException;
 import org.damour.base.client.objects.Category;
 import org.damour.base.client.objects.Comment;
 import org.damour.base.client.objects.File;
@@ -32,6 +31,7 @@ public interface BaseServiceAsync {
   public void login(String username, String password, AsyncCallback<User> callback);
   public void logout(AsyncCallback<Void> callback);
   public void getLoginHint(String username, AsyncCallback<String> callback);
+  public void submitAccountValidation(String username, String validationCode, AsyncCallback<User> callback);
   
   // hibernate admin methods
   public void getHibernateStats(AsyncCallback<List<HibernateStat>> callback);
@@ -97,5 +97,7 @@ public interface BaseServiceAsync {
   // advertising/feedback rpc
   public void submitAdvertisingInfo(String contactName, String email, String company, String phone, String comments, AsyncCallback<Boolean> callback);
   public void submitFeedback(String contactName, String email, String phone, String comments, AsyncCallback<Boolean> callback);
+  
+  
   
 }

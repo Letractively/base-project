@@ -77,6 +77,10 @@ public class BaseSystem {
     Logger.resetLogger();
   }
 
+  public static boolean requireAccountValidation() {
+    return "true".equalsIgnoreCase(getSettings().getProperty("requireAccountValidation"));
+  }
+
   public static synchronized Properties getSettings() {
     if (settings != null) {
       return settings;
