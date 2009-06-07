@@ -36,6 +36,7 @@
 .tooltip {
   border: 1px solid black;
   background-color: #ffffcc;
+  z-index: 4;
 }
 
 .tooltipText {
@@ -171,7 +172,7 @@
 
 
 .toolBar {
-  background-color: #d3d3d3;
+  background-color: #c3c3c3;
   background-image: url(images/subtoolbar_bg.png);
   background-repeat: repeat-x;
   border-bottom: 1px solid #707070;
@@ -179,8 +180,11 @@
 
 .toolBarButton {
   color: black;
-  background-color: #d3d3d3;
-  border: 1px solid #a3a3a3;
+  background-color: #b3b3b3;
+  background-image: url(images/subtoolbar_bg.png);
+  background-repeat: repeat-x;
+  border: 1px solid #666666;
+  background-position: center;
   cursor: pointer;
   cursor: hand;
   margin: 0 1px 0 0;
@@ -188,15 +192,19 @@
 }
 
 .toolBarButton-hover {
-  background-color: #f3f3f3;
-  border: 1px solid #838383;
+  border: 1px solid black;
+  color: white;
+  background-color: #666666;
 }
 
 .toolBarButton-pressed {
-  border: 1px solid #535353;
+  border: 1px solid black;
+  background-color: red;
+  color: white;
 }
 
 .toolBarButton-disabled {
+  border: 1px solid #999999;
   color: gray;
   cursor: default;
 }
@@ -284,33 +292,38 @@
 
 .my-button {
    background-image:url(images/button_bg.png);
-   background-color: #d3d3d3;
+   background-color: #b3b3b3;
+   color: black;
    font-weight: plain;
    border: 1px solid black;
-   margin: 1px;
-   padding: 2px 5px;
    cursor: pointer;
    cursor: hand;
+   padding: 2px 5px;
+   margin: 1px;
 }
 
 .my-button-pressed {
-   background-image:url(images/buttonbg.gif);
+   background-image:url(images/button_bg.png);
+   background-color: red;
+   color: white;
    font-weight: plain;
    border: 1px solid black;
-   margin: 1px;
-   padding: 2px 5px;
    cursor: pointer;
    cursor: hand;
+   padding: 2px 5px;
+   margin: 1px;
 }
 
 .my-button-hover {
-   background-image:url(images/buttonhoverbg.gif);
+   background-image:url(images/button_bg.png);
+   background-color: #666666;
+   color: white;
    font-weight: plain;
    border: 1px solid black;
-   margin: 1px;
-   padding: 2px 5px;
    cursor: pointer;
    cursor: hand;
+   padding: 2px 5px;
+   margin: 1px;
 }
 
 
