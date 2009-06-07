@@ -565,8 +565,12 @@ public final class RPC {
       try {
         crc.update(SerializabilityUtil.getSerializedTypeName(object.getClass()).getBytes(SerializabilityUtil.DEFAULT_ENCODING));
         Class<?> superClass = object.getClass().getSuperclass();
-        if (superClass != null) {
+        while (superClass != null) {
           crc.update(SerializabilityUtil.getSerializedTypeName(superClass).getBytes(SerializabilityUtil.DEFAULT_ENCODING));
+          superClass = superClass.getSuperclass();
+          if (superClass.equals(Throwable.class)) {
+            break;
+          }
         }
       } catch (Throwable t) {
         return "//EX[2,1,[\"java.lang.Exception/1920171873\"," + escapedStr + "],0," + AbstractSerializationStream.SERIALIZATION_STREAM_VERSION + "]";
