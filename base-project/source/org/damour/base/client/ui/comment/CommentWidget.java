@@ -208,8 +208,9 @@ public class CommentWidget extends VerticalPanel {
           continue;
         }
 
-        boolean userIsAuthorOfComment = AuthenticationHandler.getInstance().getUser() != null
+        boolean userIsAuthorOfComment = AuthenticationHandler.getInstance().getUser() != null && comment.getAuthor() != null
             && comment.getAuthor().equals(AuthenticationHandler.getInstance().getUser());
+        
         if (userCanManage || userIsAuthorOfComment || comment.isApproved()) {
 
           FlexTable commentHeaderPanel = new FlexTable();
