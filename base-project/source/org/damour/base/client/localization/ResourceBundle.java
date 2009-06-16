@@ -1,25 +1,10 @@
-/*
- * This program is free software; you can redistribute it and/or modify it under the 
- * terms of the GNU Lesser General Public License, version 2.1 as published by the Free Software 
- * Foundation.
- *
- * You should have received a copy of the GNU Lesser General Public License along with this 
- * program; if not, you can obtain a copy at http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html 
- * or from the Free Software Foundation, Inc., 
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU Lesser General Public License for more details.
- *
- * Copyright 2008 Pentaho Corporation.  All rights reserved.
- */
 package org.damour.base.client.localization;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.damour.base.client.ui.dialogs.MessageDialogBox;
 import org.damour.base.client.utils.StringTokenizer;
 import org.damour.base.client.utils.StringUtils;
 
@@ -55,7 +40,7 @@ public class ResourceBundle {
   private String localeName = "default";
   private String currentAttemptUrl = null;
   private boolean attemptLocalizedFetches = true;
-  private Map<String, String> supportedLocales = null;
+  private Map<String, String> supportedLanguages = null;
 
   private class FakeResponse extends Response {
 
@@ -113,7 +98,7 @@ public class ResourceBundle {
     loadBundle(path, bundleName, attemptLocalizedFetches, bundleLoadCallback);
   }
 
-  public void loadBundle(String path, String bundleName, boolean attemptLocalizedFetches, IResourceBundleLoadCallback bundleLoadCallback) {
+  public void loadBundle(String path, final String bundleName, boolean attemptLocalizedFetches, IResourceBundleLoadCallback bundleLoadCallback) {
     this.bundleName = bundleName;
     this.bundleLoadCallback = bundleLoadCallback;
     this.attemptLocalizedFetches = attemptLocalizedFetches;
@@ -130,21 +115,42 @@ public class ResourceBundle {
     // 1. bundleName.properties
     // 2. bundleName_en.properties
     // 3. bundleName_en_US.properties
-
-    // always fetch the base first
-    currentAttemptUrl = path + bundleName + PROPERTIES_EXTENSION;
-    if (bundleCache.containsKey(currentAttemptUrl)) {
-      baseCallback.onResponseReceived(null, new FakeResponse(bundleCache.get(currentAttemptUrl)));
-    } else {
-      RequestBuilder requestBuilder = new RequestBuilder(RequestBuilder.GET, currentAttemptUrl);
-      try {
-        requestBuilder.sendRequest(null, baseCallback);
-      } catch (RequestException e) {
-        Window.alert("base load: " + e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
-        fireBundleLoadCallback();
+    
+    final ResourceBundle supportedLanguagesBundle = new ResourceBundle();
+    // callback for when supported_locales has been fetched (if desired)
+    IResourceBundleLoadCallback supportedLangCallback = new IResourceBundleLoadCallback() {
+      public void bundleLoaded(String ignore) {
+        // supportedLanguages will be null if the user did not set them prior to loadBundle
+        // if the user already set them, keep 'em, it's an override
+        if (ResourceBundle.this.supportedLanguages == null) {
+          ResourceBundle.this.supportedLanguages = supportedLanguagesBundle.getMap();
+        }        
+        // always fetch the base first
+        currentAttemptUrl = ResourceBundle.this.path + bundleName + PROPERTIES_EXTENSION;
+        if (bundleCache.containsKey(currentAttemptUrl)) {
+          baseCallback.onResponseReceived(null, new FakeResponse(bundleCache.get(currentAttemptUrl)));
+        } else {
+          RequestBuilder requestBuilder = new RequestBuilder(RequestBuilder.GET, currentAttemptUrl);
+          try {
+            requestBuilder.sendRequest(null, baseCallback);
+          } catch (RequestException e) {
+            Window.alert("base load: " + e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
+            fireBundleLoadCallback();
+          }
+        }
       }
+    };
+    
+    // supportedLanguages will not be null if they've already been set by the user, and in that case,
+    // we do not want attempt to load that bundle..
+    if (attemptLocalizedFetches && supportedLanguages == null) {
+      // load supported_languages bundle
+      supportedLanguagesBundle.loadBundle(path, "supported_languages", false, supportedLangCallback); //$NON-NLS-1$ //$NON-NLS-2$
+    } else {
+      // simulate callback
+      supportedLangCallback.bundleLoaded("supported_languages");
     }
-
+    
   }
 
   private void initCallbacks() {
@@ -191,7 +197,7 @@ public class ResourceBundle {
 
             // IE caches the file and causes an issue with the request
 
-            if (!isSupportedLocale(lang) || bundleCache.containsKey(currentAttemptUrl)) {
+            if (!isSupportedLanguage(lang) || bundleCache.containsKey(currentAttemptUrl)) {
               langCallback.onResponseReceived(null, new FakeResponse(bundleCache.get(currentAttemptUrl)));
             } else {
               RequestBuilder requestBuilder = new RequestBuilder(RequestBuilder.GET, currentAttemptUrl); //$NON-NLS-1$ //$NON-NLS-2$
@@ -239,7 +245,7 @@ public class ResourceBundle {
         if (st.countTokens() == 2) {
           // 3. fetch bundleName_lang_country.properties
           currentAttemptUrl = path + bundleName + "_" + localeName + PROPERTIES_EXTENSION;
-          if (!isSupportedLocale(localeName) || bundleCache.containsKey(currentAttemptUrl)) {
+          if (!isSupportedLanguage(localeName) || bundleCache.containsKey(currentAttemptUrl)) {
             langCountryCallback.onResponseReceived(null, new FakeResponse(bundleCache.get(currentAttemptUrl)));
           } else {
             RequestBuilder requestBuilder = new RequestBuilder(RequestBuilder.GET, currentAttemptUrl); //$NON-NLS-1$ //$NON-NLS-2$
@@ -289,6 +295,9 @@ public class ResourceBundle {
 
   public String getString(String key) {
     String resource = bundle.get(key);
+    if (resource == null) {
+      return key;
+    }
     return decodeUTF8(resource);
   }
 
@@ -329,12 +338,21 @@ public class ResourceBundle {
   }
 
   /**
-   * This method return the set of keys for the MessageBundle
+   * This method returns the set of keys for the MessageBundle
    * 
    * @return The key set for the message bundle
    */
   public Set<String> getKeys() {
     return bundle.keySet();
+  }
+
+  /**
+   * This method returns the internal Map of key/value pairs for the bundle
+   * 
+   * @return The key set for the message bundle
+   */
+  public Map<String, String> getMap() {
+    return bundle;
   }
 
   public static void clearCache() {
@@ -358,17 +376,22 @@ public class ResourceBundle {
     return str;
   }
 
-  public boolean isSupportedLocale(String localeCode) {
-    if (supportedLocales == null) {
-      // if supportedLocales is null, then we have no idea what we support
+  public boolean isSupportedLanguage(String languageCode) {
+    if (supportedLanguages == null || supportedLanguages.size() == 0) {
+      // if supportedLocales is null or empty, then we have no idea what we support
       // so we'll force try anything
       return true;
     }
-    return supportedLocales.containsKey(localeCode);
+    boolean returnValue = supportedLanguages.containsKey(languageCode);
+    return returnValue;
   }
 
-  public void setSupportedLocales(Map<String, String> supportedLocales) {
-    this.supportedLocales = supportedLocales;
+  public Map<String, String> getSupportedLanguages() {
+    return supportedLanguages;
+  }
+  
+  public void setSupportedLanguages(Map<String, String> supportedLanguages) {
+    this.supportedLanguages = supportedLanguages;
   }
 
   private static native String getLanguagePreference()
