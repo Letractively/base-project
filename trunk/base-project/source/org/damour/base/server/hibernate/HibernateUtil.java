@@ -2,6 +2,7 @@ package org.damour.base.server.hibernate;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -349,7 +350,7 @@ public class HibernateUtil {
       }
       mappingElement.addAttribute("lazy", "" + lazy);
 
-      Field[] fields = ReflectionCache.getFields(clazz);
+      List<Field> fields = ReflectionCache.getFields(clazz);
       for (Field field : fields) {
 
         String name = field.getName();
@@ -368,11 +369,11 @@ public class HibernateUtil {
         }
 
         boolean skip = false;
-        Field[] parentFields = ReflectionCache.getFields(clazz.getSuperclass());
+        List<Field> parentFields = ReflectionCache.getFields(clazz.getSuperclass());
         for (Field parentField : parentFields) {
           if (field.equals(parentField)) {
             // skip duplicates
-            //Logger.log("  -" + name + ":" + field.getType().getName());
+            // Logger.log("  -" + name + ":" + field.getType().getName());
             skip = true;
             break;
           }
@@ -385,12 +386,15 @@ public class HibernateUtil {
 
         Boolean isKey = Boolean.FALSE;
         Boolean isUnique = Boolean.FALSE;
+        String typeOverride = null;
         if (IHibernateFriendly.class.isAssignableFrom(clazz)) {
           try {
             Method isKeyMethod = clazz.getMethod("isFieldKey", String.class);
             Method isUniqueMethod = clazz.getMethod("isFieldUnique", String.class);
+            Method getFieldTypeMethod = clazz.getMethod("getFieldType", String.class);
             isKey = (Boolean) isKeyMethod.invoke(clazz.newInstance(), name);
             isUnique = (Boolean) isUniqueMethod.invoke(clazz.newInstance(), name);
+            typeOverride = (String) getFieldTypeMethod.invoke(clazz.newInstance(), name);
           } catch (Exception e) {
           }
         }
@@ -421,7 +425,11 @@ public class HibernateUtil {
           if (isJavaType(field.getType())) {
             Element propertyElement = mappingElement.addElement("property");
             propertyElement.addAttribute("name", name);
-            propertyElement.addAttribute("type", type);
+            if (typeOverride != null) {
+              propertyElement.addAttribute("type", typeOverride);
+            } else {
+              propertyElement.addAttribute("type", type);
+            }
             propertyElement.addAttribute("column", name);
             if (isUnique) {
               propertyElement.addAttribute("unique", "true");
