@@ -1113,19 +1113,29 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
           if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, hibNewObject, PERM.WRITE)) {
             throw new SimpleMessageException("User is not authorized to overwrite object.");
           }
-          hibNewObject.setGlobalRead(permissibleObject.isGlobalRead());
-          hibNewObject.setGlobalWrite(permissibleObject.isGlobalWrite());
-          hibNewObject.setGlobalExecute(permissibleObject.isGlobalExecute());
-          hibNewObject.setName(permissibleObject.getName());
-          hibNewObject.setDescription(permissibleObject.getDescription());
-          hibNewObject.setParent(permissibleObject.getParent());
+          // hibNewObject.setGlobalRead(permissibleObject.isGlobalRead());
+          // hibNewObject.setGlobalWrite(permissibleObject.isGlobalWrite());
+          // hibNewObject.setGlobalExecute(permissibleObject.isGlobalExecute());
+          // hibNewObject.setName(permissibleObject.getName());
+          // hibNewObject.setDescription(permissibleObject.getDescription());
+          // hibNewObject.setParent(permissibleObject.getParent());
+          List<Field> fields = ReflectionCache.getFields(permissibleObject.getClass());
+          for (Field field : fields) {
+            try {
+              field.set(hibNewObject, field.get(permissibleObject));
+            } catch (Exception e) {
+              e.printStackTrace();
+              Logger.log(e);
+            }
+          }
+
           permissibleObject = hibNewObject;
         }
       } else {
         System.out.println("it was null");
       }
 
-      Field fields[] = ReflectionCache.getFields(permissibleObject.getClass());
+      List<Field> fields = ReflectionCache.getFields(permissibleObject.getClass());
       for (Field field : fields) {
         try {
           // do not update parent permission only our 'owned' objects
@@ -1358,7 +1368,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       hibPermissibleObject.setGlobalExecute(permissibleObject.isGlobalExecute());
 
       // update 'child' fields (for example, image has child permissibles)
-      Field fields[] = ReflectionCache.getFields(hibPermissibleObject.getClass());
+      List<Field> fields = ReflectionCache.getFields(hibPermissibleObject.getClass());
       for (Field field : fields) {
         try {
           if (!field.getName().equals("parent") && PermissibleObject.class.isAssignableFrom(field.getType())) {
@@ -1412,7 +1422,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         session.get().save(permission);
       }
 
-      Field fields[] = ReflectionCache.getFields(permissibleObject.getClass());
+      List<Field> fields = ReflectionCache.getFields(permissibleObject.getClass());
       for (Field field : fields) {
         try {
           // do not update parent permission only our 'owned' objects
