@@ -38,7 +38,7 @@ public class PermissibleObjectHelper {
     // ok finally we can delete the file
     session.delete(permissibleObject);
 
-    Field fields[] = ReflectionCache.getFields(permissibleObject.getClass());
+    List<Field> fields = ReflectionCache.getFields(permissibleObject.getClass());
     for (Field field : fields) {
       if (!field.getName().equals("parent") && PermissibleObject.class.isAssignableFrom(field.getType())) {
         try {
@@ -63,7 +63,8 @@ public class PermissibleObjectHelper {
     if (parent == null) {
       return session.createQuery("from PermissibleObject where owner.id = " + owner.id + " order by creationDate desc").setCacheable(true).list();
     } else {
-      return session.createQuery("from PermissibleObject where parent.id = " + parent.id + " and owner.id = " + owner.id + " order by creationDate desc").setCacheable(true).list();
+      return session.createQuery("from PermissibleObject where parent.id = " + parent.id + " and owner.id = " + owner.id + " order by creationDate desc")
+          .setCacheable(true).list();
     }
   }
 
