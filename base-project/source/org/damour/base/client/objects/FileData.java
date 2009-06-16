@@ -63,4 +63,8 @@ public class FileData implements Serializable, IHibernateFriendly {
     return true;
   }
 
+  public String getFieldType(String fieldName) {
+    return null;
+  }
+
 }
