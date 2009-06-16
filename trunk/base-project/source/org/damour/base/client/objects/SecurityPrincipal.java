@@ -21,6 +21,10 @@ public class SecurityPrincipal implements Serializable, IHibernateFriendly {
     return false;
   }
 
+  public String getFieldType(String fieldName) {
+    return null;
+  }
+  
   public String getSqlUpdate() {
     return null;
   }

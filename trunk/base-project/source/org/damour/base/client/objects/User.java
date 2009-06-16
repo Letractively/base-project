@@ -12,7 +12,7 @@ public class User extends SecurityPrincipal implements Serializable, IHibernateF
   public String email;
   public long birthday;
   public long signupDate;
-  
+
   public boolean administrator = false;
   public boolean validated = false;
 
@@ -23,7 +23,7 @@ public class User extends SecurityPrincipal implements Serializable, IHibernateF
     if (fieldName.equals("username")) {
       return true;
     }
-    return false;
+    return super.isFieldUnique(fieldName);
   }
 
   public boolean isFieldKey(String fieldName) {

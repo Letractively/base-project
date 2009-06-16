@@ -44,6 +44,10 @@ public class UserAdvisory implements Serializable, IHibernateFriendly {
     return true;
   }
 
+  public String getFieldType(String fieldName) {
+    return null;
+  }
+
   public User getVoter() {
     return voter;
   }
