@@ -1,11 +1,15 @@
 package org.damour.base.demo.client;
 
 import org.damour.base.client.objects.User;
+import org.damour.base.client.soundmanager.MP3Player;
 import org.damour.base.client.ui.authentication.CreateNewAccountCommand;
 import org.damour.base.client.ui.colorpicker.ColorPickerDialog;
 import org.damour.base.client.ui.dialogs.IDialogCallback;
 import org.damour.base.demo.client.images.DemoImageBundle;
 
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -49,8 +53,8 @@ public class Launcher extends VerticalPanel {
           DemoImageBundle.images.createAccount_212x89().applyTo(createAccountImage);
         }
       });
-      createAccountImage.addClickListener(new ClickListener() {
-        public void onClick(Widget sender) {
+      createAccountImage.addClickHandler(new ClickHandler() {
+        public void onClick(ClickEvent event) {
           CreateNewAccountCommand cmd = new CreateNewAccountCommand();
           cmd.execute();
         }
@@ -91,6 +95,7 @@ public class Launcher extends VerticalPanel {
         picker.setCallback(new IDialogCallback() {
           public void cancelPressed() {
           }
+
           public void okPressed() {
             Window.alert(picker.getHexColor());
           }
@@ -98,11 +103,16 @@ public class Launcher extends VerticalPanel {
       }
     });
 
-    
     final Image ratePhotosImage = new Image();
     DemoImageBundle.images.ratePhotos_172x89().applyTo(ratePhotosImage);
     ratePhotosImage.setTitle("Rate Photos");
     ratePhotosImage.setStyleName("genericImageButton");
+    ratePhotosImage.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
+        MP3Player.getInstance().createSound("clong", GWT.getModuleBaseURL() + "sounds/clong.mp3");
+        MP3Player.getInstance().playSound("clong");
+      }
+    });
     ratePhotosImage.addMouseListener(new MouseListener() {
       public void onMouseDown(Widget sender, int x, int y) {
       }
