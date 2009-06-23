@@ -7,14 +7,14 @@ import java.util.List;
 import org.damour.base.client.images.BaseImageBundle;
 import org.damour.base.client.ui.dialogs.DialogBox;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
 public class MP3Player {
 
@@ -31,18 +31,18 @@ public class MP3Player {
   final Image pauseButton = new Image();
 
   private static MP3Player instance = new MP3Player();
-  
+
   public static MP3Player getInstance() {
     return instance;
   }
-  
+
   private MP3Player() {
     // initialize ui/popuppanel
     BaseImageBundle.images.player_play_32().applyTo(pauseButton);
     pauseButton.setStyleName("mp3playerButton");
     pauseButton.setTitle("Play");
-    pauseButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    pauseButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         togglePause();
       }
     });
@@ -50,8 +50,8 @@ public class MP3Player {
     BaseImageBundle.images.player_stop_32().applyTo(stopButton);
     stopButton.setStyleName("mp3playerButton");
     stopButton.setTitle("Stop");
-    stopButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    stopButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         stop();
       }
     });
@@ -59,8 +59,8 @@ public class MP3Player {
     BaseImageBundle.images.player_next_32().applyTo(nextButton);
     nextButton.setStyleName("mp3playerButton");
     nextButton.setTitle("Next");
-    nextButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    nextButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         next();
       }
     });
@@ -68,8 +68,8 @@ public class MP3Player {
     BaseImageBundle.images.player_prev_32().applyTo(prevButton);
     prevButton.setStyleName("mp3playerButton");
     prevButton.setTitle("Previous");
-    prevButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    prevButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         prev();
       }
     });
@@ -77,8 +77,8 @@ public class MP3Player {
     BaseImageBundle.images.player_hide_32().applyTo(hideButton);
     hideButton.setStyleName("mp3playerButton");
     hideButton.setTitle("Hide");
-    hideButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    hideButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         hide();
       }
     });
@@ -86,8 +86,8 @@ public class MP3Player {
     BaseImageBundle.images.player_close_32().applyTo(closeButton);
     closeButton.setStyleName("mp3playerButton");
     closeButton.setTitle("Close");
-    closeButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    closeButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         for (String soundName : loadedMap.keySet()) {
           destroySound(soundName);
         }
@@ -280,6 +280,15 @@ public class MP3Player {
     t.schedule(250);
   }
 
+  /**
+   * Create / Register a sound with the sound manager. If the sound is in your module public folder, be sure to build that into the url. This can be done simply
+   * by adding GWT.getModuleBaseURL() to beginning of the url.
+   * 
+   * @param soundName
+   *          any name you want to reference the sound by
+   * @param url
+   *          any valid url to an MP3
+   */
   public void createSound(String soundName, String url) {
     if (!url.endsWith(".mp3")) {
       if (!url.contains("?")) {
@@ -320,49 +329,55 @@ public class MP3Player {
     playNext();
   }
 
-  private native String getID3Tag(String soundName, String tag) /*-{
-     var id3Obj = $wnd.soundManager.getSoundById(soundName).id3;
+  private native String getID3Tag(String soundName, String tag)
+  /*-{
+    var id3Obj = $wnd.soundManager.getSoundById(soundName).id3;
+    //var prop = null;
+    //for (prop in id3Obj) {
+      //alert("stuff: " + id3Obj[prop]);
+    //}
+    return id3Obj[tag];
+  }-*/;
 
-  var prop = null;
-  for (prop in id3Obj) {
-  //alert("stuff: " + id3Obj[prop]);
-  }
-     return id3Obj[tag];
-   }-*/;
-
-  private native void nativeTogglePause(String soundName) /*-{
+  private native void nativeTogglePause(String soundName)
+  /*-{
     $wnd.soundManager.togglePause(soundName);
-   }-*/;
+  }-*/;
 
-  private native void nativeStop() /*-{
+  private native void nativeStop()
+  /*-{
     $wnd.soundManager.stopAll();
-   }-*/;
+  }-*/;
 
-  private native void nativeDestroySound(String soundName) /*-{
-         $wnd.soundManager.destroySound(soundName);
-        }-*/;
+  private native void nativeDestroySound(String soundName)
+  /*-{
+    $wnd.soundManager.destroySound(soundName);
+  }-*/;
 
-  private native void nativePlaySound(MP3Player player, String soundName) /*-{
-               $wnd.soundManager.play(soundName);
-              }-*/;
+  private native void nativePlaySound(MP3Player player, String soundName)
+  /*-{
+    $wnd.soundManager.play(soundName);
+  }-*/;
 
-  private native void nativeCreateSound(MP3Player player, String soundName, String url) /*-{
-               var myPlayer = player;
-               var mySoundName = soundName;
-               var soundManager = $wnd.soundManager;
-               playNextSound = function() {
-                 myPlayer.@org.damour.base.client.soundmanager.MP3Player::onfinish(Ljava/lang/String;)(mySoundName);
-               }
-               var mySoundObject = $wnd.soundManager.createSound({
-                 id: soundName,
-                 url: url,
-                 onfinish: playNextSound,
-                 stream: true
-               });
-               }-*/;
+  private native void nativeCreateSound(MP3Player player, String soundName, String url)
+  /*-{
+    var myPlayer = player;
+    var mySoundName = soundName;
+    var soundManager = $wnd.soundManager;
+    playNextSound = function() {
+      myPlayer.@org.damour.base.client.soundmanager.MP3Player::onfinish(Ljava/lang/String;)(mySoundName);
+    }
+    var mySoundObject = $wnd.soundManager.createSound({
+      id: soundName,
+      url: url,
+      onfinish: playNextSound,
+      stream: true
+    });
+  }-*/;
 
-  private native boolean isSoundManagerLoaded() /*-{
-               return (true == $wnd.soundManager.onLoadExecuted);
-             }-*/;
+  private native boolean isSoundManagerLoaded()
+  /*-{
+    return (true == $wnd.soundManager.onLoadExecuted);
+  }-*/;
 
 }

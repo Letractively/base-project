@@ -6,6 +6,8 @@ import org.damour.base.client.ui.toolbar.ToolBar;
 public class DemoApplication extends BaseApplicationUI {
 
   public void loadApplication() {
+    getApplicationContentDeck().add(new Launcher(getAuthenticatedUser()));
+    getApplicationContentDeck().showWidget(0);
   }
 
   public ToolBar buildApplicationToolBar() {
