@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.damour.base.client.ui.dialogs.MessageDialogBox;
 import org.damour.base.client.utils.StringTokenizer;
 import org.damour.base.client.utils.StringUtils;
 
@@ -371,7 +370,7 @@ public class ResourceBundle {
     while (str.indexOf("\\u") != -1) { //$NON-NLS-1$
       int index = str.indexOf("\\u"); //$NON-NLS-1$
       String hex = str.substring(index + 2, index + 6);
-      str = str.substring(0, index) + "&#" + hex + ";" + str.substring(index + 6); //$NON-NLS-1$ //$NON-NLS-2$
+      str = str.substring(0, index) + "&#x" + hex + ";" + str.substring(index + 6); //$NON-NLS-1$ //$NON-NLS-2$
     }
     return str;
   }
