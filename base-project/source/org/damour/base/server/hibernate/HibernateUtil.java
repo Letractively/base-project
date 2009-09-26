@@ -365,7 +365,7 @@ public class HibernateUtil {
             continue;
           }
         } catch (Throwable t) {
-          t.printStackTrace();
+            Logger.log("Cannot determine if field is hibernated managed:" + field.getName() + " (" + field.getType().getName() + ")");
         }
 
         boolean skip = false;
