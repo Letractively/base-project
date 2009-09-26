@@ -76,7 +76,7 @@
 		</copy>
 		<unzip dest="dist/${target.webapp.name}/WEB-INF/classes">
 			<fileset dir="dist" includes="${project.name}*.jar" />
-			<fileset dir="war/WEB-INF/lib" includes="*.zip, *.jar" excludes="**/*gwt-dev-windows.jar, **/*gwt-user.jar, **/*googlemaps*.jar, **/gwtchismes*, **/*colorpicker*" />
+			<fileset dir="war/WEB-INF/lib" includes="*.zip, *.jar" excludes="**/*gwt*incubator*.jar, **/*gwt-dev-windows.jar, **/*gwt-user.jar, **/*googlemaps*.jar, **/gwtchismes*, **/*colorpicker*" />
 			<fileset dir="../base-project/war/WEB-INF/lib" includes="**/*.zip, **/*.jar" excludes="**/*gwt-dev-windows.jar, **/*gwt-user.jar, **/*googlemaps*.jar, **/gwtchismes*, **/*colorpicker*" />
 		</unzip>
 		<delete file="dist/${project.name}.war" />
