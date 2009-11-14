@@ -14,6 +14,7 @@ import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.HTML;
 
 /**
  * This class is a ResourceBundle for GWT projects. Provided with a resource's base-name it will fetch and merge resources as follows:
@@ -363,6 +364,8 @@ public class ResourceBundle {
     bundle.putAll(inBundle.bundle);
   }
 
+  private static HTML entityDecoder = new HTML();
+  
   private String decodeUTF8(String str) {
     if (str == null) {
       return str;
@@ -371,6 +374,8 @@ public class ResourceBundle {
       int index = str.indexOf("\\u"); //$NON-NLS-1$
       String hex = str.substring(index + 2, index + 6);
       str = str.substring(0, index) + "&#x" + hex + ";" + str.substring(index + 6); //$NON-NLS-1$ //$NON-NLS-2$
+      entityDecoder.setHTML(str);
+      str = entityDecoder.getHTML();
     }
     return str;
   }
