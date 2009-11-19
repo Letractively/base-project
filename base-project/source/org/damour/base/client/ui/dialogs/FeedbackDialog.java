@@ -24,7 +24,8 @@ public class FeedbackDialog extends PromptDialogBox implements IDialogValidatorC
 
   public FeedbackDialog() {
     super(BaseApplication.getMessages().getString("feedback", "Feedback"), "Submit", null, "Cancel", false, true);
-
+    super.setAllowKeyboardEvents(false);
+    
     contactName.setVisibleLength(50);
     email.setVisibleLength(50);
     phone.setVisibleLength(20);
