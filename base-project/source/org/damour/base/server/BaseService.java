@@ -5,21 +5,15 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.mail.Message;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.damour.base.client.exceptions.LoginException;
 import org.damour.base.client.exceptions.SimpleMessageException;
-import org.damour.base.client.objects.Category;
 import org.damour.base.client.objects.Comment;
 import org.damour.base.client.objects.File;
 import org.damour.base.client.objects.FileUploadStatus;
@@ -30,8 +24,11 @@ import org.damour.base.client.objects.MemoryStats;
 import org.damour.base.client.objects.Page;
 import org.damour.base.client.objects.PendingGroupMembership;
 import org.damour.base.client.objects.PermissibleObject;
+import org.damour.base.client.objects.PermissibleObjectTreeNode;
 import org.damour.base.client.objects.Permission;
 import org.damour.base.client.objects.RepositoryTreeNode;
+import org.damour.base.client.objects.Tag;
+import org.damour.base.client.objects.TagMembership;
 import org.damour.base.client.objects.User;
 import org.damour.base.client.objects.UserAdvisory;
 import org.damour.base.client.objects.UserGroup;
@@ -49,6 +46,7 @@ import org.damour.base.server.hibernate.helpers.PermissibleObjectHelper;
 import org.damour.base.server.hibernate.helpers.RatingHelper;
 import org.damour.base.server.hibernate.helpers.RepositoryHelper;
 import org.damour.base.server.hibernate.helpers.SecurityHelper;
+import org.damour.base.server.hibernate.helpers.TagHelper;
 import org.damour.base.server.hibernate.helpers.UserHelper;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -63,7 +61,6 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
 
   public static HashMap<User, FileUploadStatus> fileUploadStatusMap = new HashMap<User, FileUploadStatus>();
   public static final int COOKIE_TIMEOUT = 31556926; // 1 year in seconds
-  public static String smtpHost = "relay-hosting.secureserver.net";
 
   private ThreadLocal<Session> session = new ThreadLocal<Session>();
 
@@ -93,99 +90,9 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     super.doUnexpectedFailure(e);
   }
 
-  protected void sendDebugMessage(String text) {
-    String from = "admin@" + getDomainName();
-    String to = from;
-    String subject = getDomainName() + " DEBUG";
-    String message = "<BR/>" + text + "<BR/>";
-    sendMessage(smtpHost, from, from, to, subject, message);
-  }
-
-  protected boolean sendMessage(String smtpHost, String fromAddress, String fromName, String to, String subject, String text) {
-    try {
-      // Get system properties
-      Properties props = System.getProperties();
-      // Setup mail server
-      props.put("mail.smtp.host", smtpHost);
-      // Get session
-      javax.mail.Session session = javax.mail.Session.getDefaultInstance(props, null);
-      // Define message
-      MimeMessage message = new MimeMessage(session);
-      // Set the from address
-      message.setFrom(new InternetAddress(fromAddress, fromName));
-      // Set the to address
-      message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
-      // Set the subject
-      message.setSubject(subject);
-      // Set the content
-      message.setContent(text, "text/html");
-      // Send message
-      Transport.send(message);
-      return true;
-    } catch (Exception e) {
-      Logger.log(e);
-      return false;
-    }
-  }
-
-  protected String getSmtpHost() {
-    return smtpHost;
-  }
-
-  protected void setSmtpHost(String inSmtpHost) {
-    smtpHost = inSmtpHost;
-  }
-
   protected String getDomainName() {
     return BaseSystem.getDomainName(getThreadLocalRequest());
   }
-
-  // protected void emailException(Throwable t) {
-  // String trace = Logger.convertThrowableToHTML(t);
-  // String from = "admin@" + getDomainName();
-  // String to = from;
-  // String subject = "A critical server error has occurred.";
-  // String message = "<BR/>" + t.getMessage() + "<BR/>" + trace;
-  // sendMessage(smtpHost, from, from, to, subject, message);
-  // }
-
-  // protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-  // String method = req.getParameter("method");
-  // if (method.equalsIgnoreCase("doesUserHavePermission")) {
-  // org.hibernate.Session session = HibernateUtil.getInstance().getSession();
-  // try {
-  // String username = req.getParameter("user");
-  // String permissionStr = req.getParameter("permission");
-  // Long permissibleObjectId = Long.valueOf(req.getParameter("permissibleObjectId"));
-  // User user = UserHelper.getUser(session, username);
-  // PermissibleObject permissibleObject = (PermissibleObject) session.load(PermissibleObject.class, permissibleObjectId);
-  // PERM permission = PERM.valueOf(permissionStr);
-  // resp.setContentType("text/xml");
-  // resp.getWriter().write("<result>");
-  // resp.getWriter().write("" + SecurityHelper.doesUserHavePermission(session, user, permissibleObject, permission));
-  // resp.getWriter().write("</result>");
-  // } catch (Throwable t) {
-  // t.printStackTrace();
-  // logException(t);
-  // throw new RuntimeException("Invalid doGet request");
-  // } finally {
-  // session.close();
-  // }
-  // } else if (method.equals("evictFile")) {
-  // org.hibernate.Session session = HibernateUtil.getInstance().getSession();
-  // try {
-  // Long id = Long.valueOf(req.getParameter("id"));
-  // File file = (File) session.load(File.class, id);
-  // session.evict(file);
-  // session.getSessionFactory().evict(File.class, id);
-  // } catch (Throwable t) {
-  // logException(t);
-  // throw new RuntimeException("Invalid doGet request");
-  // } finally {
-  // session.close();
-  // }
-  // }
-  // }
 
   public User login(HttpServletRequest request, HttpServletResponse response, String username, String password) {
     try {
@@ -205,6 +112,13 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     }
   }
 
+  private boolean isAccountValidated(User user) {
+    if (!BaseSystem.requireAccountValidation()) {
+      return true;
+    }
+    return user.isValidated();
+  }
+
   private User login(org.hibernate.Session session, HttpServletRequest request, HttpServletResponse response, String username, String password, boolean internal)
       throws SimpleMessageException {
     username = username.toLowerCase();
@@ -212,7 +126,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     MD5 md5 = new MD5();
     md5.Update(password);
     String passwordHash = md5.asHex();
-    if (user != null && user.isValidated() && user.getUsername().equals(username)
+    if (user != null && isAccountValidated(user) && user.getUsername().equals(username)
         && ((internal && password.equals(user.getPasswordHash())) || user.getPasswordHash().equals(passwordHash))) {
       Cookie userCookie = new Cookie("user", user.getUsername());
       userCookie.setPath("/");
@@ -228,7 +142,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       response.addCookie(voterCookie);
     } else {
       destroyAuthCookies(request, response);
-      if (!user.isValidated()) {
+      if (!isAccountValidated(user)) {
         throw new SimpleMessageException("Could not login.  Account is not validated.");
       }
       throw new SimpleMessageException("Could not login.  Invalid username or password.");
@@ -366,12 +280,12 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         tx.commit();
 
         // if a new user is creating a new account, login if new user account is validated
-        if (authUser == null && newUser.isValidated()) {
+        if (authUser == null && isAccountValidated(newUser)) {
           destroyAuthCookies(getThreadLocalRequest(), getThreadLocalResponse());
           if (login(session.get(), getThreadLocalRequest(), getThreadLocalResponse(), newUser.getUsername(), newUser.getPasswordHash(), true) != null) {
             return newUser;
           }
-        } else if (authUser == null && !newUser.isValidated()) {
+        } else if (authUser == null && !isAccountValidated(newUser)) {
           // send user a validation email, where, upon clicking the link, their account will be validated
           // the validation code in the URL will simply be a hash of their email address
           MD5 md5 = new MD5();
@@ -384,7 +298,8 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
           text += "<A HREF=\"";
           text += url;
           text += "\">" + url + "</A>";
-          sendMessage(smtpHost, "admin@" + getDomainName(), getDomainName() + " validator", newUser.getEmail(), getDomainName() + " account validation", text);
+          EmailHelper.sendMessage(BaseSystem.getSmtpHost(), "admin@" + getDomainName(), getDomainName() + " validator", newUser.getEmail(), getDomainName()
+              + " account validation", text);
         }
         return newUser;
       } else if (authUser != null && (authUser.isAdministrator() || authUser.getId().equals(dbUser.getId()))) {
@@ -541,8 +456,9 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         session.get().save(groupMembership);
         tx.commit();
         // send email to group owner
-        sendMessage(getSmtpHost(), "admin@" + getDomainName(), "admin@" + getDomainName(), group.getOwner().getEmail(), "Group join request from "
-            + user.getUsername(), "[" + getDomainName() + "] " + user.getUsername() + " has requested permission to join your group " + group.getName());
+        EmailHelper.sendMessage(BaseSystem.getSmtpHost(), "admin@" + getDomainName(), "admin@" + getDomainName(), group.getOwner().getEmail(),
+            "Group join request from " + user.getUsername(), "[" + getDomainName() + "] " + user.getUsername()
+                + " has requested permission to join your group " + group.getName());
         throw new SimpleMessageException("Could not join group, request submitted to group owner.");
       }
       throw new SimpleMessageException("Could not join group.");
@@ -1076,11 +992,8 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
   }
 
   public RepositoryTreeNode getRepositoryTree() throws SimpleMessageException {
-    User authUser = getAuthenticatedUser(session.get());
-    if (authUser == null) {
-      throw new SimpleMessageException("User is not authenticated.");
-    }
     try {
+      User authUser = getAuthenticatedUser(session.get());
       RepositoryTreeNode root = new RepositoryTreeNode();
       RepositoryHelper.buildRepositoryTreeNode(session.get(), authUser, root, null);
       return root;
@@ -1226,6 +1139,18 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       throw new SimpleMessageException("User is not authenticated.");
     }
     return PermissibleObjectHelper.getMyPermissibleObjects(session.get(), authUser, parent);
+  }
+
+  public PermissibleObjectTreeNode getChildren(PermissibleObject parent) throws SimpleMessageException {
+    try {
+      User authUser = getAuthenticatedUser(session.get());
+      PermissibleObjectTreeNode root = new PermissibleObjectTreeNode();
+      RepositoryHelper.buildPermissibleObjectTreeNode(session.get(), authUser, root, parent);
+      return root;
+    } catch (Throwable t) {
+      Logger.log(t);
+      throw new SimpleMessageException(t.getMessage());
+    }
   }
 
   public Folder createNewFolder(Folder newFolder) throws SimpleMessageException {
@@ -1481,24 +1406,174 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     }
   }
 
-  public void createCategory(String categoryName, String categoryDescription, Category parentCategory) throws SimpleMessageException {
+  public void createTag(String tagName, String tagDescription, Tag parentTag) throws SimpleMessageException {
+    User authUser = getAuthenticatedUser(session.get());
+    if (authUser == null) {
+      throw new SimpleMessageException("User is not authenticated.");
+    }
+
+    if (StringUtils.isEmpty(tagName)) {
+      throw new SimpleMessageException("Tag name not provided.");
+    }
+
+    Tag hibParentTag = null;
+    if (parentTag != null) {
+      hibParentTag = ((Tag) session.get().load(Tag.class, parentTag.getId()));
+    }
+
+    Transaction tx = session.get().beginTransaction();
+    try {
+      Tag tag = new Tag();
+      tag.setName(tagName);
+      tag.setDescription(tagDescription);
+      tag.setParentTag(hibParentTag);
+      session.get().save(tag);
+      tx.commit();
+    } catch (Throwable t) {
+      Logger.log(t);
+      try {
+        tx.rollback();
+      } catch (Throwable tt) {
+      }
+      throw new SimpleMessageException(t.getMessage());
+    }
   }
 
-  public void deleteCategory(Category category) throws SimpleMessageException {
+  public void deleteTag(final Tag tag) throws SimpleMessageException {
+    User authUser = getAuthenticatedUser(session.get());
+    if (authUser == null) {
+      throw new SimpleMessageException("User is not authenticated.");
+    }
+
+    if (tag == null) {
+      throw new SimpleMessageException("Tag not provided.");
+    }
+
+    Tag hibTag = ((Tag) session.get().load(Tag.class, tag.getId()));
+    if (hibTag == null) {
+      throw new SimpleMessageException("Tag not found: " + tag);
+    }
+
+    Transaction tx = session.get().beginTransaction();
+    try {
+      TagHelper.deleteTag(session.get(), hibTag);
+      tx.commit();
+    } catch (Throwable t) {
+      Logger.log(t);
+      try {
+        tx.rollback();
+      } catch (Throwable tt) {
+      }
+      throw new SimpleMessageException(t.getMessage());
+    }
   }
 
-  public List<Category> getCategories() throws SimpleMessageException {
-    return null;
+  public List<Tag> getTags() throws SimpleMessageException {
+    // anyone can get tags
+    return TagHelper.getTags(session.get());
   }
 
-  public void addToCategory(Category category, PermissibleObject permissibleObject) throws SimpleMessageException {
+  public void addToTag(final Tag tag, final PermissibleObject permissibleObject) throws SimpleMessageException {
+    TagMembership tagMembership = new TagMembership();
+    tagMembership.setTag(tag);
+    tagMembership.setPermissibleObject(permissibleObject);
+    addToTag(tagMembership);
   }
 
-  public List<Category> getCategories(PermissibleObject permissibleObject) throws SimpleMessageException {
-    return null;
+  public void addToTag(final TagMembership tagMembership) throws SimpleMessageException {
+    if (tagMembership == null) {
+      throw new SimpleMessageException("TagMembership not provided.");
+    }
+
+    if (tagMembership.getTag() == null) {
+      throw new SimpleMessageException("Tag not provided.");
+    }
+
+    if (tagMembership.getPermissibleObject() == null) {
+      throw new SimpleMessageException("PermissibleObject not provided.");
+    }
+
+    User authUser = getAuthenticatedUser(session.get());
+    if (authUser == null) {
+      throw new SimpleMessageException("User is not authenticated.");
+    }
+
+    // assumption is that the membership does not exist but the category / permissible object do
+    // they must be loaded
+    Tag hibTag = ((Tag) session.get().load(Tag.class, tagMembership.getTag().getId()));
+    if (hibTag == null) {
+      throw new SimpleMessageException("Tag not found: " + tagMembership.getTag().getId());
+    }
+
+    PermissibleObject hibPermissibleObject = ((PermissibleObject) session.get().load(PermissibleObject.class, tagMembership.getPermissibleObject().getId()));
+    if (hibPermissibleObject == null) {
+      throw new SimpleMessageException("PermissibleObject not found: " + tagMembership.getPermissibleObject());
+    }
+
+    Transaction tx = session.get().beginTransaction();
+    try {
+      tagMembership.setTag(hibTag);
+      tagMembership.setPermissibleObject(hibPermissibleObject);
+      session.get().save(tagMembership);
+      tx.commit();
+    } catch (Throwable t) {
+      Logger.log(t);
+      try {
+        tx.rollback();
+      } catch (Throwable tt) {
+      }
+      throw new SimpleMessageException(t.getMessage());
+    }
   }
 
-  public void removeFromCategory(Category category, PermissibleObject permissibleObject) throws SimpleMessageException {
+  public List<Tag> getTags(PermissibleObject permissibleObject) throws SimpleMessageException {
+    if (permissibleObject == null) {
+      throw new SimpleMessageException("PermissibleObject not provided.");
+    }
+    return TagHelper.getTags(session.get(), permissibleObject);
+  }
+
+  public void removeTagMembership(final TagMembership tagMembership) throws SimpleMessageException {
+    removeFromTag(tagMembership.getTag(), tagMembership.getPermissibleObject());
+  }
+
+  public void removeFromTag(final Tag tag, final PermissibleObject permissibleObject) throws SimpleMessageException {
+    User authUser = getAuthenticatedUser(session.get());
+    if (authUser == null) {
+      throw new SimpleMessageException("User is not authenticated.");
+    }
+
+    if (tag == null) {
+      throw new SimpleMessageException("Tag not provided.");
+    }
+
+    if (permissibleObject == null) {
+      throw new SimpleMessageException("PermissibleObject not provided.");
+    }
+
+    Tag hibTag = ((Tag) session.get().load(Tag.class, tag.getId()));
+    if (hibTag == null) {
+      throw new SimpleMessageException("Category not found: " + tag);
+    }
+
+    PermissibleObject hibPermissibleObject = ((PermissibleObject) session.get().load(PermissibleObject.class, permissibleObject.getId()));
+    if (hibPermissibleObject == null) {
+      throw new SimpleMessageException("PermissibleObject not found: " + permissibleObject);
+    }
+
+    Transaction tx = session.get().beginTransaction();
+    try {
+      TagMembership cm = TagHelper.getTagMembership(session.get(), hibTag, permissibleObject);
+      session.get().delete(cm);
+      tx.commit();
+    } catch (Throwable t) {
+      Logger.log(t);
+      try {
+        tx.rollback();
+      } catch (Throwable tt) {
+      }
+      throw new SimpleMessageException(t.getMessage());
+    }
   }
 
   public Boolean submitAdvertisingInfo(String contactName, String email, String company, String phone, String comments) throws SimpleMessageException {
@@ -1507,8 +1582,8 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     text += "Company: " + company + "<BR>";
     text += "Phone: " + phone + "<BR>";
     text += "Comments: " + comments + "<BR>";
-    return sendMessage(smtpHost, "admin@" + getDomainName(), contactName, "admin@" + getDomainName(), contactName + " is interested in advertising on "
-        + getDomainName(), text);
+    return EmailHelper.sendMessage(BaseSystem.getSmtpHost(), "admin@" + getDomainName(), contactName, "admin@" + getDomainName(), contactName
+        + " is interested in advertising on " + getDomainName(), text);
   }
 
   public Boolean submitFeedback(String contactName, String email, String phone, String comments) throws SimpleMessageException {
@@ -1516,8 +1591,8 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     text += "E-Mail: " + email + "<BR>";
     text += "Phone: " + phone + "<BR>";
     text += "Comments: " + comments + "<BR>";
-    return sendMessage(smtpHost, "admin@" + getDomainName(), contactName, "admin@" + getDomainName(), contactName + " has submitted feedback for "
-        + getDomainName(), text);
+    return EmailHelper.sendMessage(BaseSystem.getSmtpHost(), "admin@" + getDomainName(), contactName, "admin@" + getDomainName(), contactName
+        + " has submitted feedback for " + getDomainName(), text);
   }
 
   public User submitAccountValidation(String username, String validationCode) throws SimpleMessageException {

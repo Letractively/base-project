@@ -4,7 +4,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import org.damour.base.client.objects.Category;
 import org.damour.base.client.objects.Comment;
 import org.damour.base.client.objects.File;
 import org.damour.base.client.objects.FileUploadStatus;
@@ -15,8 +14,11 @@ import org.damour.base.client.objects.MemoryStats;
 import org.damour.base.client.objects.Page;
 import org.damour.base.client.objects.PendingGroupMembership;
 import org.damour.base.client.objects.PermissibleObject;
+import org.damour.base.client.objects.PermissibleObjectTreeNode;
 import org.damour.base.client.objects.Permission;
 import org.damour.base.client.objects.RepositoryTreeNode;
+import org.damour.base.client.objects.Tag;
+import org.damour.base.client.objects.TagMembership;
 import org.damour.base.client.objects.User;
 import org.damour.base.client.objects.UserAdvisory;
 import org.damour.base.client.objects.UserGroup;
@@ -58,6 +60,7 @@ public interface BaseServiceAsync {
   // file/content/permissions methods
   public void getPermissibleObject(Long id, AsyncCallback<PermissibleObject> callback);
   public void getRepositoryTree(AsyncCallback<RepositoryTreeNode> callback);
+  public void getChildren(PermissibleObject parent, AsyncCallback<PermissibleObjectTreeNode> callback);
   public void savePermissibleObject(PermissibleObject permissibleObject, AsyncCallback<PermissibleObject> callback);
   public void deletePermissibleObject(PermissibleObject permissibleObject, AsyncCallback<Void> callback);
   public void deletePermissibleObjects(Set<PermissibleObject> permissibleObjects, AsyncCallback<Void> callback);
@@ -72,13 +75,15 @@ public interface BaseServiceAsync {
   // for debug purposes: simply return what was given, proving the serialization of the desired object
   public void echoPermissibleObject(PermissibleObject permissibleObject, AsyncCallback<PermissibleObject> callback);
 
-  // category methods
-  public void getCategories(AsyncCallback<List<Category>> callback);
-  public void getCategories(PermissibleObject permissibleObject, AsyncCallback<List<Category>> callback);
-  public void createCategory(String categoryName, String categoryDescription, Category parentCategory, AsyncCallback<Void> callback);
-  public void deleteCategory(Category category, AsyncCallback<Void> callback);
-  public void removeFromCategory(Category category, PermissibleObject permissibleObject, AsyncCallback<Void> callback);
-  public void addToCategory(Category category, PermissibleObject permissibleObject, AsyncCallback<Void> callback);
+  // tag methods
+  public void getTags(AsyncCallback<List<Tag>> callback);
+  public void getTags(PermissibleObject permissibleObject, AsyncCallback<List<Tag>> callback);
+  public void createTag(String tagName, String tagDescription, Tag parentTag, AsyncCallback<Void> callback);
+  public void deleteTag(Tag tag, AsyncCallback<Void> callback);
+  public void removeFromTag(Tag tag, PermissibleObject permissibleObject, AsyncCallback<Void> callback);
+  public void removeTagMembership(TagMembership tagMembership, AsyncCallback<Void> callback);
+  public void addToTag(Tag tag, PermissibleObject permissibleObject, AsyncCallback<Void> callback);
+  public void addToTag(TagMembership tagMembership, AsyncCallback<Void> callback);
   
   // content rating & advisory
   public void setUserRating(PermissibleObject permissibleObject, int rating, AsyncCallback<UserRating> callback);
