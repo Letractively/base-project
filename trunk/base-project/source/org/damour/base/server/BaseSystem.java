@@ -5,10 +5,12 @@ import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.damour.base.client.utils.StringUtils;
 import org.damour.base.server.hibernate.HibernateUtil;
 
 public class BaseSystem {
 
+  public static final String DEFAULT_SMTP_HOST = "relay-hosting.secureserver.net";
   private static final long startupDate = System.currentTimeMillis();
   private static String domainName = "" + startupDate;
   private static boolean isDomainNameSet = false;
@@ -79,6 +81,14 @@ public class BaseSystem {
 
   public static boolean requireAccountValidation() {
     return "true".equalsIgnoreCase(getSettings().getProperty("requireAccountValidation"));
+  }
+
+  public static String getSmtpHost() {
+    String smtpHost = getSettings().getProperty("smtpHost");
+    if (StringUtils.isEmpty(smtpHost)) {
+      smtpHost = DEFAULT_SMTP_HOST;
+    }
+    return smtpHost;
   }
 
   public static synchronized Properties getSettings() {
