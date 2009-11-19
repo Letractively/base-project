@@ -2,7 +2,6 @@ package org.damour.base.server.hibernate;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -47,17 +46,18 @@ public class HibernateUtil {
   private boolean showSQL = true;
   private String hbm2ddlMode = "update";
 
-  private HibernateUtil() {
+  private HibernateUtil(HashMap<String,String> overrides) {
     Logger.log("creating new HibernateUtil()");
 
     Properties rb = BaseSystem.getSettings();
-
+    rb.putAll(overrides);
+    
     setUsername(rb.getProperty("username"));
     setPassword(rb.getProperty("password"));
     setConnectString(rb.getProperty("connectString"));
     setTablePrefix(rb.getProperty("tablePrefix"));
     setHbm2ddlMode(getResource(rb, "hbm2ddlMode", "" + hbm2ddlMode));
-    showSQL = "true".equalsIgnoreCase(getResource(rb, "showSQL", "" + showSQL));
+    setShowSQL("true".equalsIgnoreCase(getResource(rb, "showSQL", "" + showSQL)));
 
     // add these mappings last because the settings above may affect them
     generateHibernateMappings(rb);
@@ -115,9 +115,9 @@ public class HibernateUtil {
     return defaultValue;
   }
 
-  public static synchronized HibernateUtil getInstance() {
+  public static synchronized HibernateUtil getInstance(HashMap<String,String> overrides) {
     if (instance == null) {
-      instance = new HibernateUtil();
+      instance = new HibernateUtil(overrides);
       instance.bootstrap();
       if (Logger.DEBUG) {
         Runnable r = new Runnable() {
@@ -141,6 +141,10 @@ public class HibernateUtil {
       }
     }
     return instance;
+  }
+  
+  public static synchronized HibernateUtil getInstance() {
+    return getInstance(new HashMap<String,String>());
   }
 
   public static void resetHibernate() {
@@ -191,7 +195,7 @@ public class HibernateUtil {
         sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.generate_statistics").setText("true");
         sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.cache.use_structured_entries").setText("true");
         sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.cache.use_query_cache").setText("true");
-        sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.show_sql").setText("" + showSQL);
+        sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.show_sql").setText("" + isShowSQL());
         // sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.format_sql").setText("" + showSQL);
         sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.jdbc.use_streams_for_binary").setText("true");
 
@@ -491,7 +495,7 @@ public class HibernateUtil {
     return tablePrefix;
   }
 
-  public void setTablePrefix(String tablePrefix) {
+  private void setTablePrefix(String tablePrefix) {
     this.tablePrefix = tablePrefix;
   }
 
@@ -499,7 +503,7 @@ public class HibernateUtil {
     return hbm2ddlMode;
   }
 
-  public void setHbm2ddlMode(String hbm2ddlMode) {
+  private void setHbm2ddlMode(String hbm2ddlMode) {
     this.hbm2ddlMode = hbm2ddlMode;
   }
 
@@ -517,7 +521,7 @@ public class HibernateUtil {
     return showSQL;
   }
 
-  public void setShowSQL(boolean showSQL) {
+  private void setShowSQL(boolean showSQL) {
     this.showSQL = showSQL;
   }
 
