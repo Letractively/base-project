@@ -6,7 +6,8 @@ import java.util.Set;
 
 import org.damour.base.client.exceptions.LoginException;
 import org.damour.base.client.exceptions.SimpleMessageException;
-import org.damour.base.client.objects.Category;
+import org.damour.base.client.objects.Tag;
+import org.damour.base.client.objects.TagMembership;
 import org.damour.base.client.objects.Comment;
 import org.damour.base.client.objects.File;
 import org.damour.base.client.objects.FileUploadStatus;
@@ -17,6 +18,7 @@ import org.damour.base.client.objects.MemoryStats;
 import org.damour.base.client.objects.Page;
 import org.damour.base.client.objects.PendingGroupMembership;
 import org.damour.base.client.objects.PermissibleObject;
+import org.damour.base.client.objects.PermissibleObjectTreeNode;
 import org.damour.base.client.objects.Permission;
 import org.damour.base.client.objects.RepositoryTreeNode;
 import org.damour.base.client.objects.User;
@@ -60,6 +62,7 @@ public interface BaseService extends RemoteService {
   // file/content/permissions methods
   public PermissibleObject getPermissibleObject(Long id) throws SimpleMessageException;
   public RepositoryTreeNode getRepositoryTree() throws SimpleMessageException;
+  public PermissibleObjectTreeNode getChildren(PermissibleObject parent) throws SimpleMessageException;
   public PermissibleObject savePermissibleObject(PermissibleObject permissibleObject) throws SimpleMessageException;
   public void deletePermissibleObject(PermissibleObject permissibleObject) throws SimpleMessageException;
   public void deletePermissibleObjects(Set<PermissibleObject> permissibleObjects) throws SimpleMessageException;
@@ -74,13 +77,15 @@ public interface BaseService extends RemoteService {
   // for debug purposes: simply return what was given, proving the serialization of the desired object
   public PermissibleObject echoPermissibleObject(PermissibleObject permissibleObject) throws SimpleMessageException;
   
-  // category methods
-  public List<Category> getCategories() throws SimpleMessageException;
-  public List<Category> getCategories(PermissibleObject permissibleObject) throws SimpleMessageException;
-  public void createCategory(String categoryName, String categoryDescription, Category parentCategory) throws SimpleMessageException;
-  public void deleteCategory(Category category) throws SimpleMessageException;
-  public void removeFromCategory(Category category, PermissibleObject permissibleObject) throws SimpleMessageException;
-  public void addToCategory(Category category, PermissibleObject permissibleObject) throws SimpleMessageException;
+  // tag methods
+  public List<Tag> getTags() throws SimpleMessageException;
+  public List<Tag> getTags(PermissibleObject permissibleObject) throws SimpleMessageException;
+  public void createTag(String tagName, String tagDescription, Tag parentTag) throws SimpleMessageException;
+  public void deleteTag(Tag tag) throws SimpleMessageException;
+  public void removeFromTag(Tag tag, PermissibleObject permissibleObject) throws SimpleMessageException;
+  public void removeTagMembership(TagMembership tagMembership) throws SimpleMessageException;
+  public void addToTag(Tag tag, PermissibleObject permissibleObject) throws SimpleMessageException;
+  public void addToTag(TagMembership tagMembership) throws SimpleMessageException;
   
   // content rating & advisory
   public UserRating getUserRating(PermissibleObject permissibleObject) throws SimpleMessageException;
