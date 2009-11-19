@@ -426,22 +426,6 @@ public class SecurityHelperTest {
     System.out.println(hash1);
   }
 
-  @Before
-  public void before() {
-    System.out.println("*********** before begin ***********");
-    HibernateUtil.getInstance().setShowSQL(false);
-    HibernateUtil.getInstance().setHbm2ddlMode("create-drop");
-    HibernateUtil.getInstance().setTablePrefix("test_");
-    HibernateUtil.getInstance().resetHibernate();
-    HibernateUtil.getInstance().generateHibernateMapping(User.class);
-    HibernateUtil.getInstance().generateHibernateMapping(UserGroup.class);
-    HibernateUtil.getInstance().generateHibernateMapping(GroupMembership.class);
-    HibernateUtil.getInstance().generateHibernateMapping(Folder.class);
-    HibernateUtil.getInstance().generateHibernateMapping(Permission.class);
-    System.out.println("*********** before end ***********");
-  }
-
-  @After
   public void after() {
     System.out.println("*********** after begin ***********");
     HibernateUtil.getInstance().getSessionFactory().close();

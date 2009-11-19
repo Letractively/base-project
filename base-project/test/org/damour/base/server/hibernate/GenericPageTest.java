@@ -2,21 +2,13 @@ package org.damour.base.server.hibernate;
 
 import java.util.List;
 
-import org.damour.base.client.objects.File;
 import org.damour.base.client.objects.Comment;
-import org.damour.base.client.objects.UserAdvisory;
-import org.damour.base.client.objects.UserRating;
-import org.damour.base.client.objects.Folder;
-import org.damour.base.client.objects.GroupMembership;
-import org.damour.base.client.objects.PendingGroupMembership;
-import org.damour.base.client.objects.Permission;
+import org.damour.base.client.objects.File;
 import org.damour.base.client.objects.User;
-import org.damour.base.client.objects.UserGroup;
 import org.damour.base.server.hibernate.helpers.GenericPage;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 public class GenericPageTest {
@@ -59,26 +51,6 @@ public class GenericPageTest {
       }
       session.close();
     }
-  }
-
-  @Before
-  public void before() {
-    System.out.println("*********** before begin ***********");
-    HibernateUtil.getInstance().setShowSQL(true);
-    HibernateUtil.getInstance().setHbm2ddlMode("create-drop");
-    HibernateUtil.getInstance().setTablePrefix("test_");
-    HibernateUtil.getInstance().resetHibernate();
-    HibernateUtil.getInstance().generateHibernateMapping(User.class);
-    HibernateUtil.getInstance().generateHibernateMapping(UserGroup.class);
-    HibernateUtil.getInstance().generateHibernateMapping(GroupMembership.class);
-    HibernateUtil.getInstance().generateHibernateMapping(PendingGroupMembership.class);
-    HibernateUtil.getInstance().generateHibernateMapping(File.class);
-    HibernateUtil.getInstance().generateHibernateMapping(Comment.class);
-    HibernateUtil.getInstance().generateHibernateMapping(UserRating.class);
-    HibernateUtil.getInstance().generateHibernateMapping(UserAdvisory.class);
-    HibernateUtil.getInstance().generateHibernateMapping(Folder.class);
-    HibernateUtil.getInstance().generateHibernateMapping(Permission.class);
-    System.out.println("*********** before end ***********");
   }
 
   @After
