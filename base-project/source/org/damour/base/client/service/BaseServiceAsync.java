@@ -64,7 +64,9 @@ public interface BaseServiceAsync {
   public void savePermissibleObject(PermissibleObject permissibleObject, AsyncCallback<PermissibleObject> callback);
   public void deletePermissibleObject(PermissibleObject permissibleObject, AsyncCallback<Void> callback);
   public void deletePermissibleObjects(Set<PermissibleObject> permissibleObjects, AsyncCallback<Void> callback);
+  public void getPermissibleObjects(PermissibleObject parent, String objectType, AsyncCallback<List<PermissibleObject>> callback);
   public void getMyPermissibleObjects(PermissibleObject parent, AsyncCallback<List<PermissibleObject>> callback);
+  public void getMyPermissibleObjects(PermissibleObject parent, String objectType, AsyncCallback<List<PermissibleObject>> callback);
   public void createNewFolder(Folder newFolder, AsyncCallback<Folder> callback);
   public void renameFile(File file, AsyncCallback<Void> callback);
   public void renameFolder(Folder folder, AsyncCallback<Void> callback);
@@ -72,12 +74,14 @@ public interface BaseServiceAsync {
   public void setPermissions(PermissibleObject permissibleObject, List<Permission> permissions, AsyncCallback<Void> callback);
   public void updatePermissibleObject(PermissibleObject permissibleObject, AsyncCallback<PermissibleObject> callback);
   public void getFileUploadStatus(AsyncCallback<FileUploadStatus> callback);
+  public void searchPermissibleObjects(String name, String description, AsyncCallback<List<PermissibleObject>> callback);
   // for debug purposes: simply return what was given, proving the serialization of the desired object
   public void echoPermissibleObject(PermissibleObject permissibleObject, AsyncCallback<PermissibleObject> callback);
 
   // tag methods
   public void getTags(AsyncCallback<List<Tag>> callback);
   public void getTags(PermissibleObject permissibleObject, AsyncCallback<List<Tag>> callback);
+  public void getTaggedPermissibleObjects(Tag tag, AsyncCallback<List<PermissibleObject>> callback);
   public void createTag(String tagName, String tagDescription, Tag parentTag, AsyncCallback<Void> callback);
   public void deleteTag(Tag tag, AsyncCallback<Void> callback);
   public void removeFromTag(Tag tag, PermissibleObject permissibleObject, AsyncCallback<Void> callback);
