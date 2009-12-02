@@ -68,4 +68,15 @@ public class PermissibleObjectHelper {
     }
   }
 
+  public static List<PermissibleObject> getMyPermissibleObjects(Session session, User owner, PermissibleObject parent, Class instanceType) {
+    if (parent == null) {
+      return session.createQuery("from " + instanceType.getSimpleName() + " where owner.id = " + owner.id + " order by creationDate desc").setCacheable(true)
+          .list();
+    } else {
+      return session.createQuery(
+          "from " + instanceType.getSimpleName() + " where parent.id = " + parent.id + " and owner.id = " + owner.id + " order by creationDate desc")
+          .setCacheable(true).list();
+    }
+  }
+
 }
