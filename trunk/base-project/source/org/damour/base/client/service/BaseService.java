@@ -66,7 +66,9 @@ public interface BaseService extends RemoteService {
   public PermissibleObject savePermissibleObject(PermissibleObject permissibleObject) throws SimpleMessageException;
   public void deletePermissibleObject(PermissibleObject permissibleObject) throws SimpleMessageException;
   public void deletePermissibleObjects(Set<PermissibleObject> permissibleObjects) throws SimpleMessageException;
+  public List<PermissibleObject> getPermissibleObjects(PermissibleObject parent, String objectType) throws SimpleMessageException;
   public List<PermissibleObject> getMyPermissibleObjects(PermissibleObject parent) throws SimpleMessageException;
+  public List<PermissibleObject> getMyPermissibleObjects(PermissibleObject parent, String objectType) throws SimpleMessageException;
   public Folder createNewFolder(Folder newFolder) throws SimpleMessageException;
   public void renameFile(File file) throws SimpleMessageException;
   public void renameFolder(Folder folder) throws SimpleMessageException;
@@ -74,12 +76,14 @@ public interface BaseService extends RemoteService {
   public void setPermissions(PermissibleObject permissibleObject, List<Permission> permissions) throws SimpleMessageException;
   public PermissibleObject updatePermissibleObject(PermissibleObject permissibleObject) throws SimpleMessageException;
   public FileUploadStatus getFileUploadStatus() throws SimpleMessageException;
+  public List<PermissibleObject> searchPermissibleObjects(String name, String description) throws SimpleMessageException;
   // for debug purposes: simply return what was given, proving the serialization of the desired object
   public PermissibleObject echoPermissibleObject(PermissibleObject permissibleObject) throws SimpleMessageException;
   
   // tag methods
   public List<Tag> getTags() throws SimpleMessageException;
   public List<Tag> getTags(PermissibleObject permissibleObject) throws SimpleMessageException;
+  public List<PermissibleObject> getTaggedPermissibleObjects(Tag tag) throws SimpleMessageException;
   public void createTag(String tagName, String tagDescription, Tag parentTag) throws SimpleMessageException;
   public void deleteTag(Tag tag) throws SimpleMessageException;
   public void removeFromTag(Tag tag, PermissibleObject permissibleObject) throws SimpleMessageException;

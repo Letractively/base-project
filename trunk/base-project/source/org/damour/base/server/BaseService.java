@@ -64,6 +64,10 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
 
   private ThreadLocal<Session> session = new ThreadLocal<Session>();
 
+  public Session getSession() {
+    return session.get();
+  }
+
   public BaseService() {
     super();
   }
@@ -1141,6 +1145,33 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     return PermissibleObjectHelper.getMyPermissibleObjects(session.get(), authUser, parent);
   }
 
+  public List<PermissibleObject> getMyPermissibleObjects(PermissibleObject parent, String objectType) throws SimpleMessageException {
+    User authUser = getAuthenticatedUser(session.get());
+    if (authUser == null) {
+      throw new SimpleMessageException("User is not authenticated.");
+    }
+    Class clazz;
+    try {
+      clazz = Class.forName(objectType);
+      return PermissibleObjectHelper.getMyPermissibleObjects(session.get(), authUser, parent, clazz);
+    } catch (ClassNotFoundException cnfe) {
+      throw new SimpleMessageException(cnfe.getMessage());
+    }
+  }
+
+  public List<PermissibleObject> getPermissibleObjects(PermissibleObject parent, String objectType) throws SimpleMessageException {
+    try {
+      User authUser = getAuthenticatedUser(session.get());
+      ArrayList<PermissibleObject> objects = new ArrayList<PermissibleObject>();
+      Class clazz = Class.forName(objectType);
+      RepositoryHelper.getPermissibleObjects(session.get(), authUser, objects, parent, clazz);
+      return objects;
+    } catch (Throwable t) {
+      Logger.log(t);
+      throw new SimpleMessageException(t.getMessage());
+    }
+  }
+
   public PermissibleObjectTreeNode getChildren(PermissibleObject parent) throws SimpleMessageException {
     try {
       User authUser = getAuthenticatedUser(session.get());
@@ -1404,6 +1435,17 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       Logger.log(t);
       throw new SimpleMessageException(t.getMessage());
     }
+  }
+
+  public List<PermissibleObject> searchPermissibleObjects(String name, String description) throws SimpleMessageException {
+    // return all permissible objects which match the name/description
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  public List<PermissibleObject> getTaggedPermissibleObjects(Tag tag) throws SimpleMessageException {
+    // TODO Auto-generated method stub
+    return null;
   }
 
   public void createTag(String tagName, String tagDescription, Tag parentTag) throws SimpleMessageException {
