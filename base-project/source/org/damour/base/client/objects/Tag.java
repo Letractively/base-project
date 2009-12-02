@@ -6,7 +6,6 @@ public class Tag implements Serializable, IHibernateFriendly {
 
   public Long id;
   public String name;
-
   public String description;
   public Tag parentTag;
 
