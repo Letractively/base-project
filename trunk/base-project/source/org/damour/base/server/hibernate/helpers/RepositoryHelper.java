@@ -144,6 +144,53 @@ public class RepositoryHelper {
     }
   }
 
+  public static void getPermissibleObjects(Session session, User user, List<PermissibleObject> permissibleObjectList, PermissibleObject parent, Class instanceType) {
+    if (!SecurityHelper.doesUserHavePermission(session, user, parent, PERM.READ)) {
+      return;
+    }
+    String selectFileUserPerm = "(select perm.permissibleObject.id from " + Permission.class.getSimpleName()
+        + " as perm where perm.permissibleObject.id = obj.id and perm.securityPrincipal.id = " + user.id + " and perm.readPerm = true)";
+    String selectFileGroupPerm = "(select perm.permissibleObject.id from "
+        + Permission.class.getSimpleName()
+        + " as perm where perm.permissibleObject.id = obj.id and perm.readPerm = true and perm.securityPrincipal.id in (select membership.userGroup.id from GroupMembership as membership where membership.user.id = "
+        + user.id + "))";
+
+    List<PermissibleObject> children = null;
+    if (parent == null) {
+      if (user != null && user.isAdministrator()) {
+        // admin sees all
+        children = session.createQuery("from " + instanceType.getSimpleName() + " as obj where obj.parent is null").setCacheable(true).list();
+      } else if (user == null) {
+        children = session.createQuery("from " + instanceType.getSimpleName() + " as obj where obj.parent is null and obj.globalRead = true")
+            .setCacheable(true).list();
+      } else {
+        children = session.createQuery(
+            "from " + instanceType.getSimpleName() + " as obj where obj.parent is null and (obj.owner.id = " + user.id
+                + " OR obj.globalRead = true OR obj.id in " + selectFileUserPerm + " OR obj.id in " + selectFileGroupPerm + ")").setCacheable(true).list();
+      }
+    } else {
+      if (user != null && user.isAdministrator()) {
+        // admin sees all
+        children = session.createQuery("from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent.id = " + parent.id).setCacheable(true)
+            .list();
+      } else if (user == null) {
+        children = session.createQuery(
+            "from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent.id = " + parent.id + " and obj.globalRead = true").setCacheable(true)
+            .list();
+      } else {
+        children = session.createQuery(
+            "from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent.id = " + parent.id + " and (obj.owner.id = " + user.id
+                + " OR obj.globalRead = true OR obj.id in " + selectFileUserPerm + " OR obj.id in " + selectFileGroupPerm + ")").setCacheable(true).list();
+      }
+    }
+    for (PermissibleObject child : children) {
+      if (child.getClass().isAssignableFrom(instanceType)) {
+        permissibleObjectList.add(child);
+      }
+      getPermissibleObjects(session, user, permissibleObjectList, child, instanceType);
+    }
+  }  
+  
   public static void dumpTreeNode(RepositoryTreeNode parent, int depth) {
     Set<Folder> folders = parent.getFolders().keySet();
     List<File> files = parent.getFiles();
