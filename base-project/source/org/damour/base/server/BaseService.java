@@ -42,6 +42,7 @@ import org.damour.base.server.hibernate.helpers.AdvisoryHelper;
 import org.damour.base.server.hibernate.helpers.CommentHelper;
 import org.damour.base.server.hibernate.helpers.FolderHelper;
 import org.damour.base.server.hibernate.helpers.GenericPage;
+import org.damour.base.server.hibernate.helpers.PageHelper;
 import org.damour.base.server.hibernate.helpers.PermissibleObjectHelper;
 import org.damour.base.server.hibernate.helpers.RatingHelper;
 import org.damour.base.server.hibernate.helpers.RepositoryHelper;
@@ -1184,6 +1185,17 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     }
   }
 
+  public Page<PermissibleObject> getPage(String pageClassType, boolean sortDescending, int pageNumber, int pageSize) throws SimpleMessageException {
+    User authUser = getAuthenticatedUser(session.get());
+    try {
+      Class<?> clazz = Class.forName(pageClassType);
+      return PageHelper.getPage(session.get(), clazz, authUser, sortDescending, pageNumber, pageSize);
+    } catch (Throwable t) {
+      Logger.log(t);
+      throw new SimpleMessageException(t.getMessage());
+    }
+  }
+
   public Folder createNewFolder(Folder newFolder) throws SimpleMessageException {
     if (newFolder == null) {
       throw new SimpleMessageException("Folder not supplied.");
@@ -1437,10 +1449,15 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     }
   }
 
-  public List<PermissibleObject> searchPermissibleObjects(String name, String description) throws SimpleMessageException {
+  public List<PermissibleObject> searchPermissibleObjects(PermissibleObject parent, String query, String searchObjectType, boolean searchNames,
+      boolean searchDescriptions, boolean searchKeywords, boolean useExactPhrase) throws SimpleMessageException {
     // return all permissible objects which match the name/description
-    // TODO Auto-generated method stub
-    return null;
+    try {
+      Class clazz = Class.forName(searchObjectType);
+      return PermissibleObjectHelper.search(session.get(), clazz, query, searchNames, searchDescriptions, searchKeywords, useExactPhrase);
+    } catch (Throwable t) {
+      throw new SimpleMessageException(t.getMessage());
+    }
   }
 
   public List<PermissibleObject> getTaggedPermissibleObjects(Tag tag) throws SimpleMessageException {

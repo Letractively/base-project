@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import org.damour.base.client.exceptions.SimpleMessageException;
 import org.damour.base.client.objects.Comment;
 import org.damour.base.client.objects.File;
 import org.damour.base.client.objects.FileUploadStatus;
@@ -67,6 +68,7 @@ public interface BaseServiceAsync {
   public void getPermissibleObjects(PermissibleObject parent, String objectType, AsyncCallback<List<PermissibleObject>> callback);
   public void getMyPermissibleObjects(PermissibleObject parent, AsyncCallback<List<PermissibleObject>> callback);
   public void getMyPermissibleObjects(PermissibleObject parent, String objectType, AsyncCallback<List<PermissibleObject>> callback);
+  public void getPage(String pageClassType, boolean sortDescending, int pageNumber, int pageSize, AsyncCallback<Page<PermissibleObject>> callback) throws SimpleMessageException;
   public void createNewFolder(Folder newFolder, AsyncCallback<Folder> callback);
   public void renameFile(File file, AsyncCallback<Void> callback);
   public void renameFolder(Folder folder, AsyncCallback<Void> callback);
@@ -74,7 +76,7 @@ public interface BaseServiceAsync {
   public void setPermissions(PermissibleObject permissibleObject, List<Permission> permissions, AsyncCallback<Void> callback);
   public void updatePermissibleObject(PermissibleObject permissibleObject, AsyncCallback<PermissibleObject> callback);
   public void getFileUploadStatus(AsyncCallback<FileUploadStatus> callback);
-  public void searchPermissibleObjects(String name, String description, AsyncCallback<List<PermissibleObject>> callback);
+  public void searchPermissibleObjects(PermissibleObject parent, String query, String searchObjectType, boolean searchNames, boolean searchDescriptions, boolean searchKeywords, boolean useExactPhrase, AsyncCallback<List<PermissibleObject>> callback);
   // for debug purposes: simply return what was given, proving the serialization of the desired object
   public void echoPermissibleObject(PermissibleObject permissibleObject, AsyncCallback<PermissibleObject> callback);
 

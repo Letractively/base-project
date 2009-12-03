@@ -6,8 +6,6 @@ import java.util.Set;
 
 import org.damour.base.client.exceptions.LoginException;
 import org.damour.base.client.exceptions.SimpleMessageException;
-import org.damour.base.client.objects.Tag;
-import org.damour.base.client.objects.TagMembership;
 import org.damour.base.client.objects.Comment;
 import org.damour.base.client.objects.File;
 import org.damour.base.client.objects.FileUploadStatus;
@@ -21,6 +19,8 @@ import org.damour.base.client.objects.PermissibleObject;
 import org.damour.base.client.objects.PermissibleObjectTreeNode;
 import org.damour.base.client.objects.Permission;
 import org.damour.base.client.objects.RepositoryTreeNode;
+import org.damour.base.client.objects.Tag;
+import org.damour.base.client.objects.TagMembership;
 import org.damour.base.client.objects.User;
 import org.damour.base.client.objects.UserAdvisory;
 import org.damour.base.client.objects.UserGroup;
@@ -69,6 +69,7 @@ public interface BaseService extends RemoteService {
   public List<PermissibleObject> getPermissibleObjects(PermissibleObject parent, String objectType) throws SimpleMessageException;
   public List<PermissibleObject> getMyPermissibleObjects(PermissibleObject parent) throws SimpleMessageException;
   public List<PermissibleObject> getMyPermissibleObjects(PermissibleObject parent, String objectType) throws SimpleMessageException;
+  public Page<PermissibleObject> getPage(String pageClassType, boolean sortDescending, int pageNumber, int pageSize) throws SimpleMessageException;
   public Folder createNewFolder(Folder newFolder) throws SimpleMessageException;
   public void renameFile(File file) throws SimpleMessageException;
   public void renameFolder(Folder folder) throws SimpleMessageException;
@@ -76,7 +77,7 @@ public interface BaseService extends RemoteService {
   public void setPermissions(PermissibleObject permissibleObject, List<Permission> permissions) throws SimpleMessageException;
   public PermissibleObject updatePermissibleObject(PermissibleObject permissibleObject) throws SimpleMessageException;
   public FileUploadStatus getFileUploadStatus() throws SimpleMessageException;
-  public List<PermissibleObject> searchPermissibleObjects(String name, String description) throws SimpleMessageException;
+  public List<PermissibleObject> searchPermissibleObjects(PermissibleObject parent, String query, String searchObjectType, boolean searchNames, boolean searchDescriptions, boolean searchKeywords, boolean useExactPhrase) throws SimpleMessageException;
   // for debug purposes: simply return what was given, proving the serialization of the desired object
   public PermissibleObject echoPermissibleObject(PermissibleObject permissibleObject) throws SimpleMessageException;
   
