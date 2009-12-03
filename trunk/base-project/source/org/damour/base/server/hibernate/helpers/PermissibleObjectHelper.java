@@ -1,13 +1,16 @@
 package org.damour.base.server.hibernate.helpers;
 
 import java.lang.reflect.Field;
+import java.util.Collections;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import org.damour.base.client.objects.Comment;
 import org.damour.base.client.objects.PermissibleObject;
 import org.damour.base.client.objects.User;
 import org.damour.base.client.objects.UserAdvisory;
 import org.damour.base.client.objects.UserRating;
+import org.damour.base.server.hibernate.HibernateUtil;
 import org.damour.base.server.hibernate.ReflectionCache;
 import org.hibernate.Session;
 
@@ -77,6 +80,81 @@ public class PermissibleObjectHelper {
           "from " + instanceType.getSimpleName() + " where parent.id = " + parent.id + " and owner.id = " + owner.id + " order by creationDate desc")
           .setCacheable(true).list();
     }
+  }
+
+  public static List<PermissibleObject> search(Session session, Class searchObjectType, String userQuery, boolean searchNames, boolean searchDescriptions,
+      boolean searchKeywords, boolean useExactPhrase) {
+    if (userQuery == null) {
+      return Collections.emptyList();
+    }
+    userQuery = userQuery.replaceAll("'", "");
+
+    String query = "from " + searchObjectType.getSimpleName();
+
+    if (useExactPhrase) {
+      boolean addedWhere = false;
+      if (searchNames) {
+        if (!addedWhere) {
+          query += " where ";
+        }
+        query += "(lower(name) like '%" + userQuery.toLowerCase() + "%')";
+        addedWhere = true;
+      }
+      if (searchDescriptions) {
+        if (!addedWhere) {
+          addedWhere = true;
+          query += " where ";
+        } else {
+          query += " or ";
+        }
+        query += "(lower(description) like '%" + userQuery.toLowerCase() + "%')";
+      }
+      if (searchKeywords) {
+        if (!addedWhere) {
+          addedWhere = true;
+          query += " where ";
+        } else {
+          query += " or ";
+        }
+        query += "(lower(keywords) like '%" + userQuery.toLowerCase() + "%')";
+      }
+    } else {
+      StringTokenizer st = new StringTokenizer(userQuery, " ,()");
+      boolean addedWhere = false;
+      while (st.hasMoreTokens()) {
+        String token = st.nextToken().toLowerCase();
+        if (searchNames) {
+          if (!addedWhere) {
+            query += " where ";
+            addedWhere = true;
+          } else {
+            query += " or ";
+          }
+          query += "lower(name) like '%" + token + "%'";
+        }
+        if (searchDescriptions) {
+          if (!addedWhere) {
+            query += " where ";
+            addedWhere = true;
+          } else {
+            query += " or ";
+          }
+          query += "lower(description) like '%" + token + "%'";
+        }
+        if (searchKeywords) {
+          if (!addedWhere) {
+            query += " where ";
+            addedWhere = true;
+          } else {
+            query += " or ";
+          }
+          query += "lower(keywords) like '%" + token + "%'";
+        }
+      }
+    }
+
+    query += " order by name asc";
+    return HibernateUtil.getInstance().executeQuery(session, query, true);
   }
 
 }

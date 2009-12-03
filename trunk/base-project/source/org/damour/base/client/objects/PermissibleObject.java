@@ -9,6 +9,8 @@ public class PermissibleObject implements Serializable, IHibernateFriendly {
 
   public String name;
   public String description;
+  public String keywords;
+
   public PermissibleObject parent;
   public Long creationDate = System.currentTimeMillis();
   public Long lastModifiedDate = System.currentTimeMillis();
@@ -142,6 +144,14 @@ public class PermissibleObject implements Serializable, IHibernateFriendly {
     this.description = description;
   }
 
+  public String getKeywords() {
+    return keywords;
+  }
+
+  public void setKeywords(String keywords) {
+    this.keywords = keywords;
+  }
+  
   public PermissibleObject getParent() {
     return parent;
   }
