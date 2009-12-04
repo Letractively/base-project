@@ -15,7 +15,7 @@ public class PageHelper {
       // admin sees all
       query = "from " + clazz.getSimpleName() + " order by id " + (sortDescending ? "desc" : "asc");
     } else if (authUser == null) {
-      query = "from " + clazz.getSimpleName() + " as obj where obj.globalRead = true";
+      query = "from " + clazz.getSimpleName() + " as obj where obj.globalRead = true order by id " + (sortDescending ? "desc" : "asc");
     } else {
       String selectFileUserPerm = "(select perm.permissibleObject.id from " + Permission.class.getSimpleName()
           + " as perm where perm.permissibleObject.id = obj.id and perm.securityPrincipal.id = " + authUser.id + " and perm.readPerm = true)";
@@ -26,7 +26,7 @@ public class PageHelper {
           + authUser.id + "))";
 
       query = "from " + clazz.getSimpleName() + " as obj where (obj.owner.id = " + authUser.id + " OR obj.globalRead = true OR obj.id in " + selectFileUserPerm
-          + " OR obj.id in " + selectFileGroupPerm + ")";
+          + " OR obj.id in " + selectFileGroupPerm + ") order by id " + (sortDescending ? "desc" : "asc");
     }
 
     GenericPage<PermissibleObject> gPage = new GenericPage<PermissibleObject>(session, query, pageNumber, pageSize);
