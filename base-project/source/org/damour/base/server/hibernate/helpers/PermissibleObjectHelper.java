@@ -10,6 +10,7 @@ import org.damour.base.client.objects.PermissibleObject;
 import org.damour.base.client.objects.User;
 import org.damour.base.client.objects.UserAdvisory;
 import org.damour.base.client.objects.UserRating;
+import org.damour.base.client.utils.StringUtils;
 import org.damour.base.server.hibernate.HibernateUtil;
 import org.damour.base.server.hibernate.ReflectionCache;
 import org.hibernate.Session;
@@ -38,12 +39,19 @@ public class PermissibleObjectHelper {
 
     // also delete all permissions for this
     SecurityHelper.deletePermissions(session, permissibleObject);
+    
+    // delete children
+    List<PermissibleObject> children = getChildren(session, permissibleObject);
+    for (PermissibleObject child : children) {
+      deletePermissibleObject(session, child);
+    }
+    
     // ok finally we can delete the file
     session.delete(permissibleObject);
 
     List<Field> fields = ReflectionCache.getFields(permissibleObject.getClass());
     for (Field field : fields) {
-      if (!field.getName().equals("parent") && PermissibleObject.class.isAssignableFrom(field.getType())) {
+      if (!field.getName().startsWith("parent") && PermissibleObject.class.isAssignableFrom(field.getType())) {
         try {
           Object obj = field.get(permissibleObject);
           deletePermissibleObject(session, (PermissibleObject) obj);
@@ -62,16 +70,7 @@ public class PermissibleObjectHelper {
     }
   }
 
-  public static List<PermissibleObject> getMyPermissibleObjects(Session session, User owner, PermissibleObject parent) {
-    if (parent == null) {
-      return session.createQuery("from PermissibleObject where owner.id = " + owner.id + " order by creationDate desc").setCacheable(true).list();
-    } else {
-      return session.createQuery("from PermissibleObject where parent.id = " + parent.id + " and owner.id = " + owner.id + " order by creationDate desc")
-          .setCacheable(true).list();
-    }
-  }
-
-  public static List<PermissibleObject> getMyPermissibleObjects(Session session, User owner, PermissibleObject parent, Class instanceType) {
+  public static List<PermissibleObject> getMyPermissibleObjects(Session session, User owner, PermissibleObject parent, Class<?> instanceType) {
     if (parent == null) {
       return session.createQuery("from " + instanceType.getSimpleName() + " where owner.id = " + owner.id + " order by creationDate desc").setCacheable(true)
           .list();
@@ -82,13 +81,18 @@ public class PermissibleObjectHelper {
     }
   }
 
-  public static List<PermissibleObject> search(Session session, Class searchObjectType, String userQuery, boolean searchNames, boolean searchDescriptions,
+  public static List<PermissibleObject> search(Session session, Class<?> searchObjectType, String userQuery, String sortField, boolean sortDescending, boolean searchNames, boolean searchDescriptions,
       boolean searchKeywords, boolean useExactPhrase) {
     if (userQuery == null) {
       return Collections.emptyList();
     }
     userQuery = userQuery.replaceAll("'", "");
 
+    String orderBy = " order by name " + (sortDescending ? "desc" : "asc");
+    if (!StringUtils.isEmpty(sortField)) {
+      orderBy = " order by " + sortField + (sortDescending ? " desc" : " asc");
+    }
+    
     String query = "from " + searchObjectType.getSimpleName();
 
     if (useExactPhrase) {
@@ -153,7 +157,7 @@ public class PermissibleObjectHelper {
       }
     }
 
-    query += " order by name asc";
+    query += orderBy;
     return HibernateUtil.getInstance().executeQuery(session, query, true);
   }
 

@@ -8,6 +8,7 @@ import java.util.List;
 import org.damour.base.client.images.BaseImageBundle;
 import org.damour.base.client.objects.Comment;
 import org.damour.base.client.objects.Page;
+import org.damour.base.client.objects.PageInfo;
 import org.damour.base.client.objects.PermissibleObject;
 import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.authentication.AuthenticationHandler;
@@ -26,7 +27,6 @@ import com.google.gwt.user.client.ui.ChangeListener;
 import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.DisclosurePanel;
 import com.google.gwt.user.client.ui.FlexTable;
-import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -41,7 +41,7 @@ import com.google.gwt.user.client.ui.Widget;
 public class CommentWidget extends VerticalPanel {
 
   private PermissibleObject permissibleObject;
-  private List<Comment> comments;
+  private List<PermissibleObject> comments;
   private boolean sortDescending = true;
   private boolean flatten = false;
   private ListBox maxCommentDepthListBox = new ListBox(false);
@@ -54,7 +54,7 @@ public class CommentWidget extends VerticalPanel {
   private long lastPageNumber = 0;
   private boolean paginate = true;
 
-  HashMap<Integer, Page<Comment>> pageCache = new HashMap<Integer, Page<Comment>>();
+  HashMap<Integer, Page<PermissibleObject>> pageCache = new HashMap<Integer, Page<PermissibleObject>>();
 
   private AsyncCallback<Boolean> deleteCommentCallback = new AsyncCallback<Boolean>() {
 
@@ -94,13 +94,11 @@ public class CommentWidget extends VerticalPanel {
       dialog.center();
     }
   };
-  private AsyncCallback<Page<Comment>> pageCallback = new AsyncCallback<Page<Comment>>() {
+  private AsyncCallback<Page<PermissibleObject>> pageCallback = new AsyncCallback<Page<PermissibleObject>>() {
 
-    public void onSuccess(Page<Comment> page) {
+    public void onSuccess(Page<PermissibleObject> page) {
       pageCache.put(page.getPageNumber(), page);
       comments = page.getResults();
-      numComments = page.getTotalRowCount();
-      lastPageNumber = page.getLastPageNumber();
       if (page.getResults().size() == 0) {
         pageNumber = 0;
         lastPageNumber = 0;
@@ -115,9 +113,9 @@ public class CommentWidget extends VerticalPanel {
     }
   };
 
-  private AsyncCallback<List<Comment>> allCommentsCallback = new AsyncCallback<List<Comment>>() {
+  private AsyncCallback<List<PermissibleObject>> allCommentsCallback = new AsyncCallback<List<PermissibleObject>>() {
 
-    public void onSuccess(List<Comment> comments) {
+    public void onSuccess(List<PermissibleObject> comments) {
       CommentWidget.this.comments = comments;
       numComments = comments.size();
       loadCommentWidget(true);
@@ -129,9 +127,9 @@ public class CommentWidget extends VerticalPanel {
     }
   };
 
-  private AsyncCallback<Page<Comment>> preFetchPageCallback = new AsyncCallback<Page<Comment>>() {
+  private AsyncCallback<Page<PermissibleObject>> preFetchPageCallback = new AsyncCallback<Page<PermissibleObject>>() {
 
-    public void onSuccess(Page<Comment> page) {
+    public void onSuccess(Page<PermissibleObject> page) {
       pageCache.put(page.getPageNumber(), page);
     }
 
@@ -141,7 +139,7 @@ public class CommentWidget extends VerticalPanel {
     }
   };
 
-  public CommentWidget(final PermissibleObject permissibleObject, final List<Comment> comments, boolean paginate) {
+  public CommentWidget(final PermissibleObject permissibleObject, final List<PermissibleObject> comments, boolean paginate) {
     this.permissibleObject = permissibleObject;
     this.comments = comments;
     this.paginate = paginate;
@@ -164,7 +162,14 @@ public class CommentWidget extends VerticalPanel {
     Timer t = new Timer() {
       public void run() {
         if (comments == null) {
-          fetchPage();
+          BaseServiceCache.getService().getPageInfo(permissibleObject, Comment.class.getName(), pageSize, new AsyncCallback<PageInfo>() {
+            public void onFailure(Throwable caught) {};
+            public void onSuccess(PageInfo pageInfo) {
+              numComments = pageInfo.getTotalRowCount();
+              lastPageNumber = pageInfo.getLastPageNumber();
+              fetchPage();
+            };
+          });
         } else {
           loadCommentWidget(false);
         }
@@ -192,7 +197,7 @@ public class CommentWidget extends VerticalPanel {
       boolean userCanManage = AuthenticationHandler.getInstance().getUser() != null
           && (AuthenticationHandler.getInstance().getUser().isAdministrator() || AuthenticationHandler.getInstance().getUser().equals(
               permissibleObject.getOwner()));
-      List<Comment> sortedComments = new ArrayList<Comment>();
+      List<PermissibleObject> sortedComments = new ArrayList<PermissibleObject>();
       if (comments != null) {
         sortedComments.addAll(comments);
       }
@@ -200,7 +205,8 @@ public class CommentWidget extends VerticalPanel {
         sortedComments = sortComments(sortedComments);
       }
 
-      for (final Comment comment : sortedComments) {
+      for (PermissibleObject obj : sortedComments) {
+        final Comment comment = (Comment)obj;
         int commentDepth = getCommentDepth(comment);
 
         int maxDepth = Integer.parseInt(maxCommentDepthListBox.getValue(maxCommentDepthListBox.getSelectedIndex()));
@@ -441,8 +447,15 @@ public class CommentWidget extends VerticalPanel {
     reloadImageButton.setTitle("Refresh comments");
     reloadImageButton.addClickListener(new ClickListener() {
       public void onClick(Widget sender) {
-        pageCache.clear();
-        fetchPage();
+        BaseServiceCache.getService().getPageInfo(permissibleObject, Comment.class.getName(), pageSize, new AsyncCallback<PageInfo>() {
+          public void onFailure(Throwable caught) {};
+          public void onSuccess(PageInfo pageInfo) {
+            numComments = pageInfo.getTotalRowCount();
+            lastPageNumber = pageInfo.getLastPageNumber();
+            pageCache.clear();
+            fetchPage();
+          };
+        });
       }
     });
 
@@ -525,9 +538,11 @@ public class CommentWidget extends VerticalPanel {
           return;
         }
         Comment comment = new Comment();
+        comment.setGlobalRead(true);
+        comment.setOwner(permissibleObject.getOwner());
         comment.setAuthor(AuthenticationHandler.getInstance().getUser());
         comment.setComment(commentStr);
-        comment.setPermissibleObject(permissibleObject);
+        comment.setParent(permissibleObject);
         comment.setEmail(emailTextField.getText());
         submitButton.setEnabled(false);
         submitComment(comment);
@@ -593,9 +608,11 @@ public class CommentWidget extends VerticalPanel {
     dialog.setCallback(new IDialogCallback() {
       public void okPressed() {
         Comment newComment = new Comment();
+        newComment.setGlobalRead(true);
+        newComment.setOwner(permissibleObject.getOwner());
         newComment.setAuthor(AuthenticationHandler.getInstance().getUser());
         newComment.setComment(textArea.getText());
-        newComment.setPermissibleObject(permissibleObject);
+        newComment.setParent(permissibleObject);
         newComment.setParentComment(parentComment);
         newComment.setEmail(emailTextBox.getText());
         submitComment(newComment);
@@ -607,13 +624,14 @@ public class CommentWidget extends VerticalPanel {
     dialog.center();
   }
 
-  private List<Comment> sortComments(List<Comment> comments) {
-    List<Comment> sortedComments = new ArrayList<Comment>();
-    for (Comment comment : comments) {
+  private List<PermissibleObject> sortComments(List<PermissibleObject> comments) {
+    List<PermissibleObject> sortedComments = new ArrayList<PermissibleObject>();
+    for (PermissibleObject obj : comments) {
+      Comment comment = (Comment)obj;
       if (!sortedComments.contains(comment)) {
         sortedComments.add(comment);
         Comment parentComment = comment.getParentComment();
-        Comment previousParentComment = null;
+        PermissibleObject previousParentComment = null;
         while (parentComment != null) {
           // insert parents ahead of their child, if not already
           if (previousParentComment != null) {
@@ -644,9 +662,9 @@ public class CommentWidget extends VerticalPanel {
   }
 
   private void prefetchPage(int pageNumber) {
-    Page<Comment> page = pageCache.get(pageNumber);
+    Page<PermissibleObject> page = pageCache.get(pageNumber);
     if (page == null && pageNumber >= 0 && pageNumber <= lastPageNumber) {
-      BaseServiceCache.getService().getCommentPage(permissibleObject, sortDescending, pageNumber, pageSize, preFetchPageCallback);
+      BaseServiceCache.getService().getPage(permissibleObject, Comment.class.getName(), "id", sortDescending, pageNumber, pageSize, preFetchPageCallback);
     }
   }
 
@@ -669,27 +687,41 @@ public class CommentWidget extends VerticalPanel {
 
   private void fetchPage() {
     if (paginate) {
-      Page<Comment> page = pageCache.get(pageNumber);
+      Page<PermissibleObject> page = pageCache.get(pageNumber);
       if (page != null) {
         pageCallback.onSuccess(page);
       } else {
-        BaseServiceCache.getService().getCommentPage(permissibleObject, sortDescending, pageNumber, pageSize, pageCallback);
+        BaseServiceCache.getService().getPage(permissibleObject, Comment.class.getName(), "id", sortDescending, pageNumber, pageSize, pageCallback);
       }
     } else {
-      BaseServiceCache.getService().getComments(permissibleObject, allCommentsCallback);
+      BaseServiceCache.getService().getPermissibleObjects(permissibleObject, Comment.class.getName(), allCommentsCallback);
     }
   }
 
-  private void submitComment(Comment comment) {
-    BaseServiceCache.getService().submitComment(comment, submitCommentCallback);
+  private void submitComment(final Comment comment) {
+    BaseServiceCache.getService().getPageInfo(permissibleObject, Comment.class.getName(), pageSize, new AsyncCallback<PageInfo>() {
+      public void onFailure(Throwable caught) {};
+      public void onSuccess(PageInfo pageInfo) {
+        numComments = pageInfo.getTotalRowCount();
+        lastPageNumber = pageInfo.getLastPageNumber();
+        BaseServiceCache.getService().submitComment(comment, submitCommentCallback);
+      };
+    });
   }
 
   private void approveComment(Comment comment) {
     BaseServiceCache.getService().approveComment(comment, approveCallback);
   }
 
-  private void deleteComment(Comment comment) {
-    BaseServiceCache.getService().deleteComment(comment, deleteCommentCallback);
+  private void deleteComment(final Comment comment) {
+    BaseServiceCache.getService().getPageInfo(permissibleObject, Comment.class.getName(), pageSize, new AsyncCallback<PageInfo>() {
+      public void onFailure(Throwable caught) {};
+      public void onSuccess(PageInfo pageInfo) {
+        numComments = pageInfo.getTotalRowCount();
+        lastPageNumber = pageInfo.getLastPageNumber();
+        BaseServiceCache.getService().deleteComment(comment, deleteCommentCallback);
+      };
+    });
   }
 
   public boolean isFlatten() {

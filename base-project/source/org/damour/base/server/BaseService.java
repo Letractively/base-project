@@ -22,6 +22,7 @@ import org.damour.base.client.objects.GroupMembership;
 import org.damour.base.client.objects.HibernateStat;
 import org.damour.base.client.objects.MemoryStats;
 import org.damour.base.client.objects.Page;
+import org.damour.base.client.objects.PageInfo;
 import org.damour.base.client.objects.PendingGroupMembership;
 import org.damour.base.client.objects.PermissibleObject;
 import org.damour.base.client.objects.PermissibleObjectTreeNode;
@@ -662,7 +663,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     User authUser = getAuthenticatedUser(session.get());
     if (authUser != null && authUser.isAdministrator()) {
       try {
-        Class clazz = Class.forName(className);
+        Class<?> clazz = Class.forName(className);
         HibernateUtil.getInstance().getSessionFactory().evict(clazz);
         Logger.log("Evicted: " + className);
       } catch (Throwable t) {
@@ -855,61 +856,25 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     }
   }
 
-  public List<Comment> getComments(PermissibleObject permissibleObject) throws SimpleMessageException {
-    if (permissibleObject == null) {
-      throw new SimpleMessageException("File not supplied.");
-    }
-    User authUser = getAuthenticatedUser(session.get());
-    try {
-      permissibleObject = ((PermissibleObject) session.get().load(PermissibleObject.class, permissibleObject.getId()));
-      if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, permissibleObject, PERM.READ)) {
-        throw new SimpleMessageException("User is not authorized to get comments on this content.");
-      }
-      return CommentHelper.getComments(session.get(), permissibleObject);
-    } catch (Throwable t) {
-      Logger.log(t);
-      throw new SimpleMessageException(t.getMessage());
-    }
-  }
-
-  public Page<Comment> getCommentPage(PermissibleObject permissibleObject, boolean sortDescending, int pageNumber, int pageSize) throws SimpleMessageException {
-    if (permissibleObject == null) {
-      throw new SimpleMessageException("Object not supplied.");
-    }
-    User authUser = getAuthenticatedUser(session.get());
-    try {
-      permissibleObject = ((PermissibleObject) session.get().load(PermissibleObject.class, permissibleObject.getId()));
-      if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, permissibleObject, PERM.READ)) {
-        throw new SimpleMessageException("User is not authorized to get comments on this content.");
-      }
-      GenericPage<Comment> gPage = new GenericPage<Comment>(session.get(), "from " + Comment.class.getSimpleName() + " where permissibleObject.id = "
-          + permissibleObject.getId() + " order by id " + (sortDescending ? "desc" : "asc"), pageNumber, pageSize);
-      return new Page<Comment>(gPage.getList(), pageNumber, gPage.getLastPageNumber(), gPage.getRowCount());
-    } catch (Throwable t) {
-      Logger.log(t);
-      throw new SimpleMessageException(t.getMessage());
-    }
-  }
-
   public Boolean submitComment(Comment comment) throws SimpleMessageException {
     if (comment == null) {
       throw new SimpleMessageException("Comment not supplied.");
     }
-    if (comment.getPermissibleObject() == null) {
+    if (comment.getParent() == null) {
       throw new SimpleMessageException("PermissibleObject not supplied with comment.");
     }
     User authUser = getAuthenticatedUser(session.get());
     Transaction tx = session.get().beginTransaction();
     try {
-      comment.setPermissibleObject((PermissibleObject) session.get().load(PermissibleObject.class, comment.getPermissibleObject().getId()));
-      if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, comment.getPermissibleObject(), PERM.READ)) {
+      comment.setParent((PermissibleObject) session.get().load(PermissibleObject.class, comment.getParent().getId()));
+      if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, comment.getParent(), PERM.READ)) {
         throw new SimpleMessageException("User is not authorized to make comments on this content.");
       }
-      if (!comment.getPermissibleObject().isAllowComments()) {
+      if (!comment.getParent().isAllowComments()) {
         throw new SimpleMessageException("Comments are not allowed on this content.");
       }
       // the comment is approved if we are not moderating or if the commenter is the file owner
-      comment.setApproved(!comment.getPermissibleObject().isModerateComments() || comment.getPermissibleObject().getOwner().equals(authUser));
+      comment.setApproved(!comment.getParent().isModerateComments() || comment.getParent().getOwner().equals(authUser));
       session.get().save(comment);
       tx.commit();
       return true;
@@ -934,7 +899,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     Transaction tx = session.get().beginTransaction();
     try {
       comment = ((Comment) session.get().load(Comment.class, comment.getId()));
-      if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, comment.getPermissibleObject(), PERM.WRITE)) {
+      if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, comment.getParent(), PERM.WRITE)) {
         throw new SimpleMessageException("User is not authorized to approve comments for this content.");
       }
       comment.setApproved(true);
@@ -962,7 +927,8 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     Transaction tx = session.get().beginTransaction();
     try {
       comment = ((Comment) session.get().load(Comment.class, comment.getId()));
-      if (!comment.getAuthor().equals(authUser) && !SecurityHelper.doesUserHavePermission(session.get(), authUser, comment.getPermissibleObject(), PERM.WRITE)) {
+      boolean isAuthor = comment.getAuthor() != null && comment.getAuthor().equals(authUser);
+      if (!isAuthor && !SecurityHelper.doesUserHavePermission(session.get(), authUser, comment.getParent(), PERM.WRITE)) {
         throw new SimpleMessageException("User is not authorized to delete comments for this content.");
       }
       // we can't delete this comment until we delete all the child comments
@@ -1138,20 +1104,12 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     }
   }
 
-  public List<PermissibleObject> getMyPermissibleObjects(PermissibleObject parent) throws SimpleMessageException {
-    User authUser = getAuthenticatedUser(session.get());
-    if (authUser == null) {
-      throw new SimpleMessageException("User is not authenticated.");
-    }
-    return PermissibleObjectHelper.getMyPermissibleObjects(session.get(), authUser, parent);
-  }
-
   public List<PermissibleObject> getMyPermissibleObjects(PermissibleObject parent, String objectType) throws SimpleMessageException {
     User authUser = getAuthenticatedUser(session.get());
     if (authUser == null) {
       throw new SimpleMessageException("User is not authenticated.");
     }
-    Class clazz;
+    Class<?> clazz;
     try {
       clazz = Class.forName(objectType);
       return PermissibleObjectHelper.getMyPermissibleObjects(session.get(), authUser, parent, clazz);
@@ -1164,7 +1122,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     try {
       User authUser = getAuthenticatedUser(session.get());
       ArrayList<PermissibleObject> objects = new ArrayList<PermissibleObject>();
-      Class clazz = Class.forName(objectType);
+      Class<?> clazz = Class.forName(objectType);
       RepositoryHelper.getPermissibleObjects(session.get(), authUser, objects, parent, clazz);
       return objects;
     } catch (Throwable t) {
@@ -1173,23 +1131,12 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     }
   }
 
-  public PermissibleObjectTreeNode getChildren(PermissibleObject parent) throws SimpleMessageException {
+  public PermissibleObjectTreeNode getPermissibleObjectTree(PermissibleObject parent) throws SimpleMessageException {
     try {
       User authUser = getAuthenticatedUser(session.get());
       PermissibleObjectTreeNode root = new PermissibleObjectTreeNode();
       RepositoryHelper.buildPermissibleObjectTreeNode(session.get(), authUser, root, parent);
       return root;
-    } catch (Throwable t) {
-      Logger.log(t);
-      throw new SimpleMessageException(t.getMessage());
-    }
-  }
-
-  public Page<PermissibleObject> getPage(String pageClassType, boolean sortDescending, int pageNumber, int pageSize) throws SimpleMessageException {
-    User authUser = getAuthenticatedUser(session.get());
-    try {
-      Class<?> clazz = Class.forName(pageClassType);
-      return PageHelper.getPage(session.get(), clazz, authUser, sortDescending, pageNumber, pageSize);
     } catch (Throwable t) {
       Logger.log(t);
       throw new SimpleMessageException(t.getMessage());
@@ -1432,6 +1379,28 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     return permissibleObject;
   }
 
+  public Page<PermissibleObject> getPage(PermissibleObject parent, String pageClassType, String sortField, boolean sortDescending, int pageNumber, int pageSize) throws SimpleMessageException {
+    User authUser = getAuthenticatedUser(session.get());
+    try {
+      Class<?> clazz = Class.forName(pageClassType);
+      return PageHelper.getPage(session.get(), parent, clazz, authUser, sortField, sortDescending, pageNumber, pageSize);
+    } catch (Throwable t) {
+      Logger.log(t);
+      throw new SimpleMessageException(t.getMessage());
+    }
+  }
+  
+  public PageInfo getPageInfo(PermissibleObject parent, String pageClassType, int pageSize) throws SimpleMessageException {
+    try {
+      User authUser = getAuthenticatedUser(session.get());
+      Class<?> clazz = Class.forName(pageClassType);
+      return PageHelper.getPageInfo(session.get(), parent, clazz, authUser, pageSize);
+    } catch (Throwable t) {
+      Logger.log(t);
+      throw new SimpleMessageException(t.getMessage());
+    }
+  }
+  
   public FileUploadStatus getFileUploadStatus() throws SimpleMessageException {
     User authUser = getAuthenticatedUser(session.get());
     if (authUser == null) {
@@ -1449,12 +1418,12 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     }
   }
 
-  public List<PermissibleObject> searchPermissibleObjects(PermissibleObject parent, String query, String searchObjectType, boolean searchNames,
+  public List<PermissibleObject> searchPermissibleObjects(PermissibleObject parent, String query, String sortField, boolean sortDescending, String searchObjectType, boolean searchNames,
       boolean searchDescriptions, boolean searchKeywords, boolean useExactPhrase) throws SimpleMessageException {
     // return all permissible objects which match the name/description
     try {
-      Class clazz = Class.forName(searchObjectType);
-      return PermissibleObjectHelper.search(session.get(), clazz, query, searchNames, searchDescriptions, searchKeywords, useExactPhrase);
+      Class<?> clazz = Class.forName(searchObjectType);
+      return PermissibleObjectHelper.search(session.get(), clazz, query, sortField, sortDescending, searchNames, searchDescriptions, searchKeywords, useExactPhrase);
     } catch (Throwable t) {
       throw new SimpleMessageException(t.getMessage());
     }
