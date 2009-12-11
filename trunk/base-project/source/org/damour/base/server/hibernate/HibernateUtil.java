@@ -36,22 +36,22 @@ public class HibernateUtil {
   private String password;
   private String connectString;
 
-  private HashMap<Class, Element> classElementMap = new HashMap<Class, Element>();
-  private HashMap<Class, Element> idElementMap = new HashMap<Class, Element>();
-  private HashMap<Class, Boolean> idElementClearedMap = new HashMap<Class, Boolean>();
-  private List<Class> mappedClasses = new ArrayList<Class>();
+  private HashMap<Class<?>, Element> classElementMap = new HashMap<Class<?>, Element>();
+  private HashMap<Class<?>, Element> idElementMap = new HashMap<Class<?>, Element>();
+  private HashMap<Class<?>, Boolean> idElementClearedMap = new HashMap<Class<?>, Boolean>();
+  private List<Class<?>> mappedClasses = new ArrayList<Class<?>>();
   private Document mappingDocument = DocumentHelper.createDocument();
   private Element mappingRoot = null;
   private String tablePrefix = "";
   private boolean showSQL = true;
   private String hbm2ddlMode = "update";
 
-  private HibernateUtil(HashMap<String,String> overrides) {
+  private HibernateUtil(HashMap<String, String> overrides) {
     Logger.log("creating new HibernateUtil()");
 
     Properties rb = BaseSystem.getSettings();
     rb.putAll(overrides);
-    
+
     setUsername(rb.getProperty("username"));
     setPassword(rb.getProperty("password"));
     setConnectString(rb.getProperty("connectString"));
@@ -87,12 +87,12 @@ public class HibernateUtil {
 
   private void generateHibernateMappings(Properties bundle) {
     try {
-      Enumeration keys = bundle.keys();
+      Enumeration<?> keys = bundle.keys();
       while (keys.hasMoreElements()) {
         String key = (String) keys.nextElement();
         if (key.startsWith("HibernateMapped")) {
           try {
-            Class clazz = Class.forName(bundle.getProperty(key));
+            Class<?> clazz = Class.forName(bundle.getProperty(key));
             generateHibernateMapping(clazz);
           } catch (Throwable t) {
             Logger.log(t);
@@ -115,7 +115,7 @@ public class HibernateUtil {
     return defaultValue;
   }
 
-  public static synchronized HibernateUtil getInstance(HashMap<String,String> overrides) {
+  public static synchronized HibernateUtil getInstance(HashMap<String, String> overrides) {
     if (instance == null) {
       instance = new HibernateUtil(overrides);
       instance.bootstrap();
@@ -142,9 +142,9 @@ public class HibernateUtil {
     }
     return instance;
   }
-  
+
   public static synchronized HibernateUtil getInstance() {
-    return getInstance(new HashMap<String,String>());
+    return getInstance(new HashMap<String, String>());
   }
 
   public static void resetHibernate() {
@@ -226,11 +226,11 @@ public class HibernateUtil {
     return sessionFactory;
   }
 
-  private void addMappedClass(Class clazz) {
+  private void addMappedClass(Class<?> clazz) {
     mappedClasses.add(clazz);
   }
 
-  private boolean isClassMapped(Class clazz) {
+  private boolean isClassMapped(Class<?> clazz) {
     return mappedClasses.contains(clazz);
   }
 
@@ -247,18 +247,20 @@ public class HibernateUtil {
     return getSessionFactory().openSession();
   }
 
-  public List executeQuery(Session session, String query, boolean cacheResults, int maxResults) {
+  public List<?> executeQuery(Session session, String query, boolean cacheResults, int maxResults) {
     Logger.log(query);
     Query q = session.createQuery(query).setCacheable(cacheResults).setMaxResults(maxResults);
     return q.list();
   }
 
+  @SuppressWarnings("unchecked")
   public List executeQuery(Session session, String query, boolean cacheResults) {
     Logger.log(query);
     Query q = session.createQuery(query).setCacheable(cacheResults);
     return q.list();
   }
 
+  @SuppressWarnings("unchecked")
   public List executeQuery(Session session, String query) {
     return executeQuery(session, query, true);
   }
@@ -295,7 +297,7 @@ public class HibernateUtil {
     this.connectString = connectString;
   }
 
-  public void generateHibernateMapping(Class clazz) {
+  public void generateHibernateMapping(Class<?> clazz) {
     if (!isClassMapped(clazz)) {
       Logger.log("Adding mapping for " + clazz.getSimpleName().toLowerCase());
       Element mappingRootElement = getMappingElement();
@@ -369,7 +371,7 @@ public class HibernateUtil {
             continue;
           }
         } catch (Throwable t) {
-            Logger.log("Cannot determine if field is hibernated managed:" + field.getName() + " (" + field.getType().getName() + ")");
+          Logger.log("Cannot determine if field is hibernated managed:" + field.getName() + " (" + field.getType().getName() + ")");
         }
 
         boolean skip = false;
@@ -449,7 +451,7 @@ public class HibernateUtil {
             setElement.addAttribute("lazy", "false");
             // setElement.addAttribute("cascade", "all-delete-orphan");
             setElement.addElement("key").addAttribute("column", "id");
-            setElement.addElement("one-to-many").addAttribute("class", ((Class) genericType.getActualTypeArguments()[0]).getName());
+            setElement.addElement("one-to-many").addAttribute("class", ((Class<?>) genericType.getActualTypeArguments()[0]).getName());
           } else if (byte[].class.equals(field.getType())) {
             Element propertyElement = mappingElement.addElement("property");
             propertyElement.addAttribute("name", name);
@@ -478,7 +480,7 @@ public class HibernateUtil {
     }
   }
 
-  private boolean isJavaType(Class clazz) {
+  private boolean isJavaType(Class<?> clazz) {
     if (clazz.isPrimitive()) {
       return true;
     } else if (Boolean.class.isAssignableFrom(clazz)) {
