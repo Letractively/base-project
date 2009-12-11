@@ -35,7 +35,7 @@ public class SearchTest {
 
     tx.commit();
 
-    List<PermissibleObject> results = PermissibleObjectHelper.search(session, PermissibleObject.class, "abc xxx", true, true, true, false);
+    List<PermissibleObject> results = PermissibleObjectHelper.search(session, PermissibleObject.class, "abc xxx", "name", true, true, true, true, false);
     for (PermissibleObject result : results) {
       System.out.println("Found: " + result.getName());
     }
