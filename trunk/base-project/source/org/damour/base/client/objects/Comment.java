@@ -2,11 +2,9 @@ package org.damour.base.client.objects;
 
 import java.io.Serializable;
 
-public class Comment implements Serializable, IHibernateFriendly {
+public class Comment extends PermissibleObject implements Serializable {
 
-  public Long id;
   public User author;
-  public PermissibleObject permissibleObject;
   public String comment;
   public Comment parentComment;
   //
@@ -19,49 +17,6 @@ public class Comment implements Serializable, IHibernateFriendly {
   public boolean approved = false;
 
   public Comment() {
-  }
-
-  public boolean isFieldUnique(String fieldName) {
-    return false;
-  }
-
-  public boolean isFieldKey(String fieldName) {
-    return false;
-  }
-
-  public String getSqlUpdate() {
-    return null;
-  }
-
-  public String getCachePolicy() {
-    return "nonstrict-read-write";
-  }
-
-  public boolean isLazy() {
-    return false;
-  }
-
-  public boolean isFieldMapped(String fieldName) {
-    return true;
-  }
-
-  public String getFieldType(String fieldName) {
-    return null;
-  }
-
-  /**
-   * @return the id
-   */
-  public Long getId() {
-    return id;
-  }
-
-  /**
-   * @param id
-   *          the id to set
-   */
-  public void setId(Long id) {
-    this.id = id;
   }
 
   /**
@@ -77,21 +32,6 @@ public class Comment implements Serializable, IHibernateFriendly {
    */
   public void setAuthor(User author) {
     this.author = author;
-  }
-
-  /**
-   * @return the permissibleObject
-   */
-  public PermissibleObject getPermissibleObject() {
-    return permissibleObject;
-  }
-
-  /**
-   * @param permissibleObject
-   *          the permissibleObject to set
-   */
-  public void setPermissibleObject(PermissibleObject permissibleObject) {
-    this.permissibleObject = permissibleObject;
   }
 
   /**

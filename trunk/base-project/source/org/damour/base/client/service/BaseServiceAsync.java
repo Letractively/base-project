@@ -4,7 +4,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import org.damour.base.client.exceptions.SimpleMessageException;
 import org.damour.base.client.objects.Comment;
 import org.damour.base.client.objects.File;
 import org.damour.base.client.objects.FileUploadStatus;
@@ -13,6 +12,7 @@ import org.damour.base.client.objects.GroupMembership;
 import org.damour.base.client.objects.HibernateStat;
 import org.damour.base.client.objects.MemoryStats;
 import org.damour.base.client.objects.Page;
+import org.damour.base.client.objects.PageInfo;
 import org.damour.base.client.objects.PendingGroupMembership;
 import org.damour.base.client.objects.PermissibleObject;
 import org.damour.base.client.objects.PermissibleObjectTreeNode;
@@ -61,14 +61,12 @@ public interface BaseServiceAsync {
   // file/content/permissions methods
   public void getPermissibleObject(Long id, AsyncCallback<PermissibleObject> callback);
   public void getRepositoryTree(AsyncCallback<RepositoryTreeNode> callback);
-  public void getChildren(PermissibleObject parent, AsyncCallback<PermissibleObjectTreeNode> callback);
+  public void getPermissibleObjectTree(PermissibleObject parent, AsyncCallback<PermissibleObjectTreeNode> callback);
   public void savePermissibleObject(PermissibleObject permissibleObject, AsyncCallback<PermissibleObject> callback);
   public void deletePermissibleObject(PermissibleObject permissibleObject, AsyncCallback<Void> callback);
   public void deletePermissibleObjects(Set<PermissibleObject> permissibleObjects, AsyncCallback<Void> callback);
   public void getPermissibleObjects(PermissibleObject parent, String objectType, AsyncCallback<List<PermissibleObject>> callback);
-  public void getMyPermissibleObjects(PermissibleObject parent, AsyncCallback<List<PermissibleObject>> callback);
   public void getMyPermissibleObjects(PermissibleObject parent, String objectType, AsyncCallback<List<PermissibleObject>> callback);
-  public void getPage(String pageClassType, boolean sortDescending, int pageNumber, int pageSize, AsyncCallback<Page<PermissibleObject>> callback) throws SimpleMessageException;
   public void createNewFolder(Folder newFolder, AsyncCallback<Folder> callback);
   public void renameFile(File file, AsyncCallback<Void> callback);
   public void renameFolder(Folder folder, AsyncCallback<Void> callback);
@@ -76,10 +74,14 @@ public interface BaseServiceAsync {
   public void setPermissions(PermissibleObject permissibleObject, List<Permission> permissions, AsyncCallback<Void> callback);
   public void updatePermissibleObject(PermissibleObject permissibleObject, AsyncCallback<PermissibleObject> callback);
   public void getFileUploadStatus(AsyncCallback<FileUploadStatus> callback);
-  public void searchPermissibleObjects(PermissibleObject parent, String query, String searchObjectType, boolean searchNames, boolean searchDescriptions, boolean searchKeywords, boolean useExactPhrase, AsyncCallback<List<PermissibleObject>> callback);
+  public void searchPermissibleObjects(PermissibleObject parent, String query, String sortField, boolean sortDescending, String searchObjectType, boolean searchNames, boolean searchDescriptions, boolean searchKeywords, boolean useExactPhrase, AsyncCallback<List<PermissibleObject>> callback);
   // for debug purposes: simply return what was given, proving the serialization of the desired object
   public void echoPermissibleObject(PermissibleObject permissibleObject, AsyncCallback<PermissibleObject> callback);
 
+  // page api
+  public void getPage(PermissibleObject parent, String pageClassType, String sortField, boolean sortDescending, int pageNumber, int pageSize, AsyncCallback<Page<PermissibleObject>> callback);
+  public void getPageInfo(PermissibleObject parent, String pageClassType, int pageSize, AsyncCallback<PageInfo> callback);
+  
   // tag methods
   public void getTags(AsyncCallback<List<Tag>> callback);
   public void getTags(PermissibleObject permissibleObject, AsyncCallback<List<Tag>> callback);
@@ -99,8 +101,6 @@ public interface BaseServiceAsync {
   public void getUserAdvisory(PermissibleObject permissibleObject, AsyncCallback<UserAdvisory> callback);
   
   // file comments
-  public void getCommentPage(PermissibleObject permissibleObject, boolean sortDescending, int pageNumber, int pageSize, AsyncCallback<Page<Comment>> callback);
-  public void getComments(PermissibleObject permissibleObject, AsyncCallback<List<Comment>> callback);
   public void submitComment(Comment comment, AsyncCallback<Boolean> callback);
   public void approveComment(Comment comment, AsyncCallback<Boolean> callback);
   public void deleteComment(Comment comment, AsyncCallback<Boolean> callback);

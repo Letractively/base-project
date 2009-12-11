@@ -7,18 +7,14 @@ import java.util.List;
 public class Page<T> implements Serializable {
 
   public List<T> results = new ArrayList<T>();
-  public long totalRowCount;
   public int pageNumber;
-  public long lastPageNumber;
 
   public Page() {
   }
 
-  public Page(List<T> results, int pageNumber, long lastPageNumber, long totalRowCount) {
+  public Page(List<T> results, int pageNumber) {
     this.results.addAll(results);
     this.pageNumber = pageNumber;
-    this.totalRowCount = totalRowCount;
-    this.lastPageNumber = lastPageNumber;
   }
 
   public List<T> getResults() {
@@ -35,22 +31,6 @@ public class Page<T> implements Serializable {
 
   public void setPageNumber(int pageNumber) {
     this.pageNumber = pageNumber;
-  }
-
-  public long getLastPageNumber() {
-    return lastPageNumber;
-  }
-
-  public void setLastPageNumber(int lastPageNumber) {
-    this.lastPageNumber = lastPageNumber;
-  }
-
-  public long getTotalRowCount() {
-    return totalRowCount;
-  }
-
-  public void setTotalRowCount(long totalRowCount) {
-    this.totalRowCount = totalRowCount;
   }
 
 }
