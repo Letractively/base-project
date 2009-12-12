@@ -15,18 +15,25 @@ package org.damour.base.server.gwt;
  * the License.
  */
 
-import com.google.gwt.user.client.rpc.SerializationException;
-import com.google.gwt.user.client.rpc.impl.AbstractSerializationStreamWriter;
-import com.google.gwt.user.server.rpc.SerializationPolicy;
-
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
+
+import com.google.gwt.user.client.rpc.SerializationException;
+import com.google.gwt.user.client.rpc.impl.AbstractSerializationStreamWriter;
+import com.google.gwt.user.server.Base64Utils;
+import com.google.gwt.user.server.rpc.SerializationPolicy;
+import com.google.gwt.user.server.rpc.impl.TypeNameObfuscator;
 
 /**
  * For internal use only. Used for server call serialization. This class is
@@ -363,9 +370,6 @@ public final class ServerSerializationStreamWriter extends
    * than 1.3 that supports unicode strings.
    */
   public static String escapeString(String toEscape) {
-    if (toEscape == null) {
-      toEscape = "";
-    }
     // make output big enough to escape every character (plus the quotes)
     char[] input = toEscape.toCharArray();
     CharVector charVector = new CharVector(input.length * 2 + 2, input.length);
@@ -407,14 +411,10 @@ public final class ServerSerializationStreamWriter extends
    * consumed and/or interpreted as a special character when the JSON encoded
    * response is evaluated. For example, 0x2028 and 0x2029 are alternate line
    * endings for JS per ECMA-232, which are respected by Firefox and Mozilla.
-   * 
-   * @param ch character to check
-   * @return <code>true</code> if the character requires the \\uXXXX unicode
-   *         character escape
-   * 
+   * <p>
    * Notes:
    * <ol>
-   * <li> The following cases are a more conservative set of cases which are are
+   * <li>The following cases are a more conservative set of cases which are are
    * in the future proofing space as opposed to the required minimal set. We
    * could remove these and still pass our tests.
    * <ul>
@@ -429,18 +429,20 @@ public final class ServerSerializationStreamWriter extends
    * <li>Total Characters Escaped: 13515</li>
    * </ul>
    * </li>
-   * <li> The following cases are the minimal amount of escaping required to
+   * <li>The following cases are the minimal amount of escaping required to
    * prevent test failure.
    * <ul>
    * <li>LINE_SEPARATOR - 1</li>
    * <li>PARAGRAPH_SEPARATOR - 1</li>
    * <li>FORMAT - 32</li>
    * <li>SURROGATE - 2048</li>
-   * <li>Total Characters Escaped: 2082</li>
-   * </li>
-   * </ul>
-   * </li>
+   * <li>Total Characters Escaped: 2082</li></li>
+   * </ul> </li>
    * </ol>
+   * 
+   * @param ch character to check
+   * @return <code>true</code> if the character requires the \\uXXXX unicode
+   *         character escape
    */
   private static boolean needsUnicodeEscape(char ch) {
     switch (ch) {
@@ -453,8 +455,8 @@ public final class ServerSerializationStreamWriter extends
         // these must be quoted or they will break the protocol
         return true;
       case NON_BREAKING_HYPHEN:
-          // This can be expanded into a break followed by a hyphen
-          return true;
+        // This can be expanded into a break followed by a hyphen
+        return true;
       default:
         switch (Character.getType(ch)) {
           // Conservative
@@ -482,9 +484,9 @@ public final class ServerSerializationStreamWriter extends
   }
 
   /**
-   * Writes a safe escape sequence for a character.  Some characters have a
-   * short form, such as \n for U+000D, while others are represented as \\xNN
-   * or \\uNNNN.
+   * Writes a safe escape sequence for a character. Some characters have a short
+   * form, such as \n for U+000D, while others are represented as \\xNN or
+   * \\uNNNN.
    * 
    * @param ch character to unicode escape
    * @param charVector char vector to receive the unicode escaped representation
@@ -577,11 +579,23 @@ public final class ServerSerializationStreamWriter extends
   }
 
   @Override
-  protected String getObjectTypeSignature(Object instance) {
+  protected String getObjectTypeSignature(Object instance)
+      throws SerializationException {
     assert (instance != null);
 
     Class<?> clazz = getClassForSerialization(instance);
-    return SerializabilityUtil.encodeSerializedInstanceReference(clazz);
+    if (hasFlags(FLAG_ELIDE_TYPE_NAMES)) {
+      if (serializationPolicy instanceof TypeNameObfuscator) {
+        return ((TypeNameObfuscator) serializationPolicy).getTypeIdForClass(clazz);
+      }
+
+      throw new SerializationException("The GWT module was compiled with RPC "
+          + "type name elision enabled, but "
+          + serializationPolicy.getClass().getName() + " does not implement "
+          + TypeNameObfuscator.class.getName());
+    } else {
+      return SerializabilityUtil.encodeSerializedInstanceReference(clazz, serializationPolicy);
+    }
   }
 
   @Override
@@ -591,8 +605,11 @@ public final class ServerSerializationStreamWriter extends
 
     Class<?> clazz = getClassForSerialization(instance);
 
-    serializationPolicy.validateSerialize(clazz);
-
+    try {
+      serializationPolicy.validateSerialize(clazz);
+    } catch (SerializationException e) {
+      throw new SerializationException(e.getMessage() + ": instance = " + instance);
+    }
     serializeImpl(instance, clazz);
   }
 
@@ -620,10 +637,55 @@ public final class ServerSerializationStreamWriter extends
   private void serializeClass(Object instance, Class<?> instanceClass)
       throws SerializationException {
     assert (instance != null);
-
     Field[] serializableFields = SerializabilityUtil.applyFieldSerializationPolicy(instanceClass);
+
+    /**
+     * If clientFieldNames is non-null, identify any additional server-only fields and serialize
+     * them separately.  Java serialization is used to construct a byte array, which is encoded
+     * as a String and written prior to the rest of the field data.
+     */
+    Set<String> clientFieldNames = serializationPolicy.getClientFieldNamesForEnhancedClass(instanceClass);
+    if (clientFieldNames != null) {
+      List<Field> serverFields = new ArrayList<Field>();
+      for (Field declField : serializableFields) {
+        assert (declField != null);
+        
+        // Identify server-only fields
+        if (!clientFieldNames.contains(declField.getName())) {
+          serverFields.add(declField);
+          continue;
+        }
+      }
+      
+      // Serialize the server-only fields into a byte array and encode as a String
+      try {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(baos);
+        oos.writeInt(serverFields.size());
+        for (Field f : serverFields) {
+          oos.writeObject(f.getName());
+          f.setAccessible(true);
+          Object fieldData = f.get(instance);
+          oos.writeObject(fieldData);
+        }
+        oos.close();
+
+        byte[] serializedData = baos.toByteArray();
+        String encodedData = Base64Utils.toBase64(serializedData);
+        writeString(encodedData);
+      } catch (IllegalAccessException e) {
+        throw new SerializationException(e);
+      } catch (IOException e) {
+        throw new SerializationException(e);
+      }
+    }
+    
+    // Write the client-visible field data
     for (Field declField : serializableFields) {
-      assert (declField != null);
+      if ((clientFieldNames != null) && !clientFieldNames.contains(declField.getName())) {
+        // Skip server-only fields
+        continue;
+      }
 
       boolean isAccessible = declField.isAccessible();
       boolean needsAccessOverride = !isAccessible
