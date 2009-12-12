@@ -99,8 +99,8 @@ public class BaseApplicationUI extends BaseApplication implements IAuthenticatio
   }
 
   public ToolbarButton buildLoginButton() {
-    ToolbarButton loginLink = new ToolbarButton("Login");
-    loginLink.setTitle("Login or Create a New Account");
+    ToolbarButton loginLink = new ToolbarButton(getMessages().getString("login", "Login"));
+    loginLink.setTitle(getMessages().getString("loginTitle", "Login or Create a New Account"));
     loginLink.addClickHandler(new ClickHandler() {
       public void onClick(ClickEvent event) {
         AuthenticationHandler.getInstance().handleUserAuthentication(true);
@@ -160,9 +160,9 @@ public class BaseApplicationUI extends BaseApplication implements IAuthenticatio
     MenuItem myFilesMenuItem = new MenuItem(getMessages().getString("fileManager", "File Manager"), new MenuButtonCommand() {
       public void execute() {
         popup.hide();
-        PromptDialogBox dialogBox = new PromptDialogBox("File Manager", "Close", null, null, false, false);
+        PromptDialogBox dialogBox = new PromptDialogBox(getMessages().getString("fileManager", "File Manager"), "Close", null, null, false, false);
         // create a new filemanager for this user
-        FileManagerPanel fileManager = new FileManagerPanel("File Manager");
+        FileManagerPanel fileManager = new FileManagerPanel(getMessages().getString("fileManager", "File Manager"));
         dialogBox.setContent(fileManager);
         dialogBox.center();
       }
@@ -288,8 +288,12 @@ public class BaseApplicationUI extends BaseApplication implements IAuthenticatio
 
     linkCol = -1;
     int row = -1;
-    footerGradientPanel.setHTML(++row, ++linkCol, "Copyright &#169 2007-" + ((new Date()).getYear() + 1900) + " "
-        + BaseApplication.getMessages().getString("companyName", "Your Company") + ".  All rights reserved.");
+
+    String date = "" + ((new Date()).getYear() + 1900);
+    String company = BaseApplication.getMessages().getString("companyName", "Your Company");
+    String copyright = "Copyright &#169 2007-" + date + " " + company + ".  All rights reserved.";
+
+    footerGradientPanel.setHTML(++row, ++linkCol, getMessages().getString("copyrightFooter", copyright, new String[] { date, company }));
     footerGradientPanel.getCellFormatter().setHorizontalAlignment(row, linkCol, HasHorizontalAlignment.ALIGN_CENTER);
 
     footerGradientPanelWrapper.add(footerGradientPanel);
