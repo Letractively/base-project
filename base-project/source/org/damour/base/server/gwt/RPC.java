@@ -16,10 +16,13 @@ import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.SerializationException;
 import com.google.gwt.user.client.rpc.impl.AbstractSerializationStream;
 import com.google.gwt.user.server.rpc.RPCRequest;
+import com.google.gwt.user.server.rpc.RPCServletUtils;
+import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.google.gwt.user.server.rpc.SerializationPolicy;
 import com.google.gwt.user.server.rpc.SerializationPolicyProvider;
 import com.google.gwt.user.server.rpc.UnexpectedException;
 import com.google.gwt.user.server.rpc.impl.LegacySerializationPolicy;
+import com.google.gwt.user.server.rpc.impl.TypeNameObfuscator;
 
 /**
  * Utility class for integrating with the RPC system. This class exposes methods
@@ -28,14 +31,14 @@ import com.google.gwt.user.server.rpc.impl.LegacySerializationPolicy;
  * reused by framework implementors such as Spring and G4jsf to support a wide
  * range of service invocation policies.
  * 
- * <h3>Canonical Example</h3>
- * The following example demonstrates the canonical way to use this class.
+ * <h3>Canonical Example</h3> The following example demonstrates the canonical
+ * way to use this class.
  * 
- * {@example com.google.gwt.examples.rpc.server.CanonicalExample#processCall(String)}
+ * {@example
+ * com.google.gwt.examples.rpc.server.CanonicalExample#processCall(String)}
  * 
- * <h3>Advanced Example</h3>
- * The following example shows a more advanced way of using this class to create
- * an adapter between GWT RPC entities and POJOs.
+ * <h3>Advanced Example</h3> The following example shows a more advanced way of
+ * using this class to create an adapter between GWT RPC entities and POJOs.
  * 
  * {@example com.google.gwt.examples.rpc.server.AdvancedExample#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)}
  */
@@ -115,14 +118,14 @@ public final class RPC {
   /**
    * Returns an {@link RPCRequest} that is built by decoding the contents of an
    * encoded RPC request and optionally validating that type can handle the
-   * request. If the type parameter is not <code>null</code>, the
-   * implementation checks that the type is assignable to the
-   * {@link RemoteService} interface requested in the encoded request string.
+   * request. If the type parameter is not <code>null</code>, the implementation
+   * checks that the type is assignable to the {@link RemoteService} interface
+   * requested in the encoded request string.
    * 
    * <p>
    * Invoking this method with <code>null</code> for the type parameter,
-   * <code>decodeRequest(encodedRequest, null)</code>, is equivalent to
-   * calling <code>decodeRequest(encodedRequest)</code>.
+   * <code>decodeRequest(encodedRequest, null)</code>, is equivalent to calling
+   * <code>decodeRequest(encodedRequest)</code>.
    * </p>
    * 
    * @param encodedRequest a string that encodes the {@link RemoteService}
@@ -158,13 +161,13 @@ public final class RPC {
   /**
    * Returns an {@link RPCRequest} that is built by decoding the contents of an
    * encoded RPC request and optionally validating that type can handle the
-   * request. If the type parameter is not <code>null</code>, the
-   * implementation checks that the type is assignable to the
-   * {@link RemoteService} interface requested in the encoded request string.
+   * request. If the type parameter is not <code>null</code>, the implementation
+   * checks that the type is assignable to the {@link RemoteService} interface
+   * requested in the encoded request string.
    * 
    * <p>
-   * If the serializationPolicyProvider parameter is not <code>null</code>,
-   * it is asked for a {@link SerializationPolicy} to use to restrict the set of
+   * If the serializationPolicyProvider parameter is not <code>null</code>, it
+   * is asked for a {@link SerializationPolicy} to use to restrict the set of
    * types that can be decoded from the request. If this parameter is
    * <code>null</code>, then only subtypes of
    * {@link com.google.gwt.user.client.rpc.IsSerializable IsSerializable} or
@@ -173,8 +176,8 @@ public final class RPC {
    * 
    * <p>
    * Invoking this method with <code>null</code> for the type parameter,
-   * <code>decodeRequest(encodedRequest, null)</code>, is equivalent to
-   * calling <code>decodeRequest(encodedRequest)</code>.
+   * <code>decodeRequest(encodedRequest, null)</code>, is equivalent to calling
+   * <code>decodeRequest(encodedRequest)</code>.
    * </p>
    * 
    * @param encodedRequest a string that encodes the {@link RemoteService}
@@ -225,7 +228,8 @@ public final class RPC {
       streamReader.prepareToRead(encodedRequest);
 
       // Read the name of the RemoteService interface
-      String serviceIntfName = streamReader.readString();
+      String serviceIntfName = maybeDeobfuscate(streamReader,
+          streamReader.readString());
 
       if (type != null) {
         if (!implementsInterface(type, serviceIntfName)) {
@@ -257,10 +261,16 @@ public final class RPC {
       String serviceMethodName = streamReader.readString();
 
       int paramCount = streamReader.readInt();
+      if (paramCount > streamReader.getNumberOfTokens()) {
+        throw new IncompatibleRemoteServiceException(
+            "Invalid number of parameters");
+      }
       Class<?>[] parameterTypes = new Class[paramCount];
 
       for (int i = 0; i < parameterTypes.length; i++) {
-        String paramClassName = streamReader.readString();
+        String paramClassName = maybeDeobfuscate(streamReader,
+            streamReader.readString());
+
         try {
           parameterTypes[i] = getClassFromSerializedName(paramClassName,
               classLoader);
@@ -278,7 +288,8 @@ public final class RPC {
           parameterValues[i] = streamReader.deserializeValue(parameterTypes[i]);
         }
 
-        return new RPCRequest(method, parameterValues, serializationPolicy);
+        return new RPCRequest(method, parameterValues, serializationPolicy,
+            streamReader.getFlags());
 
       } catch (NoSuchMethodException e) {
         throw new IncompatibleRemoteServiceException(
@@ -292,8 +303,8 @@ public final class RPC {
 
   /**
    * Returns a string that encodes an exception. If method is not
-   * <code>null</code>, it is an error if the exception is not in the
-   * method's list of checked exceptions.
+   * <code>null</code>, it is an error if the exception is not in the method's
+   * list of checked exceptions.
    * 
    * @param serviceMethod the method that threw the exception, may be
    *          <code>null</code>
@@ -313,13 +324,13 @@ public final class RPC {
 
   /**
    * Returns a string that encodes an exception. If method is not
-   * <code>null</code>, it is an error if the exception is not in the
-   * method's list of checked exceptions.
+   * <code>null</code>, it is an error if the exception is not in the method's
+   * list of checked exceptions.
    * 
    * <p>
-   * If the serializationPolicy parameter is not <code>null</code>, it is
-   * used to determine what types can be encoded as part of this response. If
-   * this parameter is <code>null</code>, then only subtypes of
+   * If the serializationPolicy parameter is not <code>null</code>, it is used
+   * to determine what types can be encoded as part of this response. If this
+   * parameter is <code>null</code>, then only subtypes of
    * {@link com.google.gwt.user.client.rpc.IsSerializable IsSerializable} or
    * types which have custom field serializers may be encoded.
    * </p>
@@ -339,6 +350,13 @@ public final class RPC {
   public static String encodeResponseForFailure(Method serviceMethod,
       Throwable cause, SerializationPolicy serializationPolicy)
       throws SerializationException {
+    return encodeResponseForFailure(serviceMethod, cause, serializationPolicy,
+        AbstractSerializationStream.DEFAULT_FLAGS);
+  }
+
+  public static String encodeResponseForFailure(Method serviceMethod,
+      Throwable cause, SerializationPolicy serializationPolicy, int flags)
+      throws SerializationException {
     if (cause == null) {
       throw new NullPointerException("cause cannot be null");
     }
@@ -347,13 +365,15 @@ public final class RPC {
       throw new NullPointerException("serializationPolicy");
     }
 
-    if (serviceMethod != null && !RPC.isExpectedException(serviceMethod, cause)) {
+    if (serviceMethod != null
+        && !RPCServletUtils.isExpectedException(serviceMethod, cause)) {
       throw new UnexpectedException("Service method '"
           + getSourceRepresentation(serviceMethod)
           + "' threw an unexpected exception: " + cause.toString(), cause);
     }
 
-    return encodeResponse(cause.getClass(), cause, true, serializationPolicy);
+    return encodeResponse(cause.getClass(), cause, true, flags,
+        serializationPolicy);
   }
 
   /**
@@ -381,9 +401,9 @@ public final class RPC {
    * an object that is not assignable to the service method's return type.
    * 
    * <p>
-   * If the serializationPolicy parameter is not <code>null</code>, it is
-   * used to determine what types can be encoded as part of this response. If
-   * this parameter is <code>null</code>, then only subtypes of
+   * If the serializationPolicy parameter is not <code>null</code>, it is used
+   * to determine what types can be encoded as part of this response. If this
+   * parameter is <code>null</code>, then only subtypes of
    * {@link com.google.gwt.user.client.rpc.IsSerializable IsSerializable} or
    * types which have custom field serializers may be encoded.
    * </p>
@@ -402,6 +422,13 @@ public final class RPC {
    */
   public static String encodeResponseForSuccess(Method serviceMethod,
       Object object, SerializationPolicy serializationPolicy)
+      throws SerializationException {
+    return encodeResponseForSuccess(serviceMethod, object, serializationPolicy,
+        AbstractSerializationStream.DEFAULT_FLAGS);
+  }
+
+  public static String encodeResponseForSuccess(Method serviceMethod,
+      Object object, SerializationPolicy serializationPolicy, int flags)
       throws SerializationException {
     if (serviceMethod == null) {
       throw new NullPointerException("serviceMethod cannot be null");
@@ -429,7 +456,8 @@ public final class RPC {
       }
     }
 
-    return encodeResponse(methodReturnType, object, false, serializationPolicy);
+    return encodeResponse(methodReturnType, object, false, flags,
+        serializationPolicy);
   }
 
   /**
@@ -474,9 +502,9 @@ public final class RPC {
    * could be the value returned by the method or an exception thrown by it.
    * 
    * <p>
-   * If the serializationPolicy parameter is not <code>null</code>, it is
-   * used to determine what types can be encoded as part of this response. If
-   * this parameter is <code>null</code>, then only subtypes of
+   * If the serializationPolicy parameter is not <code>null</code>, it is used
+   * to determine what types can be encoded as part of this response. If this
+   * parameter is <code>null</code>, then only subtypes of
    * {@link com.google.gwt.user.client.rpc.IsSerializable IsSerializable} or
    * types which have custom field serializers may be encoded.
    * </p>
@@ -505,6 +533,14 @@ public final class RPC {
   public static String invokeAndEncodeResponse(Object target,
       Method serviceMethod, Object[] args,
       SerializationPolicy serializationPolicy) throws SerializationException {
+    return invokeAndEncodeResponse(target, serviceMethod, args,
+        serializationPolicy, AbstractSerializationStream.DEFAULT_FLAGS);
+  }
+
+  public static String invokeAndEncodeResponse(Object target,
+      Method serviceMethod, Object[] args,
+      SerializationPolicy serializationPolicy, int flags)
+      throws SerializationException {
     if (serviceMethod == null) {
       throw new NullPointerException("serviceMethod");
     }
@@ -518,7 +554,7 @@ public final class RPC {
       Object result = serviceMethod.invoke(target, args);
 
       responsePayload = encodeResponseForSuccess(serviceMethod, result,
-          serializationPolicy);
+          serializationPolicy, flags);
     } catch (IllegalAccessException e) {
       SecurityException securityException = new SecurityException(
           formatIllegalAccessErrorMessage(target, serviceMethod));
@@ -535,7 +571,7 @@ public final class RPC {
       Throwable cause = e.getCause();
 
       responsePayload = encodeResponseForFailure(serviceMethod, cause,
-          serializationPolicy);
+          serializationPolicy, flags);
     }
 
     return responsePayload;
@@ -553,11 +589,14 @@ public final class RPC {
    * @throws SerializationException if the object cannot be serialized
    */
   private static String encodeResponse(Class<?> responseClass, Object object,
-      boolean wasThrown, SerializationPolicy serializationPolicy)
+      boolean wasThrown, int flags, SerializationPolicy serializationPolicy)
       throws SerializationException {
 
     if (object instanceof Throwable) {
       Logger.log((Throwable)object);
+      // gwt 2.0 as it was
+      //EX[1,["org.damour.base.client.exceptions.LoginException/904444981"],0,5]
+      
       //EX[2,1,["java.lang.Exception/1920171873","could\x20not\x20insert:\x20[org.damour.base.client.objects.UserGroup]"],0,4]
       //EX[2,1,["java.lang.Exception/1920171873","pwned"],0,4]
       String escapedStr = ServerSerializationStreamWriter.escapeString(((Throwable)object).getMessage());
@@ -577,9 +616,10 @@ public final class RPC {
       }
       return "//EX[2,1,[\"" + object.getClass().getName() + "/" + crc.getValue() + "\"," + escapedStr + "],0," + AbstractSerializationStream.SERIALIZATION_STREAM_VERSION + "]";
     }
-    
+
     ServerSerializationStreamWriter stream = new ServerSerializationStreamWriter(
         serializationPolicy);
+    stream.setFlags(flags);
 
     stream.prepareToWrite();
     if (responseClass != void.class) {
@@ -758,39 +798,31 @@ public final class RPC {
   }
 
   /**
-   * Returns true if the {@link java.lang.reflect.Method Method} definition on
-   * the service is specified to throw the exception contained in the
-   * InvocationTargetException or false otherwise. NOTE we do not check that the
-   * type is serializable here. We assume that it must be otherwise the
-   * application would never have been allowed to run.
-   * 
-   * @param serviceIntfMethod the method from the RPC request
-   * @param cause the exception that the method threw
-   * @return true if the exception's type is in the method's signature
+   * Given a type identifier in the stream, attempt to deobfuscate it. Retuns
+   * the original identifier if deobfuscation is unnecessary or no mapping is
+   * known.
    */
-  private static boolean isExpectedException(Method serviceIntfMethod,
-      Throwable cause) {
-    assert (serviceIntfMethod != null);
-    assert (cause != null);
-
-    Class<?>[] exceptionsThrown = serviceIntfMethod.getExceptionTypes();
-    if (exceptionsThrown.length <= 0) {
-      // The method is not specified to throw any exceptions
-      //
-      return false;
-    }
-
-    Class<? extends Throwable> causeType = cause.getClass();
-
-    for (Class<?> exceptionThrown : exceptionsThrown) {
-      assert (exceptionThrown != null);
-
-      if (exceptionThrown.isAssignableFrom(causeType)) {
-        return true;
+  private static String maybeDeobfuscate(
+      ServerSerializationStreamReader streamReader, String name)
+      throws SerializationException {
+    int index;
+    if (streamReader.hasFlags(AbstractSerializationStream.FLAG_ELIDE_TYPE_NAMES)) {
+      SerializationPolicy serializationPolicy = streamReader.getSerializationPolicy();
+      if (!(serializationPolicy instanceof TypeNameObfuscator)) {
+        throw new IncompatibleRemoteServiceException(
+            "RPC request was encoded with obfuscated type names, "
+                + "but the SerializationPolicy in use does not implement "
+                + TypeNameObfuscator.class.getName());
       }
-    }
 
-    return false;
+      String maybe = ((TypeNameObfuscator) serializationPolicy).getClassNameForTypeId(name);
+      if (maybe != null) {
+        return maybe;
+      }
+    } else if ((index = name.indexOf('/')) != -1) {
+      return name.substring(0, index);
+    }
+    return name;
   }
 
   /**

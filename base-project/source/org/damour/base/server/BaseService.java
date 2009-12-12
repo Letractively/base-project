@@ -42,7 +42,6 @@ import org.damour.base.server.hibernate.ReflectionCache;
 import org.damour.base.server.hibernate.helpers.AdvisoryHelper;
 import org.damour.base.server.hibernate.helpers.CommentHelper;
 import org.damour.base.server.hibernate.helpers.FolderHelper;
-import org.damour.base.server.hibernate.helpers.GenericPage;
 import org.damour.base.server.hibernate.helpers.PageHelper;
 import org.damour.base.server.hibernate.helpers.PermissibleObjectHelper;
 import org.damour.base.server.hibernate.helpers.RatingHelper;
