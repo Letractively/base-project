@@ -21,6 +21,8 @@ import org.damour.base.client.ui.repository.FileManagerPanel;
 import org.damour.base.client.ui.toolbar.ToolBar;
 import org.damour.base.client.utils.StringUtils;
 
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.RunAsyncCallback;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
@@ -43,9 +45,11 @@ public class BaseApplicationUI extends BaseApplication implements IAuthenticatio
   private VerticalPanel applicationPanel = new VerticalPanel();
   private DeckPanel applicationContentDeck = new DeckPanel();
   private ToolBar applicationToolBar = new ToolBar();
-  private AdministratorPanel adminPanel;
 
   private User authenticatedUser = null;
+
+  private boolean adminMode = false;
+  private Widget adminPanel;
 
   public void loadModule() {
     applicationPanel.setWidth("100%");
@@ -134,7 +138,7 @@ public class BaseApplicationUI extends BaseApplication implements IAuthenticatio
   public Widget buildProfileButton(boolean enabled) {
 
     if ("true".equals(getSettings().getString("showProfileAsButton", "false"))) {
-      ToolbarButton profileButton = new ToolbarButton("Profile");
+      ToolbarButton profileButton = new ToolbarButton(getMessages().getString("profile", "Profile"));
       profileButton.addClickHandler(new ClickHandler() {
         public void onClick(ClickEvent event) {
           // it is possible the user is 'stale', but HIGHLY unlikely
@@ -154,20 +158,28 @@ public class BaseApplicationUI extends BaseApplication implements IAuthenticatio
         AuthenticationHandler.getInstance().showEditAccountDialog(getAuthenticatedUser());
       }
     });
-    editAccountMenuItem.setTitle("Edit Your Account");
+    editAccountMenuItem.setTitle(getMessages().getString("editYourAccount", "Edit Your Account"));
     profileMenu.addItem(editAccountMenuItem);
 
     MenuItem myFilesMenuItem = new MenuItem(getMessages().getString("fileManager", "File Manager"), new MenuButtonCommand() {
       public void execute() {
-        popup.hide();
-        PromptDialogBox dialogBox = new PromptDialogBox(getMessages().getString("fileManager", "File Manager"), "Close", null, null, false, false);
-        // create a new filemanager for this user
-        FileManagerPanel fileManager = new FileManagerPanel(getMessages().getString("fileManager", "File Manager"));
-        dialogBox.setContent(fileManager);
-        dialogBox.center();
+        GWT.runAsync(new RunAsyncCallback() {
+          public void onFailure(Throwable reason) {
+          }
+
+          public void onSuccess() {
+            popup.hide();
+            PromptDialogBox dialogBox = new PromptDialogBox(getMessages().getString("fileManager", "File Manager"), getMessages().getString("close", "Close"),
+                null, null, false, false);
+            // create a new filemanager for this user
+            FileManagerPanel fileManager = new FileManagerPanel(getMessages().getString("fileManager", "File Manager"));
+            dialogBox.setContent(fileManager);
+            dialogBox.center();
+          }
+        });
       }
     });
-    myFilesMenuItem.setTitle("Manage Files");
+    myFilesMenuItem.setTitle(getMessages().getString("manageFiles", "Manage Files"));
     profileMenu.addItem(myFilesMenuItem);
 
     ComboMenuButton menuButton = new ComboMenuButton(getMessages().getString("profile", "Profile"), profileMenu);
@@ -195,18 +207,26 @@ public class BaseApplicationUI extends BaseApplication implements IAuthenticatio
     final ToolbarButton adminLink = new ToolbarButton(getMessages().getString("administration", "Administration"));
     adminLink.addClickHandler(new ClickHandler() {
       public void onClick(final ClickEvent event) {
-        if (adminPanel != null) {
-          adminLink.setText(getMessages().getString("Administration", "Administration"));
-          applicationContentDeck.remove(adminPanel);
-          adminPanel = null;
-          return;
-        }
-        adminLink.setText(getMessages().getString("closeAdministration", "Close Administration"));
-        adminPanel = new AdministratorPanel(getAuthenticatedUser());
-        adminPanel = new AdministratorPanel(getAuthenticatedUser());
-        adminPanel.activate();
-        applicationContentDeck.add(adminPanel);
-        applicationContentDeck.showWidget(applicationContentDeck.getWidgetIndex(adminPanel));
+        GWT.runAsync(new RunAsyncCallback() {
+          public void onFailure(Throwable reason) {
+          }
+
+          public void onSuccess() {
+            adminMode = !adminMode;
+            if (adminPanel == null) {
+              adminPanel = new AdministratorPanel(getAuthenticatedUser());
+              adminLink.setText(getMessages().getString("administration", "Administration"));
+              adminLink.setTitle(getMessages().getString("toggleAdministration", "Toggle Administration"));
+            }
+            if (adminMode) {
+              ((AdministratorPanel) adminPanel).activate();
+              applicationContentDeck.add(adminPanel);
+              applicationContentDeck.showWidget(applicationContentDeck.getWidgetIndex(adminPanel));
+            } else {
+              applicationContentDeck.remove(adminPanel);
+            }
+          }
+        });
       }
     });
     return adminLink;
