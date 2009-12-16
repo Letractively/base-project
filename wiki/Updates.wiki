@@ -1,6 +1,12 @@
 #summary Project News & Updates.
 #labels Featured
 
+= Dec 16, 2009 = 
+
+  * Plenty of fixes / enhancements have gone in since June (check [http://code.google.com/p/base-project/updates/list updates]
+http://domain/page
+  * GWT 2.0 support has been added
+
 = June 3, 2009 =
 
   * Quick fix for use of java.sql call only available with Java 1.6, found 1.5 workaround
