@@ -103,11 +103,11 @@ public class AuthenticationHandler {
         boolean valid = true;
         String validationMessage = "";
         if (username == null || "".equals(username.getText())) {
-          validationMessage += "<BR>" + BaseApplication.getMessages().getString("mustEnterUsername", "You must enter a username.");
+          validationMessage += BaseApplication.getMessages().getString("mustEnterUsername", "You must enter a username.");
           valid = false;
         }
         if (password == null || "".equals(password.getText())) {
-          validationMessage += "<BR>" + BaseApplication.getMessages().getString("mustEnterPassword", "You must enter a password.");
+          validationMessage += (username == null || "".equals(username.getText()))?"<BR>":"" + BaseApplication.getMessages().getString("mustEnterPassword", "You must enter a password.");
           valid = false;
         }
         if (!valid) {
