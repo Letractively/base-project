@@ -5,7 +5,7 @@
 <%@page import="java.io.FileInputStream"%>
 
 <%
-  String applicationName = "base";
+  String applicationName = "baseproject";
 
   // set the BaseSystem classloader for others to enjoy
   // it is likely:  org.apache.jasper.servlet.JasperLoader 
