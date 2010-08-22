@@ -329,7 +329,7 @@ public class ResourceBundle {
   public String getString(String key, String defaultValue, String... parameters) {
     String resource = bundle.get(key);
     if (resource == null) {
-      return defaultValue;
+      resource = defaultValue;
     }
     for (int i = 0; i < parameters.length; i++) {
       resource = resource.replace("{" + i + "}", parameters[i]); //$NON-NLS-1$ //$NON-NLS-2$
