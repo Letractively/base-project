@@ -1,4 +1,4 @@
-<module rename-to="base">
+<module rename-to="baseproject">
 
 	<!-- Inherit the core Web Toolkit stuff.                  -->
 	<inherits name='com.google.gwt.user.User'/>
@@ -11,6 +11,6 @@
 	<stylesheet src="base.css"/>
 
 	<!-- Specify the app entry point class.                   -->
-	<entry-point class='org.damour.base.client.BaseApplication'/>
+	<!-- <entry-point class='org.damour.base.client.BaseApplicationUI'/> -->
 
 </module>
