@@ -15,7 +15,7 @@
 
 	<path id="classpath" >
 		<fileset dir="war/WEB-INF/lib" includes="**/*.jar, **/*.zip" />
-		<fileset dir="../base-project/war/WEB-INF/lib" includes="**/*.jar, **/*.zip" />
+		<fileset dir="${base.project.dir}/war/WEB-INF/lib" includes="**/*.jar, **/*.zip" />
 	</path>
 
 	<!-- ===================================================================
@@ -38,7 +38,7 @@
 	<target name="copy-source" depends="init">
 		<copy todir="dist/source" overwrite="true">
 			<fileset dir="source" includes="**/*" />
-			<fileset dir="../base-project/source" includes="**/*" />
+			<fileset dir="${base.project.dir}/source" includes="**/*" />
 		</copy>
 	</target>
 
@@ -71,13 +71,13 @@
 		</copy>
 		<jar basedir="dist/bin" destfile="dist/${project.name}-${release.major.number}.${release.minor.number}.${release.milestone.number}.jar" />
 		<copy todir="dist/${target.webapp.name}">
-			<fileset dir="../base-project/${gwt.output.dir}" includes="**/*" excludes="WEB-INF/classes/**/*, WEB-INF/lib/**/*"/>
+			<fileset dir="${base.project.dir}/${gwt.output.dir}" includes="**/*" excludes="WEB-INF/classes/**/*, WEB-INF/lib/**/*"/>
 			<fileset dir="${gwt.output.dir}" includes="**/*" excludes="WEB-INF/classes/**/*, WEB-INF/lib/**/*"/>
 		</copy>
 		<unzip dest="dist/${target.webapp.name}/WEB-INF/classes">
 			<fileset dir="dist" includes="${project.name}*.jar" />
 			<fileset dir="war/WEB-INF/lib" includes="*.zip, *.jar" excludes="**/*gwt*incubator*.jar, **/*gwt-dev*.jar, **/*gwt-user.jar, **/*googlemaps*.jar, **/gwtchismes*, **/*colorpicker*" />
-			<fileset dir="../base-project/war/WEB-INF/lib" includes="**/*.zip, **/*.jar" excludes="**/*gwt-dev*.jar, **/*gwt-user.jar, **/*googlemaps*.jar, **/gwtchismes*, **/*colorpicker*" />
+			<fileset dir="${base.project.dir}/war/WEB-INF/lib" includes="**/*.zip, **/*.jar" excludes="**/*gwt-dev*.jar, **/*gwt-user.jar, **/*googlemaps*.jar, **/gwtchismes*, **/*colorpicker*" />
 		</unzip>
 		<delete file="dist/${project.name}.war" />
 		<zip destfile="dist/${project.name}.war" basedir="dist/${target.webapp.name}" />
