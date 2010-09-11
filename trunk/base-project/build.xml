@@ -1,7 +1,7 @@
 <!-- ======================================================================
      description: main build file
      ====================================================================== -->
-<project name="base-project" default="compile-gwt">
+<project name="base-project" default="dist">
 	<description>build process..</description>
 
 	<property file="build_override.properties" />
@@ -22,7 +22,6 @@
        =================================================================== -->
 	<target name="clean" depends="">
 		<delete dir="dist" />
-		<delete dir="${gwt.output.dir}/${gwt.app.name}" />
 	</target>
 
 	<!-- ===================================================================
@@ -30,57 +29,27 @@
        =================================================================== -->
 	<target name="init">
 		<mkdir dir="dist" />
-		<mkdir dir="dist/source" />
 		<mkdir dir="dist/bin" />
 	</target>
 
 	<target name="copy-source" depends="init">
-		<copy todir="dist/source" overwrite="true">
+		<copy todir="dist/bin" overwrite="true">
 			<fileset dir="source" includes="**/*" />
 		</copy>
 	</target>
 
 	<target name="compile" depends="copy-source">
 		<javac destdir="dist/bin" debug="${debug}" optimize="${optimize}" deprecation="${deprecation}" compiler="modern" source="1.5" target="1.5" fork="true">
-			<src path="dist/source" />
+			<src path="source" />
 			<classpath refid="classpath" />
 		</javac>
 	</target>
 
-	<target name="compile-gwt" depends="compile">
-		<java classname="com.google.gwt.dev.Compiler" fork="true" maxmemory="1024M">
-			<classpath>
-				<path refid="classpath" />
-				<pathelement location="dist/source" />
-			</classpath>
-			<arg value="-localWorkers" />
-			<arg value="4" />
-			<arg value="${gwt.app}" />
-		</java>
-	</target>
-
-	<target name="clean-dist" depends="clean">
-		<delete dir="dist" />
-	</target>
-
 	<target name="dist-nodeps" depends="compile">
-		<copy todir="dist/bin" overwrite="true">
-			<fileset dir="dist/source" includes="**/*" />
-		</copy>
 		<jar basedir="dist/bin" destfile="dist/${project.name}-${release.major.number}.${release.minor.number}.${release.milestone.number}.jar" />
-		<copy todir="dist/${target.webapp.name}">
-			<fileset dir="${gwt.output.dir}" includes="**/*" excludes="WEB-INF/classes/**/*, WEB-INF/lib/**/*"/>
-		</copy>
-		<unzip dest="dist/${target.webapp.name}/WEB-INF/classes">
-			<fileset dir="dist" includes="${project.name}*.jar" />
-			<fileset dir="war/WEB-INF/lib" includes="*.zip, *.jar" excludes="**/*gwt*incubator*.jar, **/*gwt-dev*.jar, **/*gwt-user.jar, **/*googlemaps*.jar, **/gwtchismes*, **/*colorpicker*" />
-		</unzip>
-		<delete file="dist/${project.name}.war" />
-		<zip destfile="dist/${project.name}.war" basedir="dist/${target.webapp.name}" />
-		<delete dir="dist/${target.webapp.name}" />
 	</target>
 
-	<target name="dist" depends="clean, compile-gwt, dist-nodeps">
+	<target name="dist" depends="clean, dist-nodeps">
 	</target>
 
 </project>
