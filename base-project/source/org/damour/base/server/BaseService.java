@@ -1053,6 +1053,13 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     }
   }
 
+  public List<PermissibleObject> savePermissibleObjects(List<PermissibleObject> permissibleObjects) {
+    for (PermissibleObject object: permissibleObjects) {
+      savePermissibleObject(object);
+    }
+    return permissibleObjects;
+  }
+  
   public void deletePermissibleObject(PermissibleObject permissibleObject) throws SimpleMessageException {
     if (permissibleObject == null) {
       throw new SimpleMessageException("Object not supplied.");

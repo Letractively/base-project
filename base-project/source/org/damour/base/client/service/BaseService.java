@@ -65,6 +65,7 @@ public interface BaseService extends RemoteService {
   public RepositoryTreeNode getRepositoryTree() throws SimpleMessageException;
   public PermissibleObjectTreeNode getPermissibleObjectTree(PermissibleObject parent) throws SimpleMessageException;
   public PermissibleObject savePermissibleObject(PermissibleObject permissibleObject) throws SimpleMessageException;
+  public List<PermissibleObject> savePermissibleObjects(List<PermissibleObject> permissibleObjects) throws SimpleMessageException;
   public void deletePermissibleObject(PermissibleObject permissibleObject) throws SimpleMessageException;
   public void deletePermissibleObjects(Set<PermissibleObject> permissibleObjects) throws SimpleMessageException;
   public List<PermissibleObject> getPermissibleObjects(PermissibleObject parent, String objectType) throws SimpleMessageException;

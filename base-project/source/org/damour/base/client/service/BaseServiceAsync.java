@@ -63,6 +63,7 @@ public interface BaseServiceAsync {
   public void getRepositoryTree(AsyncCallback<RepositoryTreeNode> callback);
   public void getPermissibleObjectTree(PermissibleObject parent, AsyncCallback<PermissibleObjectTreeNode> callback);
   public void savePermissibleObject(PermissibleObject permissibleObject, AsyncCallback<PermissibleObject> callback);
+  public void savePermissibleObjects(List<PermissibleObject> permissibleObjects, AsyncCallback<List<PermissibleObject>> callback);
   public void deletePermissibleObject(PermissibleObject permissibleObject, AsyncCallback<Void> callback);
   public void deletePermissibleObjects(Set<PermissibleObject> permissibleObjects, AsyncCallback<Void> callback);
   public void getPermissibleObjects(PermissibleObject parent, String objectType, AsyncCallback<List<PermissibleObject>> callback);
