@@ -2,7 +2,7 @@ package org.damour.base.client.objects;
 
 import java.io.Serializable;
 
-public class PermissibleObject implements Serializable, IHibernateFriendly {
+public class PermissibleObject implements Serializable, IHibernateFriendly, Comparable {
 
   public Long id;
   public User owner;
@@ -280,6 +280,14 @@ public class PermissibleObject implements Serializable, IHibernateFriendly {
 
   public String getFieldType(String fieldName) {
     return null;
+  }
+
+  public int compareTo(Object o) {
+    if (o instanceof PermissibleObject == false) {
+      return 0;
+    }
+    PermissibleObject other = (PermissibleObject)o;
+    return this.id.compareTo(other.getId());
   }
 
 }

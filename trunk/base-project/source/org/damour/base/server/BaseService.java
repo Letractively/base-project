@@ -27,6 +27,7 @@ import org.damour.base.client.objects.PendingGroupMembership;
 import org.damour.base.client.objects.PermissibleObject;
 import org.damour.base.client.objects.PermissibleObjectTreeNode;
 import org.damour.base.client.objects.Permission;
+import org.damour.base.client.objects.Permission.PERM;
 import org.damour.base.client.objects.RepositoryTreeNode;
 import org.damour.base.client.objects.Tag;
 import org.damour.base.client.objects.TagMembership;
@@ -34,7 +35,6 @@ import org.damour.base.client.objects.User;
 import org.damour.base.client.objects.UserAdvisory;
 import org.damour.base.client.objects.UserGroup;
 import org.damour.base.client.objects.UserRating;
-import org.damour.base.client.objects.Permission.PERM;
 import org.damour.base.client.utils.StringUtils;
 import org.damour.base.server.gwt.RemoteServiceServlet;
 import org.damour.base.server.hibernate.HibernateUtil;
@@ -1014,8 +1014,6 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
 
           permissibleObject = hibNewObject;
         }
-      } else {
-        System.out.println("it was null");
       }
 
       List<Field> fields = ReflectionCache.getFields(permissibleObject.getClass());
@@ -1141,6 +1139,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     try {
       User authUser = getAuthenticatedUser(session.get());
       PermissibleObjectTreeNode root = new PermissibleObjectTreeNode();
+      parent = getPermissibleObject(parent.getId());
       RepositoryHelper.buildPermissibleObjectTreeNode(session.get(), authUser, root, parent);
       return root;
     } catch (Throwable t) {

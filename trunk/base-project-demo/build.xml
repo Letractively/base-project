@@ -64,8 +64,11 @@
 		<delete dir="dist" />
 	</target>
 
+	
 	<target name="dist" depends="clean, compile-gwt">
-		<jar basedir="dist/bin" destfile="dist/${project.name}-${release.major.number}.${release.minor.number}.${release.milestone.number}.jar" />
+		<jar basedir="dist/bin" destfile="dist/${project.name}-${release.major.number}.${release.minor.number}.${release.milestone.number}-local.jar" />
+		<copy todir="dist/bin" file="build-res/settings_override.properties" />
+		<jar basedir="dist/bin" destfile="dist/${project.name}-${release.major.number}.${release.minor.number}.${release.milestone.number}-custom.jar" />
 		<copy todir="dist/${target.webapp.name}">
 			<fileset dir="${base.project.dir}/${gwt.output.dir}" includes="**/*" excludes="WEB-INF/classes/**/*, WEB-INF/lib/**/*"/>
 			<fileset dir="${gwt.output.dir}" includes="**/*" excludes="WEB-INF/classes/**/*, WEB-INF/lib/**/*"/>
@@ -80,17 +83,33 @@
 			<fileset file="build-res/apache-tomcat-${tomcat.version}.zip" />
 		</unzip>
 
-		<delete file="dist/${project.name}.war" />
-		<zip destfile="dist/${project.name}.war" basedir="dist/${target.webapp.name}" />
+		<zip destfile="dist/${project.name}-local.war" basedir="dist/${target.webapp.name}" />
+		<unzip dest="dist/apache-tomcat-${tomcat.version}/webapps/${target.webapp.name}">
+			<fileset file="dist/${project.name}-local.war"/>
+		</unzip>		
 
-		<delete dir="dist/apache-tomcat-${tomcat.version}/webapps/${target.webapp.name}" />
-		<move todir="dist/apache-tomcat-${tomcat.version}/webapps/${target.webapp.name}">
-			<fileset dir="dist/${target.webapp.name}"/>
-		</move>		
-
-		<zip destfile="dist/${project.name}-tomcat.zip">
-		  <zipfileset prefix="${project.name}-tomcat" dir="dist/apache-tomcat-${tomcat.version}"/>
+		<zip destfile="dist/${project.name}-tomcat-local.zip">
+		  <zipfileset prefix="${project.name}-tomcat-local" dir="dist/apache-tomcat-${tomcat.version}"/>
 		</zip>
+		
+
+		<copy overwrite="true" todir="dist/${target.webapp.name}/WEB-INF/classes" file="build-res/settings_override.properties" />
+		<zip destfile="dist/${project.name}-custom.war" basedir="dist/${target.webapp.name}" />
+		<delete dir="dist/apache-tomcat-${tomcat.version}" />
+		<unzip dest="dist">
+			<fileset file="build-res/apache-tomcat-${tomcat.version}.zip" />
+		</unzip>
+
+		<unzip dest="dist/apache-tomcat-${tomcat.version}/webapps/${target.webapp.name}">
+			<fileset file="dist/${project.name}-custom.war"/>
+		</unzip>		
+		
+		<zip destfile="dist/${project.name}-tomcat-custom.zip">
+		  <zipfileset prefix="${project.name}-tomcat" dir="dist/apache-tomcat-${tomcat.version}"/>
+		</zip>		
+		
+		<copy todir="dist/bin" file="build-res/settings_override.properties" />
+
 		
 	</target>
 

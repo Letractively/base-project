@@ -27,6 +27,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DeckPanel;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -48,7 +49,6 @@ public class BaseApplicationUI extends BaseApplication implements IAuthenticatio
 
   private User authenticatedUser = null;
 
-  private boolean adminMode = false;
   private Widget adminPanel;
 
   public void loadModule() {
@@ -138,9 +138,8 @@ public class BaseApplicationUI extends BaseApplication implements IAuthenticatio
   public Widget buildProfileButton(boolean enabled) {
 
     if ("true".equals(getSettings().getString("showProfileAsButton", "false"))) {
-      ToolbarButton profileButton = new ToolbarButton(getMessages().getString("profile", "Profile"));
-      profileButton.addClickHandler(new ClickHandler() {
-        public void onClick(ClickEvent event) {
+      ToolbarButton profileButton = new ToolbarButton(getMessages().getString("profile", "Profile"), new Command() {
+        public void execute() {
           // it is possible the user is 'stale', but HIGHLY unlikely
           AuthenticationHandler.getInstance().showEditAccountDialog(getAuthenticatedUser());
         }
@@ -212,19 +211,14 @@ public class BaseApplicationUI extends BaseApplication implements IAuthenticatio
           }
 
           public void onSuccess() {
-            adminMode = !adminMode;
             if (adminPanel == null) {
               adminPanel = new AdministratorPanel(getAuthenticatedUser());
+              applicationContentDeck.add(adminPanel);
               adminLink.setText(getMessages().getString("administration", "Administration"));
               adminLink.setTitle(getMessages().getString("toggleAdministration", "Toggle Administration"));
             }
-            if (adminMode) {
-              ((AdministratorPanel) adminPanel).activate();
-              applicationContentDeck.add(adminPanel);
-              applicationContentDeck.showWidget(applicationContentDeck.getWidgetIndex(adminPanel));
-            } else {
-              applicationContentDeck.remove(adminPanel);
-            }
+            ((AdministratorPanel) adminPanel).activate();
+            applicationContentDeck.showWidget(applicationContentDeck.getWidgetIndex(adminPanel));
           }
         });
       }
@@ -382,6 +376,7 @@ public class BaseApplicationUI extends BaseApplication implements IAuthenticatio
 
   public void loggedOut() {
     authenticatedUser = null;
+    adminPanel = null;
     buildApplicationToolBar();
   }
 
