@@ -982,3 +982,35 @@ td.datePickerMonth {
   background-color: #DDDDDD;
   cursor: pointer;
 }
+
+.password-strength-empty {
+  color: black;
+  background-color: white;
+  border: 1px solid black;
+  cursor: pointer;
+  cursor: hand;  
+}
+
+.password-strength-strong {
+  color: black;
+  background-color: #10ff10;
+  border: 1px solid black;
+  cursor: pointer;
+  cursor: hand;
+}
+
+.password-strength-moderate {
+  color: black;
+  background-color: yellow;
+  border: 1px solid black;
+  cursor: pointer;
+  cursor: hand;  
+}
+
+.password-strength-weak {
+  color: white;
+  background-color: red;
+  border: 1px solid black;
+  cursor: pointer;
+  cursor: hand;
+}
