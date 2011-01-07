@@ -271,8 +271,6 @@ public class AuthenticationHandler {
 
     final FlexTable contentPanel = new FlexTable();
     int row = 0;
-    contentPanel.setWidget(row, 0, new HTML("&nbsp;"));
-    contentPanel.getFlexCellFormatter().setColSpan(row++, 0, 2);
     contentPanel.setWidget(row, 0, usernameLabel);
     contentPanel.setWidget(row, 1, usernameTextBox);
     contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
@@ -447,8 +445,6 @@ public class AuthenticationHandler {
 
     final FlexTable contentPanel = new FlexTable();
     int row = 0;
-    contentPanel.setWidget(row, 0, new HTML("&nbsp;"));
-    contentPanel.getFlexCellFormatter().setColSpan(row++, 0, 2);
     contentPanel.setWidget(row, 0, usernameLabel);
     contentPanel.setWidget(row, 1, usernameTextBox);
     usernameTextBox.setText(user.getUsername());
@@ -509,21 +505,31 @@ public class AuthenticationHandler {
         String validationMessage = "";
 
         if (passwordTextBox.getText() != null && !"".equals(passwordTextBox.getText()) && !passwordTextBox.getText().equals(passwordConfirm.getText())) {
-          validationMessage += "<BR>"
-              + BaseApplication.getMessages().getString("mustEnterMatchingPasswords", "You must enter a matching password and confirmation password.");
+          validationMessage += BaseApplication.getMessages().getString("mustEnterMatchingPasswords", "You must enter a matching password and confirmation password.");
+          validationMessage += "<BR>";
           validationFailed = true;
         }
         if (emailAddress.getText() == null || "".equals(emailAddress.getText()) || emailAddress.getText().indexOf("@") == -1) {
-          validationMessage += "<BR>" + BaseApplication.getMessages().getString("mustEnterValidEmail", "You must enter a valid email address.");
+          validationMessage += BaseApplication.getMessages().getString("mustEnterValidEmail", "You must enter a valid email address.");
+          validationMessage += "<BR>";
           validationFailed = true;
         }
         if (dateBox.getValue() == null) {
-          validationMessage += "<BR>" + BaseApplication.getMessages().getString("mustEnterBirthdate", "You must enter your birthdate.");
+          validationMessage += BaseApplication.getMessages().getString("mustEnterBirthdate", "You must enter your birthdate.");
+          validationMessage += "<BR>";
           validationFailed = true;
         }
         if (validationFailed) {
           final MessageDialogBox dialog = new MessageDialogBox(BaseApplication.getMessages().getString("validationFailed", "Validation Failed"),
               validationMessage, true, true, true);
+          dialog.setCallback(new IDialogCallback() {
+            public void okPressed() {
+              accountDialog.center();
+            }
+
+            public void cancelPressed() {
+            }
+          });
           dialog.center();
           return;
         }
@@ -543,7 +549,7 @@ public class AuthenticationHandler {
     accountDialog.setContent(contentPanel);
     accountDialog.setText(BaseApplication.getMessages().getString("editAccountSettings", "Edit Account Settings"));
     accountDialog.center();
-    usernameTextBox.setFocus(true);
+    passwordTextBox.setFocus(true);
   }
 
   public void login(final String username, final String password) {

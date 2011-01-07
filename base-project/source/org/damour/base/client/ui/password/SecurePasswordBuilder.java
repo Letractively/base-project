@@ -98,109 +98,7 @@ public class SecurePasswordBuilder {
     generatePasswordButton.addClickHandler(new ClickHandler() {
 
       public void onClick(ClickEvent event) {
-        String generatedPassword = "";
-        do {
-          generatedPassword = "";
-          // get first digit
-          if (startWithCombo.getSelectedIndex() == 0) {
-            // start with uppercase
-            generatedPassword += getRandomCharacter(true);
-          } else if (startWithCombo.getSelectedIndex() == 1) {
-            // start with lower
-            generatedPassword += getRandomCharacter(false);
-          } else if (startWithCombo.getSelectedIndex() == 2) {
-            // start with number
-            generatedPassword += getRandomNumber();
-          } else if (startWithCombo.getSelectedIndex() == 3) {
-            // start with symbol
-            generatedPassword += getRandomSymbol();
-          }
-
-          // build the meat of the password
-          int length = Integer.parseInt(lengthCombo.getValue(lengthCombo.getSelectedIndex()));
-          for (int i = 1; i < length - 1; i++) {
-            if (useLettersCheckBox.getValue() && useNumbersCheckBox.getValue() && useSymbolsCheckBox.getValue()) {
-              int random = Random.nextInt(3);
-              if (random == 0) {
-                // letter
-                boolean useUpperCase = upperCase.getValue();
-                if (lowerCase.getValue()) {
-                  useUpperCase = false;
-                } else if (mixedCase.getValue()) {
-                  useUpperCase = Random.nextBoolean();
-                }
-                generatedPassword += getRandomCharacter(useUpperCase);
-              } else if (random == 1) {
-                // number
-                generatedPassword += getRandomNumber();
-              } else if (random == 2) {
-                // symbol
-                generatedPassword += getRandomSymbol();
-              }
-            } else if (useLettersCheckBox.getValue() && useNumbersCheckBox.getValue()) {
-              boolean useLetters = Random.nextBoolean();
-              if (useLetters) {
-                boolean useUpperCase = upperCase.getValue();
-                if (lowerCase.getValue()) {
-                  useUpperCase = false;
-                } else if (mixedCase.getValue()) {
-                  useUpperCase = Random.nextBoolean();
-                }
-                generatedPassword += getRandomCharacter(useUpperCase);
-              } else {
-                generatedPassword += getRandomNumber();
-              }
-            } else if (useLettersCheckBox.getValue() && useSymbolsCheckBox.getValue()) {
-              boolean useLetters = Random.nextBoolean();
-              if (useLetters) {
-                boolean useUpperCase = upperCase.getValue();
-                if (lowerCase.getValue()) {
-                  useUpperCase = false;
-                } else if (mixedCase.getValue()) {
-                  useUpperCase = Random.nextBoolean();
-                }
-                generatedPassword += getRandomCharacter(useUpperCase);
-              } else {
-                generatedPassword += getRandomSymbol();
-              }
-            } else if (useNumbersCheckBox.getValue() && useSymbolsCheckBox.getValue()) {
-              boolean useNumbers = Random.nextBoolean();
-              if (useNumbers) {
-                generatedPassword += getRandomNumber();
-              } else {
-                generatedPassword += getRandomSymbol();
-              }
-            } else if (useLettersCheckBox.getValue()) {
-              boolean useUpperCase = upperCase.getValue();
-              if (lowerCase.getValue()) {
-                useUpperCase = false;
-              } else if (mixedCase.getValue()) {
-                useUpperCase = Random.nextBoolean();
-              }
-              generatedPassword += getRandomCharacter(useUpperCase);
-            } else if (useNumbersCheckBox.getValue()) {
-              generatedPassword += getRandomNumber();
-            } else if (useSymbolsCheckBox.getValue()) {
-              generatedPassword += getRandomSymbol();
-            }
-          }
-
-          // get last digit
-          if (endWithCombo.getSelectedIndex() == 0) {
-            // start with uppercase
-            generatedPassword += getRandomCharacter(true);
-          } else if (endWithCombo.getSelectedIndex() == 1) {
-            // start with lower
-            generatedPassword += getRandomCharacter(false);
-          } else if (endWithCombo.getSelectedIndex() == 2) {
-            // start with number
-            generatedPassword += getRandomNumber();
-          } else if (endWithCombo.getSelectedIndex() == 3) {
-            // start with symbol
-            generatedPassword += getRandomSymbol();
-          }
-        } while (!accept(generatedPassword, dontUseTextBox.getText()));
-        generatedPasswordTextBox.setText(generatedPassword);
+        generatedPasswordTextBox.setText(generatePassword());
       }
 
     });
@@ -218,6 +116,112 @@ public class SecurePasswordBuilder {
 
     RootPanel rp = RootPanel.get("content");
     rp.add(applicationPanel);
+  }
+
+  public String generatePassword() {
+    String generatedPassword = "";
+    do {
+      generatedPassword = "";
+      // get first digit
+      if (startWithCombo.getSelectedIndex() == 0) {
+        // start with uppercase
+        generatedPassword += getRandomCharacter(true);
+      } else if (startWithCombo.getSelectedIndex() == 1) {
+        // start with lower
+        generatedPassword += getRandomCharacter(false);
+      } else if (startWithCombo.getSelectedIndex() == 2) {
+        // start with number
+        generatedPassword += getRandomNumber();
+      } else if (startWithCombo.getSelectedIndex() == 3) {
+        // start with symbol
+        generatedPassword += getRandomSymbol();
+      }
+
+      // build the meat of the password
+      int length = Integer.parseInt(lengthCombo.getValue(lengthCombo.getSelectedIndex()));
+      for (int i = 1; i < length - 1; i++) {
+        if (useLettersCheckBox.getValue() && useNumbersCheckBox.getValue() && useSymbolsCheckBox.getValue()) {
+          int random = Random.nextInt(3);
+          if (random == 0) {
+            // letter
+            boolean useUpperCase = upperCase.getValue();
+            if (lowerCase.getValue()) {
+              useUpperCase = false;
+            } else if (mixedCase.getValue()) {
+              useUpperCase = Random.nextBoolean();
+            }
+            generatedPassword += getRandomCharacter(useUpperCase);
+          } else if (random == 1) {
+            // number
+            generatedPassword += getRandomNumber();
+          } else if (random == 2) {
+            // symbol
+            generatedPassword += getRandomSymbol();
+          }
+        } else if (useLettersCheckBox.getValue() && useNumbersCheckBox.getValue()) {
+          boolean useLetters = Random.nextBoolean();
+          if (useLetters) {
+            boolean useUpperCase = upperCase.getValue();
+            if (lowerCase.getValue()) {
+              useUpperCase = false;
+            } else if (mixedCase.getValue()) {
+              useUpperCase = Random.nextBoolean();
+            }
+            generatedPassword += getRandomCharacter(useUpperCase);
+          } else {
+            generatedPassword += getRandomNumber();
+          }
+        } else if (useLettersCheckBox.getValue() && useSymbolsCheckBox.getValue()) {
+          boolean useLetters = Random.nextBoolean();
+          if (useLetters) {
+            boolean useUpperCase = upperCase.getValue();
+            if (lowerCase.getValue()) {
+              useUpperCase = false;
+            } else if (mixedCase.getValue()) {
+              useUpperCase = Random.nextBoolean();
+            }
+            generatedPassword += getRandomCharacter(useUpperCase);
+          } else {
+            generatedPassword += getRandomSymbol();
+          }
+        } else if (useNumbersCheckBox.getValue() && useSymbolsCheckBox.getValue()) {
+          boolean useNumbers = Random.nextBoolean();
+          if (useNumbers) {
+            generatedPassword += getRandomNumber();
+          } else {
+            generatedPassword += getRandomSymbol();
+          }
+        } else if (useLettersCheckBox.getValue()) {
+          boolean useUpperCase = upperCase.getValue();
+          if (lowerCase.getValue()) {
+            useUpperCase = false;
+          } else if (mixedCase.getValue()) {
+            useUpperCase = Random.nextBoolean();
+          }
+          generatedPassword += getRandomCharacter(useUpperCase);
+        } else if (useNumbersCheckBox.getValue()) {
+          generatedPassword += getRandomNumber();
+        } else if (useSymbolsCheckBox.getValue()) {
+          generatedPassword += getRandomSymbol();
+        }
+      }
+
+      // get last digit
+      if (endWithCombo.getSelectedIndex() == 0) {
+        // start with uppercase
+        generatedPassword += getRandomCharacter(true);
+      } else if (endWithCombo.getSelectedIndex() == 1) {
+        // start with lower
+        generatedPassword += getRandomCharacter(false);
+      } else if (endWithCombo.getSelectedIndex() == 2) {
+        // start with number
+        generatedPassword += getRandomNumber();
+      } else if (endWithCombo.getSelectedIndex() == 3) {
+        // start with symbol
+        generatedPassword += getRandomSymbol();
+      }
+    } while (!accept(generatedPassword, dontUseTextBox.getText()));
+    return generatedPassword;
   }
 
   public boolean accept(String password, String dontUse) {
