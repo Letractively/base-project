@@ -1,14 +1,14 @@
 package org.damour.base.client.ui.password;
 
+import org.damour.base.client.ui.dialogs.MessageDialogBox;
+
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextBox;
 
 public class SecurePasswordVerification extends HorizontalPanel {
@@ -91,7 +91,11 @@ public class SecurePasswordVerification extends HorizontalPanel {
 
       public void onClick(ClickEvent event) {
         // bring up dialog to generate strong password
-        Window.alert("click");
+        SecurePasswordBuilder builder = new SecurePasswordBuilder();
+        String password = builder.generatePassword();
+        MessageDialogBox.alert("Generated Password", password);
+        textBox.setText(password);
+        verifyPasswordStrength(textBox.getText());
       }
     });
     strengthMeterSegment1.setTitle("Click to generate random secure password");
