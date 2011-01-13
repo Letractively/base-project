@@ -75,6 +75,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
 
   protected void onBeforeRequestDeserialized(String serializedRequest) {
     session.set(HibernateUtil.getInstance().getSession());
+    BaseSystem.getDomainName(getThreadLocalRequest());
     Logger.log(serializedRequest);
   }
 
@@ -93,10 +94,6 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     }
     Logger.log(e);
     super.doUnexpectedFailure(e);
-  }
-
-  protected String getDomainName() {
-    return BaseSystem.getDomainName(getThreadLocalRequest());
   }
 
   public User login(HttpServletRequest request, HttpServletResponse response, String username, String password) {
@@ -245,11 +242,12 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       if (dbUser == null) {
         // new account, it did NOT exist
         // validate captcha first
-        if (captchaText != null && !"".equals(captchaText)) {
-          Captcha captcha = (Captcha) getThreadLocalRequest().getSession().getAttribute("captcha");
-          if (captcha != null && !captcha.isValid(captchaText)) {
-            throw new SimpleMessageException("Could not create account: validation failed.");
-          }
+        if (StringUtils.isEmpty(captchaText)) {
+          captchaText = "INVALID!";
+        }
+        Captcha captcha = (Captcha) getThreadLocalRequest().getSession().getAttribute("captcha");
+        if (captcha != null && !captcha.isValid(captchaText)) {
+          throw new SimpleMessageException("CAPTCHA validation failed");
         }
 
         User newUser = new User();
@@ -295,16 +293,18 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
           // the validation code in the URL will simply be a hash of their email address
           MD5 md5 = new MD5();
           md5.Update(newUser.getEmail());
+          md5.Update(newUser.getPasswordHash());
 
           String url = getThreadLocalRequest().getScheme() + "://" + getThreadLocalRequest().getServerName() + "/?u=" + newUser.getUsername() + "&v="
               + md5.asHex();
 
-          String text = "Thank you for signing up with " + getDomainName() + ".<BR><BR>Please confirm your account by clicking the following link:<BR><BR>";
+          String text = "Thank you for signing up with " + BaseSystem.getDomainName()
+              + ".<BR><BR>Please confirm your account by clicking the following link:<BR><BR>";
           text += "<A HREF=\"";
           text += url;
           text += "\">" + url + "</A>";
-          EmailHelper.sendMessage(BaseSystem.getSmtpHost(), "admin@" + getDomainName(), getDomainName() + " validator", newUser.getEmail(), getDomainName()
-              + " account validation", text);
+          BaseSystem.getEmailService().sendMessage(BaseSystem.getSmtpHost(), BaseSystem.getAdminEmailAddress(), BaseSystem.getDomainName() + " validator",
+              newUser.getEmail(), BaseSystem.getDomainName() + " account validation", text);
         }
         return newUser;
       } else if (authUser != null && (authUser.isAdministrator() || authUser.getId().equals(dbUser.getId()))) {
@@ -352,7 +352,11 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         tx.rollback();
       } catch (Exception exx) {
       }
-      throw new SimpleMessageException(ex.getCause().getMessage());
+      if (ex.getCause() != null) {
+        throw new SimpleMessageException(ex.getCause().getMessage());
+      } else {
+        throw new SimpleMessageException(ex.getMessage());
+      }
     }
   }
 
@@ -461,9 +465,9 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         session.get().save(groupMembership);
         tx.commit();
         // send email to group owner
-        EmailHelper.sendMessage(BaseSystem.getSmtpHost(), "admin@" + getDomainName(), "admin@" + getDomainName(), group.getOwner().getEmail(),
-            "Group join request from " + user.getUsername(), "[" + getDomainName() + "] " + user.getUsername()
-                + " has requested permission to join your group " + group.getName());
+        BaseSystem.getEmailService().sendMessage(BaseSystem.getSmtpHost(), BaseSystem.getAdminEmailAddress(), BaseSystem.getAdminEmailAddress(),
+            group.getOwner().getEmail(), "Group join request from " + user.getUsername(),
+            "[" + BaseSystem.getDomainName() + "] " + user.getUsername() + " has requested permission to join your group " + group.getName());
         throw new SimpleMessageException("Could not join group, request submitted to group owner.");
       }
       throw new SimpleMessageException("Could not join group.");
@@ -1052,12 +1056,12 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
   }
 
   public List<PermissibleObject> savePermissibleObjects(List<PermissibleObject> permissibleObjects) {
-    for (PermissibleObject object: permissibleObjects) {
+    for (PermissibleObject object : permissibleObjects) {
       savePermissibleObject(object);
     }
     return permissibleObjects;
   }
-  
+
   public void deletePermissibleObject(PermissibleObject permissibleObject) throws SimpleMessageException {
     if (permissibleObject == null) {
       throw new SimpleMessageException("Object not supplied.");
@@ -1384,7 +1388,8 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     return permissibleObject;
   }
 
-  public Page<PermissibleObject> getPage(PermissibleObject parent, String pageClassType, String sortField, boolean sortDescending, int pageNumber, int pageSize) throws SimpleMessageException {
+  public Page<PermissibleObject> getPage(PermissibleObject parent, String pageClassType, String sortField, boolean sortDescending, int pageNumber, int pageSize)
+      throws SimpleMessageException {
     User authUser = getAuthenticatedUser(session.get());
     try {
       Class<?> clazz = Class.forName(pageClassType);
@@ -1394,7 +1399,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       throw new SimpleMessageException(t.getMessage());
     }
   }
-  
+
   public PageInfo getPageInfo(PermissibleObject parent, String pageClassType, int pageSize) throws SimpleMessageException {
     try {
       User authUser = getAuthenticatedUser(session.get());
@@ -1405,7 +1410,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       throw new SimpleMessageException(t.getMessage());
     }
   }
-  
+
   public FileUploadStatus getFileUploadStatus() throws SimpleMessageException {
     User authUser = getAuthenticatedUser(session.get());
     if (authUser == null) {
@@ -1423,12 +1428,13 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     }
   }
 
-  public List<PermissibleObject> searchPermissibleObjects(PermissibleObject parent, String query, String sortField, boolean sortDescending, String searchObjectType, boolean searchNames,
-      boolean searchDescriptions, boolean searchKeywords, boolean useExactPhrase) throws SimpleMessageException {
+  public List<PermissibleObject> searchPermissibleObjects(PermissibleObject parent, String query, String sortField, boolean sortDescending,
+      String searchObjectType, boolean searchNames, boolean searchDescriptions, boolean searchKeywords, boolean useExactPhrase) throws SimpleMessageException {
     // return all permissible objects which match the name/description
     try {
       Class<?> clazz = Class.forName(searchObjectType);
-      return PermissibleObjectHelper.search(session.get(), clazz, query, sortField, sortDescending, searchNames, searchDescriptions, searchKeywords, useExactPhrase);
+      return PermissibleObjectHelper.search(session.get(), clazz, query, sortField, sortDescending, searchNames, searchDescriptions, searchKeywords,
+          useExactPhrase);
     } catch (Throwable t) {
       throw new SimpleMessageException(t.getMessage());
     }
@@ -1615,8 +1621,8 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     text += "Company: " + company + "<BR>";
     text += "Phone: " + phone + "<BR>";
     text += "Comments: " + comments + "<BR>";
-    return EmailHelper.sendMessage(BaseSystem.getSmtpHost(), "admin@" + getDomainName(), contactName, "admin@" + getDomainName(), contactName
-        + " is interested in advertising on " + getDomainName(), text);
+    return BaseSystem.getEmailService().sendMessage(BaseSystem.getSmtpHost(), BaseSystem.getAdminEmailAddress(), contactName,
+        BaseSystem.getAdminEmailAddress(), contactName + " is interested in advertising on " + BaseSystem.getDomainName(), text);
   }
 
   public Boolean submitFeedback(String contactName, String email, String phone, String comments) throws SimpleMessageException {
@@ -1624,8 +1630,8 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     text += "E-Mail: " + email + "<BR>";
     text += "Phone: " + phone + "<BR>";
     text += "Comments: " + comments + "<BR>";
-    return EmailHelper.sendMessage(BaseSystem.getSmtpHost(), "admin@" + getDomainName(), contactName, "admin@" + getDomainName(), contactName
-        + " has submitted feedback for " + getDomainName(), text);
+    return BaseSystem.getEmailService().sendMessage(BaseSystem.getSmtpHost(), BaseSystem.getAdminEmailAddress(), contactName,
+        BaseSystem.getAdminEmailAddress(), contactName + " has submitted feedback for " + BaseSystem.getDomainName(), text);
   }
 
   public User submitAccountValidation(String username, String validationCode) throws SimpleMessageException {
@@ -1635,6 +1641,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       if (user != null && !user.isValidated()) {
         MD5 md5 = new MD5();
         md5.Update(user.getEmail());
+        md5.Update(user.getPasswordHash());
         if (validationCode.equals(md5.asHex())) {
           // validation successful
           user.setValidated(true);
