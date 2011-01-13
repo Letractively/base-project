@@ -39,10 +39,10 @@ public class BaseSystem {
     if (!isDomainNameSet) {
       isDomainNameSet = true;
       domainName = request.getServerName();
-      if (domainName.lastIndexOf(".") > domainName.indexOf(".")) {
-        // remove subdomain
-        domainName = domainName.substring(domainName.indexOf(".") + 1);
-      }
+      // if (domainName.lastIndexOf(".") > domainName.indexOf(".")) {
+      // // remove subdomain
+      // domainName = domainName.substring(domainName.indexOf(".") + 1);
+      // }
     }
     return domainName;
   }
@@ -83,12 +83,34 @@ public class BaseSystem {
     return "true".equalsIgnoreCase(getSettings().getProperty("requireAccountValidation"));
   }
 
+  private static IEmailService emailService;
+
+  public static IEmailService getEmailService() {
+    if (emailService == null) {
+      try {
+        emailService = (IEmailService) Class.forName(getSettings().getProperty("IEmailServiceImpl")).newInstance();
+      } catch (Throwable t) {
+        emailService = new EmailHelper();
+        Logger.log(t);
+      }
+    }
+    return emailService;
+  }
+
   public static String getSmtpHost() {
     String smtpHost = getSettings().getProperty("smtpHost");
     if (StringUtils.isEmpty(smtpHost)) {
       smtpHost = DEFAULT_SMTP_HOST;
     }
     return smtpHost;
+  }
+
+  public static String getAdminEmailAddress() {
+    String adminEmailAddress = getSettings().getProperty("adminEmailAddress");
+    if (StringUtils.isEmpty(adminEmailAddress)) {
+      adminEmailAddress = "admin@" + getDomainName();
+    }
+    return adminEmailAddress;
   }
 
   public static synchronized Properties getSettings() {
