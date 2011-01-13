@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.damour.base.client.BaseApplication;
+import org.damour.base.client.exceptions.SimpleMessageException;
 import org.damour.base.client.objects.User;
 import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.buttons.Button;
@@ -14,6 +15,7 @@ import org.damour.base.client.ui.dialogs.IDialogValidatorCallback;
 import org.damour.base.client.ui.dialogs.MessageDialogBox;
 import org.damour.base.client.ui.dialogs.PromptDialogBox;
 import org.damour.base.client.ui.password.SecurePasswordVerification;
+import org.damour.base.client.utils.StringUtils;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -26,6 +28,7 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
@@ -85,14 +88,14 @@ public class AuthenticationHandler {
     dateBox.setValue(possibleBirthday);
 
     usernameTextBox.setVisibleLength(30);
-    passwordTextBox.setVisibleLength(30);
+    passwordTextBox.setVisibleLength(20);
     passwordTextBox.addFocusHandler(new FocusHandler() {
       public void onFocus(FocusEvent event) {
         passwordTextBox.selectAll();
       }
     });
 
-    passwordConfirm.setVisibleLength(30);
+    passwordConfirm.setVisibleLength(20);
     passwordConfirm.addFocusHandler(new FocusHandler() {
       public void onFocus(FocusEvent event) {
         passwordConfirm.selectAll();
@@ -276,8 +279,13 @@ public class AuthenticationHandler {
     contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
     row++;
 
+    HorizontalPanel passwordPanel = new HorizontalPanel();
+    passwordPanel.add(passwordTextBox);
+    passwordPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+    passwordPanel.add(new SecurePasswordVerification(true, passwordTextBox, passwordConfirm));
+    
     contentPanel.setWidget(row, 0, passwordLabel);
-    contentPanel.setWidget(row, 1, passwordTextBox);
+    contentPanel.setWidget(row, 1, passwordPanel);
     contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
     row++;
 
@@ -287,10 +295,10 @@ public class AuthenticationHandler {
     row++;
 
     // use password widgets
-    contentPanel.setWidget(row, 0, passwordStrengthLabel);
-    contentPanel.setWidget(row, 1, new SecurePasswordVerification(passwordTextBox, passwordConfirm));
-    contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
-    row++;
+    // contentPanel.setWidget(row, 0, passwordStrengthLabel);
+    // contentPanel.setWidget(row, 1, new SecurePasswordVerification(passwordTextBox, passwordConfirm));
+    // contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
+    // row++;
 
     contentPanel.setWidget(row, 0, passwordHintLabel);
     contentPanel.setWidget(row, 1, passwordHint);
@@ -368,6 +376,13 @@ public class AuthenticationHandler {
           validationMessage += BaseApplication.getMessages().getString("mustEnterBirthdate", "You must enter your birthdate.") + "<BR>";
           validationFailed = true;
         }
+
+        if (StringUtils.isEmpty(captchaValidationTextBox.getText())) {
+          validationMessage += BaseApplication.getMessages().getString("captchaValidationFailed", "You must enter validation text.") + "<BR>";
+          validationFailed = true;
+        }
+        
+        
         if (!disclaimerCheckBox.getValue()) {
           validationMessage += BaseApplication.getMessages().getString("mustReadDisclaimer",
               "You must read and agree with the disclaimer statement to continue.")
@@ -451,19 +466,18 @@ public class AuthenticationHandler {
     contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
     row++;
 
+    HorizontalPanel passwordPanel = new HorizontalPanel();
+    passwordPanel.add(passwordTextBox);
+    passwordPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+    passwordPanel.add(new SecurePasswordVerification(true, passwordTextBox, passwordConfirm));
+
     contentPanel.setWidget(row, 0, passwordLabel);
-    contentPanel.setWidget(row, 1, passwordTextBox);
+    contentPanel.setWidget(row, 1, passwordPanel);
     contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
     row++;
 
     contentPanel.setWidget(row, 0, passwordConfirmLabel);
     contentPanel.setWidget(row, 1, passwordConfirm);
-    contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
-    row++;
-
-    // use password widgets
-    contentPanel.setWidget(row, 0, passwordStrengthLabel);
-    contentPanel.setWidget(row, 1, new SecurePasswordVerification(passwordTextBox, passwordConfirm));
     contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
     row++;
 
@@ -505,7 +519,8 @@ public class AuthenticationHandler {
         String validationMessage = "";
 
         if (passwordTextBox.getText() != null && !"".equals(passwordTextBox.getText()) && !passwordTextBox.getText().equals(passwordConfirm.getText())) {
-          validationMessage += BaseApplication.getMessages().getString("mustEnterMatchingPasswords", "You must enter a matching password and confirmation password.");
+          validationMessage += BaseApplication.getMessages().getString("mustEnterMatchingPasswords",
+              "You must enter a matching password and confirmation password.");
           validationMessage += "<BR>";
           validationFailed = true;
         }
@@ -587,7 +602,7 @@ public class AuthenticationHandler {
     final AsyncCallback<User> loginCallback = new AsyncCallback<User>() {
       public void onFailure(Throwable caught) {
         MessageDialogBox dialog = new MessageDialogBox(BaseApplication.getMessages().getString("error", "Error"), BaseApplication.getMessages().getString(
-            "couldNotCreateAccount", "Could not create new account.  Try entering a different username."), true, true, true);
+            "couldNotCreateAccount", "Could not create new account. {0}", caught.getMessage()), true, true, true);
         dialog.setCallback(new IDialogCallback() {
           public void okPressed() {
             accountDialog.center();

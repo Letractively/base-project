@@ -13,7 +13,8 @@ import com.google.gwt.user.client.ui.TextBox;
 
 public class SecurePasswordVerification extends HorizontalPanel {
 
-  private HTML strengthMeterSegment1 = new HTML();
+  private HTML strengthMeter = new HTML();
+  private boolean simpleStyle = false;
 
   public void verifyPasswordStrength(String password) {
     int score = 0;
@@ -68,18 +69,37 @@ public class SecurePasswordVerification extends HorizontalPanel {
 
     // 100 is a perfect score
     if (score == 100) {
-      strengthMeterSegment1.setText("Strong " + score);
-      strengthMeterSegment1.setStyleName("password-strength-strong");
+      strengthMeter.setHTML("&nbsp;Strong " + (simpleStyle?"":score));
+      if (!simpleStyle) {
+        strengthMeter.setStyleName("password-strength-strong");
+      } else {
+        strengthMeter.removeStyleDependentName("moderate");
+        strengthMeter.removeStyleDependentName("weak");
+        strengthMeter.addStyleDependentName("strong");
+      }
     } else if (score >= 65) {
-      strengthMeterSegment1.setText("Moderate " + score);
-      strengthMeterSegment1.setStyleName("password-strength-moderate");
+      strengthMeter.setHTML("&nbsp;Moderate " + (simpleStyle?"":score));
+      if (!simpleStyle) {
+        strengthMeter.setStyleName("password-strength-moderate");
+      } else {
+        strengthMeter.removeStyleDependentName("strong");
+        strengthMeter.removeStyleDependentName("weak");
+        strengthMeter.addStyleDependentName("moderate");
+      }
     } else {
-      strengthMeterSegment1.setText("Weak " + score);
-      strengthMeterSegment1.setStyleName("password-strength-weak");
+      strengthMeter.setHTML("&nbsp;Weak " + (simpleStyle?"":score));
+      if (!simpleStyle) {
+        strengthMeter.setStyleName("password-strength-weak");
+      } else {
+        strengthMeter.removeStyleDependentName("moderate");
+        strengthMeter.removeStyleDependentName("strong");
+        strengthMeter.addStyleDependentName("weak");
+      }
     }
   }
 
-  public SecurePasswordVerification(final TextBox textBox, final TextBox confirmTextBox) {
+  public SecurePasswordVerification(boolean simpleStyle, final TextBox textBox, final TextBox confirmTextBox) {
+    this.simpleStyle = simpleStyle;
     textBox.addKeyUpHandler(new KeyUpHandler() {
 
       public void onKeyUp(KeyUpEvent event) {
@@ -87,7 +107,7 @@ public class SecurePasswordVerification extends HorizontalPanel {
       }
     });
 
-    strengthMeterSegment1.addClickHandler(new ClickHandler() {
+    strengthMeter.addClickHandler(new ClickHandler() {
 
       public void onClick(ClickEvent event) {
         // bring up dialog to generate strong password
@@ -98,13 +118,17 @@ public class SecurePasswordVerification extends HorizontalPanel {
         verifyPasswordStrength(textBox.getText());
       }
     });
-    strengthMeterSegment1.setTitle("Click to generate random secure password");
-    strengthMeterSegment1.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-    strengthMeterSegment1.setHTML("&nbsp;");
-    strengthMeterSegment1.setStyleName("password-strength-empty");
-    strengthMeterSegment1.setWidth("100px");
-    add(strengthMeterSegment1);
+    strengthMeter.setTitle("Click to generate random secure password");
+    if (!simpleStyle) {
+      strengthMeter.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+      strengthMeter.setHTML("&nbsp;");
+      strengthMeter.setWidth("100px");
+      strengthMeter.setStyleName("password-strength-empty");
+    } else {
+      strengthMeter.setStyleName("password-simple-style");
+    }
     setStyleName("contentPanel");
+    add(strengthMeter);
     verifyPasswordStrength(textBox.getText());
   }
 
