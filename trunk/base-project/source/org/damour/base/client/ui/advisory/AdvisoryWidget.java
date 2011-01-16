@@ -1,31 +1,39 @@
 package org.damour.base.client.ui.advisory;
 
+import org.damour.base.client.BaseApplication;
 import org.damour.base.client.images.BaseImageBundle;
 import org.damour.base.client.objects.PermissibleObject;
 import org.damour.base.client.objects.UserAdvisory;
 import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.dialogs.MessageDialogBox;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.MouseMoveEvent;
+import com.google.gwt.event.dom.client.MouseMoveHandler;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.MouseListener;
-import com.google.gwt.user.client.ui.PopupListener;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
 public class AdvisoryWidget extends VerticalPanel {
 
-  PopupPanel contentAdvisoryPopup = new PopupPanel(true, false);
-  boolean popupShowing = false;
+  private static PopupPanel contentAdvisoryPopup = new PopupPanel(true, false);
+
+  private static Timer timer = new Timer() {
+
+    public void run() {
+      contentAdvisoryPopup.hide();
+    }
+  };
+
   boolean showStatsLabel = true;
 
   PermissibleObject permissibleObject;
@@ -36,59 +44,45 @@ public class AdvisoryWidget extends VerticalPanel {
   Image R = new Image();
   Image NC17 = new Image();
 
+  private Grid ratingPanel = new Grid(5, 2);
   RadioButton GRB = new RadioButton("");
   RadioButton PGRB = new RadioButton("");
   RadioButton PG13RB = new RadioButton("");
   RadioButton RRB = new RadioButton("");
   RadioButton NC17RB = new RadioButton("");
 
-  MouseListener mouseListener = new MouseListener() {
+  private MouseMoveHandler mouseMoveHandler = new MouseMoveHandler() {
 
-    public void onMouseDown(Widget sender, int x, int y) {
-    }
-
-    public void onMouseEnter(Widget sender) {
-    }
-
-    public void onMouseLeave(Widget sender) {
-    }
-
-    public void onMouseMove(Widget sender, int x, int y) {
+    public void onMouseMove(MouseMoveEvent event) {
       if (fileAdvisory == null) {
         // bring up content advisory popup
-        if (!popupShowing) {
-          contentAdvisoryPopup.setPopupPosition(sender.getAbsoluteLeft() + x + 5, sender.getAbsoluteTop() + y + 5);
-          contentAdvisoryPopup.show();
-          popupShowing = true;
-          Timer timer = new Timer() {
-
-            public void run() {
-              contentAdvisoryPopup.hide();
-            }
-          };
-          timer.schedule(3000);
+        if (contentAdvisoryPopup.getWidget() == ratingPanel && contentAdvisoryPopup.isShowing()) {
+          return;
         }
+        contentAdvisoryPopup.setStyleName("advisoryPopup");
+        contentAdvisoryPopup.setWidget(ratingPanel);
+        contentAdvisoryPopup.setPopupPosition(event.getClientX(), event.getClientY());
+        contentAdvisoryPopup.show();
+        timer.cancel();
+        timer.schedule(4000);
       }
     }
-
-    public void onMouseUp(Widget sender, int x, int y) {
-    }
   };
-  ClickListener ratingListener = new ClickListener() {
+  private ClickHandler ratingHandler = new ClickHandler() {
 
-    public void onClick(Widget sender) {
+    public void onClick(ClickEvent event) {
       if (fileAdvisory == null) {
         // do vote
         int vote = 0;
-        if (sender == G || sender == GRB) {
+        if (event.getSource() == G || event.getSource() == GRB) {
           vote = 1;
-        } else if (sender == PG || sender == PGRB) {
+        } else if (event.getSource() == PG || event.getSource() == PGRB) {
           vote = 2;
-        } else if (sender == PG13 || sender == PG13RB) {
+        } else if (event.getSource() == PG13 || event.getSource() == PG13RB) {
           vote = 3;
-        } else if (sender == R || sender == RRB) {
+        } else if (event.getSource() == R || event.getSource() == RRB) {
           vote = 4;
-        } else if (sender == NC17 || sender == NC17RB) {
+        } else if (event.getSource() == NC17 || event.getSource() == NC17RB) {
           vote = 5;
         }
         setFileUserAdvisory(vote);
@@ -116,7 +110,6 @@ public class AdvisoryWidget extends VerticalPanel {
     BaseImageBundle.images.advisoryR().applyTo(R);
     BaseImageBundle.images.advisoryNC17().applyTo(NC17);
 
-    Grid ratingPanel = new Grid(5, 2);
     ratingPanel.setCellPadding(0);
     ratingPanel.setCellSpacing(0);
     ratingPanel.setWidget(0, 1, G);
@@ -130,25 +123,16 @@ public class AdvisoryWidget extends VerticalPanel {
     ratingPanel.setWidget(4, 1, NC17);
     ratingPanel.setWidget(4, 0, NC17RB);
 
-    G.addClickListener(ratingListener);
-    PG.addClickListener(ratingListener);
-    PG13.addClickListener(ratingListener);
-    R.addClickListener(ratingListener);
-    NC17.addClickListener(ratingListener);
-    GRB.addClickListener(ratingListener);
-    PGRB.addClickListener(ratingListener);
-    PG13RB.addClickListener(ratingListener);
-    RRB.addClickListener(ratingListener);
-    NC17RB.addClickListener(ratingListener);
-
-    contentAdvisoryPopup.addPopupListener(new PopupListener() {
-
-      public void onPopupClosed(PopupPanel sender, boolean autoClosed) {
-        popupShowing = false;
-      }
-    });
-    contentAdvisoryPopup.setStyleName("advisoryPopup");
-    contentAdvisoryPopup.setWidget(ratingPanel);
+    G.addClickHandler(ratingHandler);
+    PG.addClickHandler(ratingHandler);
+    PG13.addClickHandler(ratingHandler);
+    R.addClickHandler(ratingHandler);
+    NC17.addClickHandler(ratingHandler);
+    GRB.addClickHandler(ratingHandler);
+    PGRB.addClickHandler(ratingHandler);
+    PG13RB.addClickHandler(ratingHandler);
+    RRB.addClickHandler(ratingHandler);
+    NC17RB.addClickHandler(ratingHandler);
   }
 
   private void buildAdvisoryImagePanel() {
@@ -157,12 +141,13 @@ public class AdvisoryWidget extends VerticalPanel {
     Image advisoryImage = new Image();
     Label statsLabel = new Label();
     DOM.setStyleAttribute(statsLabel.getElement(), "fontSize", "8pt");
-    
+
     if (permissibleObject == null || permissibleObject.getAverageAdvisory() == 0) {
       BaseImageBundle.images.advisoryNR().applyTo(advisoryImage);
-      statsLabel.setText("Not Rated");
+      statsLabel.setText(BaseApplication.getMessages().getString("notRated", "Not Rated"));
     } else if (permissibleObject != null) {
-      statsLabel.setText("Rating based on " + permissibleObject.getNumAdvisoryVotes() + " votes");
+      statsLabel
+          .setText(BaseApplication.getMessages().getString("advisoryStatsLabel", "Rating based on {0} votes", "" + permissibleObject.getNumAdvisoryVotes()));
       if (permissibleObject.getAverageAdvisory() > 0 && permissibleObject.getAverageAdvisory() <= 1) {
         BaseImageBundle.images.advisoryG().applyTo(advisoryImage);
       } else if (permissibleObject.getAverageAdvisory() > 1 && permissibleObject.getAverageAdvisory() <= 2) {
@@ -175,15 +160,15 @@ public class AdvisoryWidget extends VerticalPanel {
         BaseImageBundle.images.advisoryNC17().applyTo(advisoryImage);
       }
     }
-    advisoryImage.addMouseListener(mouseListener);
+    advisoryImage.addMouseMoveHandler(mouseMoveHandler);
     setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
     setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
     add(advisoryImage);
     if (showStatsLabel) {
       if (fileAdvisory == null) {
-        advisoryImage.setTitle("Content Advisory");
+        advisoryImage.setTitle(BaseApplication.getMessages().getString("contentAdvisory", "Content Advisory"));
       } else {
-        advisoryImage.setTitle("Content Advisory (You have already voted)");
+        advisoryImage.setTitle(BaseApplication.getMessages().getString("contentAdvisoryAlready", "Content Advisory (You have already voted)"));
       }
       add(statsLabel);
     } else {
@@ -205,7 +190,7 @@ public class AdvisoryWidget extends VerticalPanel {
       }
 
       public void onFailure(Throwable t) {
-        MessageDialogBox dialog = new MessageDialogBox("Error", t.getMessage(), false, true, true);
+        MessageDialogBox dialog = new MessageDialogBox(BaseApplication.getMessages().getString("error", "Error"), t.getMessage(), false, true, true);
         dialog.center();
       }
     };
@@ -227,7 +212,7 @@ public class AdvisoryWidget extends VerticalPanel {
 
       public void onFailure(Throwable t) {
         clear();
-        MessageDialogBox dialog = new MessageDialogBox("Error", t.getMessage(), false, true, true);
+        MessageDialogBox dialog = new MessageDialogBox(BaseApplication.getMessages().getString("error", "Error"), t.getMessage(), false, true, true);
         dialog.center();
       }
     };
