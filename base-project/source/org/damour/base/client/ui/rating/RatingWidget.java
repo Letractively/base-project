@@ -1,20 +1,27 @@
 package org.damour.base.client.ui.rating;
 
+import org.damour.base.client.BaseApplication;
 import org.damour.base.client.images.BaseImageBundle;
 import org.damour.base.client.objects.PermissibleObject;
 import org.damour.base.client.objects.UserRating;
 import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.dialogs.MessageDialogBox;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.MouseOutEvent;
+import com.google.gwt.event.dom.client.MouseOutHandler;
+import com.google.gwt.event.dom.client.MouseOverEvent;
+import com.google.gwt.event.dom.client.MouseOverHandler;
+import com.google.gwt.event.dom.client.MouseUpEvent;
+import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.MouseListener;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -31,49 +38,50 @@ public class RatingWidget extends VerticalPanel {
   Image star4 = new Image();
   Image star5 = new Image();
 
-  ClickListener starClickListener = new ClickListener() {
+  ClickHandler starClickHandler = new ClickHandler() {
 
-    public void onClick(Widget sender) {
+    public void onClick(ClickEvent event) {
       if (fileRating == null) {
         // do vote
         int vote = 0;
-        if (sender == star1) {
+        if (event.getSource() == star1) {
           vote = 1;
-        } else if (sender == star2) {
+        } else if (event.getSource() == star2) {
           vote = 2;
-        } else if (sender == star3) {
+        } else if (event.getSource() == star3) {
           vote = 3;
-        } else if (sender == star4) {
+        } else if (event.getSource() == star4) {
           vote = 4;
-        } else if (sender == star5) {
+        } else if (event.getSource() == star5) {
           vote = 5;
         }
         setUserRating(permissibleObject, vote);
       }
     }
   };
-  MouseListener starListener = new MouseListener() {
 
-    public void onMouseDown(Widget sender, int x, int y) {
-    }
+  MouseOverHandler starOverHandler = new MouseOverHandler() {
 
-    public void onMouseEnter(Widget sender) {
+    public void onMouseOver(MouseOverEvent event) {
       if (fileRating == null) {
-        DOM.setStyleAttribute(sender.getElement(), "cursor", "hand");
-        DOM.setStyleAttribute(sender.getElement(), "cursor", "pointer");
-        starMoused(sender);
+        DOM.setStyleAttribute(((Widget) event.getSource()).getElement(), "cursor", "hand");
+        DOM.setStyleAttribute(((Widget) event.getSource()).getElement(), "cursor", "pointer");
+        starMoused((Widget) event.getSource());
       }
     }
+  };
 
-    public void onMouseLeave(Widget sender) {
-      DOM.setStyleAttribute(sender.getElement(), "cursor", "default");
+  MouseOutHandler starOutHandler = new MouseOutHandler() {
+
+    public void onMouseOut(MouseOutEvent event) {
+      DOM.setStyleAttribute(((Widget) event.getSource()).getElement(), "cursor", "default");
       setStars();
     }
+  };
 
-    public void onMouseMove(Widget sender, int x, int y) {
-    }
+  MouseUpHandler starUpHandler = new MouseUpHandler() {
 
-    public void onMouseUp(Widget sender, int x, int y) {
+    public void onMouseUp(MouseUpEvent event) {
       setStars();
     }
   };
@@ -91,8 +99,9 @@ public class RatingWidget extends VerticalPanel {
     setupStar(star5);
 
     add(starPanel);
-    statsLabel = new Label(NumberFormat.getFormat("#.#").format(permissibleObject.getAverageRating()) + " rating from " + permissibleObject.getNumRatingVotes()
-        + " users", false);
+
+    statsLabel = new Label(BaseApplication.getMessages().getString("ratingStatsLabel", "{0} rating from {1} users",
+        NumberFormat.getFormat("#.#").format(permissibleObject.getAverageRating()), "" + permissibleObject.getNumRatingVotes()), false);
     DOM.setStyleAttribute(statsLabel.getElement(), "fontSize", "8pt");
     if (showStatsLabel) {
       add(statsLabel);
@@ -107,7 +116,7 @@ public class RatingWidget extends VerticalPanel {
   public void starMoused(Widget sender) {
     if (sender == star1) {
       BaseImageBundle.images.starHover().applyTo(star1);
-      star1.setTitle("Awful");
+      star1.setTitle(BaseApplication.getMessages().getString("ratingAwful", "Awful"));
       BaseImageBundle.images.starEmpty().applyTo(star2);
       BaseImageBundle.images.starEmpty().applyTo(star3);
       BaseImageBundle.images.starEmpty().applyTo(star4);
@@ -115,7 +124,7 @@ public class RatingWidget extends VerticalPanel {
     } else if (sender == star2) {
       BaseImageBundle.images.starHover().applyTo(star1);
       BaseImageBundle.images.starHover().applyTo(star2);
-      star2.setTitle("Poor");
+      star2.setTitle(BaseApplication.getMessages().getString("ratingPoor", "Poor"));
       BaseImageBundle.images.starEmpty().applyTo(star3);
       BaseImageBundle.images.starEmpty().applyTo(star4);
       BaseImageBundle.images.starEmpty().applyTo(star5);
@@ -123,7 +132,7 @@ public class RatingWidget extends VerticalPanel {
       BaseImageBundle.images.starHover().applyTo(star1);
       BaseImageBundle.images.starHover().applyTo(star2);
       BaseImageBundle.images.starHover().applyTo(star3);
-      star3.setTitle("Not bad");
+      star3.setTitle(BaseApplication.getMessages().getString("ratingNotBad", "Not Bad"));
       BaseImageBundle.images.starEmpty().applyTo(star4);
       BaseImageBundle.images.starEmpty().applyTo(star5);
     } else if (sender == star4) {
@@ -131,7 +140,7 @@ public class RatingWidget extends VerticalPanel {
       BaseImageBundle.images.starHover().applyTo(star2);
       BaseImageBundle.images.starHover().applyTo(star3);
       BaseImageBundle.images.starHover().applyTo(star4);
-      star4.setTitle("Good");
+      star4.setTitle(BaseApplication.getMessages().getString("ratingGood", "Good"));
       BaseImageBundle.images.starEmpty().applyTo(star5);
     } else if (sender == star5) {
       BaseImageBundle.images.starHover().applyTo(star1);
@@ -139,13 +148,15 @@ public class RatingWidget extends VerticalPanel {
       BaseImageBundle.images.starHover().applyTo(star3);
       BaseImageBundle.images.starHover().applyTo(star4);
       BaseImageBundle.images.starHover().applyTo(star5);
-      star5.setTitle("Great");
+      star5.setTitle(BaseApplication.getMessages().getString("ratingGreat", "Great"));
     }
   }
 
   private Image setupStar(Image star) {
-    star.addClickListener(starClickListener);
-    star.addMouseListener(starListener);
+    star.addClickHandler(starClickHandler);
+    star.addMouseOverHandler(starOverHandler);
+    star.addMouseOutHandler(starOutHandler);
+    star.addMouseUpHandler(starUpHandler);
     DOM.setStyleAttribute(star.getElement(), "margin", "0px");
     DOM.setStyleAttribute(star.getElement(), "padding", "0px");
     starPanel.add(star);
@@ -154,8 +165,8 @@ public class RatingWidget extends VerticalPanel {
   }
 
   public void setStars() {
-    String statText = NumberFormat.getFormat("#.#").format(permissibleObject.getAverageRating()) + " rating from " + permissibleObject.getNumRatingVotes()
-        + " users";
+    String statText = BaseApplication.getMessages().getString("ratingStatsLabel", "{0} rating from {1} users",
+        NumberFormat.getFormat("#.#").format(permissibleObject.getAverageRating()), "" + permissibleObject.getNumRatingVotes());
     statsLabel.setText(statText);
     if (permissibleObject.getNumRatingVotes() == 0) {
       BaseImageBundle.images.starNoVotes().applyTo(star1);
@@ -246,7 +257,7 @@ public class RatingWidget extends VerticalPanel {
     }
 
     if (showStatsLabel && fileRating != null) {
-      String title = "Content Rating (You have already voted)";
+      String title = BaseApplication.getMessages().getString("ratingAlready", "Content Rating (You have already voted)");
       star1.setTitle(title);
       star2.setTitle(title);
       star3.setTitle(title);
@@ -275,7 +286,7 @@ public class RatingWidget extends VerticalPanel {
       }
 
       public void onFailure(Throwable t) {
-        MessageDialogBox dialog = new MessageDialogBox("Error", t.getMessage(), false, true, true);
+        MessageDialogBox dialog = new MessageDialogBox(BaseApplication.getMessages().getString("error", "Error"), t.getMessage(), false, true, true);
         dialog.center();
       }
     };
@@ -296,7 +307,7 @@ public class RatingWidget extends VerticalPanel {
       }
 
       public void onFailure(Throwable t) {
-        MessageDialogBox dialog = new MessageDialogBox("Error", t.getMessage(), false, true, true);
+        MessageDialogBox dialog = new MessageDialogBox(BaseApplication.getMessages().getString("error", "Error"), t.getMessage(), false, true, true);
         dialog.center();
         clear();
       }
