@@ -8,9 +8,9 @@ import org.damour.base.client.objects.Folder;
 import org.damour.base.client.objects.PermissibleObject;
 import org.damour.base.client.objects.PermissibleObjectTreeNode;
 import org.damour.base.client.objects.Permission;
+import org.damour.base.client.objects.Permission.PERM;
 import org.damour.base.client.objects.RepositoryTreeNode;
 import org.damour.base.client.objects.User;
-import org.damour.base.client.objects.Permission.PERM;
 import org.hibernate.Session;
 
 public class RepositoryHelper {
@@ -39,12 +39,13 @@ public class RepositoryHelper {
         // admin sees all
         folders = session.createQuery("from " + Folder.class.getSimpleName() + " as folder where folder.parent is null").setCacheable(true).list();
       } else if (user == null) {
-        folders = session.createQuery("from " + Folder.class.getSimpleName() + " as folder where folder.parent is null folder.globalRead = true").setCacheable(
-            true).list();
+        folders = session.createQuery("from " + Folder.class.getSimpleName() + " as folder where folder.parent is null folder.globalRead = true")
+            .setCacheable(true).list();
       } else {
-        folders = session.createQuery(
-            "from " + Folder.class.getSimpleName() + " as folder where folder.parent is null and (folder.owner.id = " + user.id
-                + " OR folder.globalRead = true OR folder.id in " + selectFolderUserPerm + " OR folder.id in " + selectFolderGroupPerm + ")")
+        folders = session
+            .createQuery(
+                "from " + Folder.class.getSimpleName() + " as folder where folder.parent is null and (folder.owner.id = " + user.id
+                    + " OR folder.globalRead = true OR folder.id in " + selectFolderUserPerm + " OR folder.id in " + selectFolderGroupPerm + ")")
             .setCacheable(true).list();
       }
     } else {
@@ -53,13 +54,14 @@ public class RepositoryHelper {
         folders = session.createQuery("from " + Folder.class.getSimpleName() + " as folder where folder.parent.id = " + parentFolder.id).setCacheable(true)
             .list();
       } else if (user == null) {
-        folders = session.createQuery(
-            "from " + Folder.class.getSimpleName() + " as folder where folder.parent.id = " + parentFolder.id + " and folder.globalRead = true").setCacheable(
-            true).list();
+        folders = session
+            .createQuery("from " + Folder.class.getSimpleName() + " as folder where folder.parent.id = " + parentFolder.id + " and folder.globalRead = true")
+            .setCacheable(true).list();
       } else {
-        folders = session.createQuery(
-            "from " + Folder.class.getSimpleName() + " as folder where folder.parent.id = " + parentFolder.id + " and (folder.owner.id = " + user.id
-                + " OR folder.globalRead = true OR folder.id in " + selectFolderUserPerm + " OR folder.id in " + selectFolderGroupPerm + ")")
+        folders = session
+            .createQuery(
+                "from " + Folder.class.getSimpleName() + " as folder where folder.parent.id = " + parentFolder.id + " and (folder.owner.id = " + user.id
+                    + " OR folder.globalRead = true OR folder.id in " + selectFolderUserPerm + " OR folder.id in " + selectFolderGroupPerm + ")")
             .setCacheable(true).list();
       }
     }
@@ -72,9 +74,11 @@ public class RepositoryHelper {
         files = session.createQuery("from " + File.class.getSimpleName() + " as file where file.parent is null and file.globalRead = true").setCacheable(true)
             .list();
       } else {
-        files = session.createQuery(
-            "from " + File.class.getSimpleName() + " as file where file.parent is null and (file.owner.id = " + user.id
-                + " OR file.globalRead = true OR file.id in " + selectFileUserPerm + " OR file.id in " + selectFileGroupPerm + ")").setCacheable(true).list();
+        files = session
+            .createQuery(
+                "from " + File.class.getSimpleName() + " as file where file.parent is null and (file.owner.id = " + user.id
+                    + " OR file.globalRead = true OR file.id in " + selectFileUserPerm + " OR file.id in " + selectFileGroupPerm + ")").setCacheable(true)
+            .list();
       }
     } else {
       if (user != null && user.isAdministrator()) {
@@ -85,9 +89,11 @@ public class RepositoryHelper {
             .createQuery("from " + File.class.getSimpleName() + " as file where file.parent.id = " + parentFolder.id + " and file.globalRead = true")
             .setCacheable(true).list();
       } else {
-        files = session.createQuery(
-            "from " + File.class.getSimpleName() + " as file where file.parent.id = " + parentFolder.id + " and (file.owner.id = " + user.id
-                + " OR file.globalRead = true OR file.id in " + selectFileUserPerm + " OR file.id in " + selectFileGroupPerm + ")").setCacheable(true).list();
+        files = session
+            .createQuery(
+                "from " + File.class.getSimpleName() + " as file where file.parent.id = " + parentFolder.id + " and (file.owner.id = " + user.id
+                    + " OR file.globalRead = true OR file.id in " + selectFileUserPerm + " OR file.id in " + selectFileGroupPerm + ")").setCacheable(true)
+            .list();
       }
     }
     for (Folder folder : folders) {
@@ -98,11 +104,28 @@ public class RepositoryHelper {
     parentNode.setFiles(files);
   }
 
-  public static void buildPermissibleObjectTreeNode(Session session, User user, PermissibleObjectTreeNode parentNode, PermissibleObject parent) {
+  public static void buildPermissibleObjectTreeNode(Session session, User user, PermissibleObjectTreeNode parentNode, PermissibleObject parent,
+      int currentDepth, int fetchDepth, int metaDataFetchDepth) {
+
     if (!SecurityHelper.doesUserHavePermission(session, user, parent, PERM.READ)) {
       return;
     }
+
     parentNode.setParent(parent);
+
+    if (parent != null && (metaDataFetchDepth == -1 || currentDepth <= metaDataFetchDepth)) {
+      if (parent.getNumAdvisoryVotes() > 0) {
+        parentNode.setUserAdvisory(AdvisoryHelper.getUserAdvisory(session, parent, user, null));
+      }
+      if (parent.getNumRatingVotes() > 0) {
+        parentNode.setUserRating(RatingHelper.getUserRating(session, parent, user, null));
+      }
+    }
+
+    if (currentDepth != -1 && currentDepth >= fetchDepth) {
+      return;
+    }
+
     String selectFileUserPerm = "(select perm.permissibleObject.id from " + Permission.class.getSimpleName()
         + " as perm where perm.permissibleObject.id = obj.id and perm.securityPrincipal.id = " + user.id + " and perm.readPerm = true)";
     String selectFileGroupPerm = "(select perm.permissibleObject.id from "
@@ -114,38 +137,46 @@ public class RepositoryHelper {
     if (parent == null) {
       if (user != null && user.isAdministrator()) {
         // admin sees all
-        children = session.createQuery("from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent is null order by id").setCacheable(true).list();
+        children = session.createQuery("from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent is null order by id").setCacheable(true)
+            .list();
       } else if (user == null) {
-        children = session.createQuery("from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent is null and obj.globalRead = true order by id")
+        children = session
+            .createQuery("from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent is null and obj.globalRead = true order by id")
             .setCacheable(true).list();
       } else {
-        children = session.createQuery(
-            "from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent is null and (obj.owner.id = " + user.id
-                + " OR obj.globalRead = true OR obj.id in " + selectFileUserPerm + " OR obj.id in " + selectFileGroupPerm + ") order by id").setCacheable(true).list();
+        children = session
+            .createQuery(
+                "from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent is null and (obj.owner.id = " + user.id
+                    + " OR obj.globalRead = true OR obj.id in " + selectFileUserPerm + " OR obj.id in " + selectFileGroupPerm + ") order by id")
+            .setCacheable(true).list();
       }
     } else {
       if (user != null && user.isAdministrator()) {
         // admin sees all
-        children = session.createQuery("from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent.id = " + parent.id + " order by id").setCacheable(true)
-            .list();
+        children = session.createQuery("from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent.id = " + parent.id + " order by id")
+            .setCacheable(true).list();
       } else if (user == null) {
-        children = session.createQuery(
-            "from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent.id = " + parent.id + " and obj.globalRead = true order by id").setCacheable(true)
-            .list();
+        children = session
+            .createQuery(
+                "from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent.id = " + parent.id + " and obj.globalRead = true order by id")
+            .setCacheable(true).list();
       } else {
-        children = session.createQuery(
-            "from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent.id = " + parent.id + " and (obj.owner.id = " + user.id
-                + " OR obj.globalRead = true OR obj.id in " + selectFileUserPerm + " OR obj.id in " + selectFileGroupPerm + ") order by id").setCacheable(true).list();
+        children = session
+            .createQuery(
+                "from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent.id = " + parent.id + " and (obj.owner.id = " + user.id
+                    + " OR obj.globalRead = true OR obj.id in " + selectFileUserPerm + " OR obj.id in " + selectFileGroupPerm + ") order by id")
+            .setCacheable(true).list();
       }
     }
     for (PermissibleObject child : children) {
       PermissibleObjectTreeNode childNode = new PermissibleObjectTreeNode();
       parentNode.getChildren().put(child, childNode);
-      buildPermissibleObjectTreeNode(session, user, childNode, child);
+      buildPermissibleObjectTreeNode(session, user, childNode, child, currentDepth + 1, fetchDepth, metaDataFetchDepth);
     }
   }
 
-  public static void getPermissibleObjects(Session session, User user, List<PermissibleObject> permissibleObjectList, PermissibleObject parent, Class instanceType) {
+  public static void getPermissibleObjects(Session session, User user, List<PermissibleObject> permissibleObjectList, PermissibleObject parent,
+      Class instanceType) {
     if (!SecurityHelper.doesUserHavePermission(session, user, parent, PERM.READ)) {
       return;
     }
@@ -165,9 +196,10 @@ public class RepositoryHelper {
         children = session.createQuery("from " + instanceType.getSimpleName() + " as obj where obj.parent is null and obj.globalRead = true")
             .setCacheable(true).list();
       } else {
-        children = session.createQuery(
-            "from " + instanceType.getSimpleName() + " as obj where obj.parent is null and (obj.owner.id = " + user.id
-                + " OR obj.globalRead = true OR obj.id in " + selectFileUserPerm + " OR obj.id in " + selectFileGroupPerm + ")").setCacheable(true).list();
+        children = session
+            .createQuery(
+                "from " + instanceType.getSimpleName() + " as obj where obj.parent is null and (obj.owner.id = " + user.id
+                    + " OR obj.globalRead = true OR obj.id in " + selectFileUserPerm + " OR obj.id in " + selectFileGroupPerm + ")").setCacheable(true).list();
       }
     } else {
       if (user != null && user.isAdministrator()) {
@@ -175,13 +207,14 @@ public class RepositoryHelper {
         children = session.createQuery("from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent.id = " + parent.id).setCacheable(true)
             .list();
       } else if (user == null) {
-        children = session.createQuery(
-            "from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent.id = " + parent.id + " and obj.globalRead = true").setCacheable(true)
-            .list();
+        children = session
+            .createQuery("from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent.id = " + parent.id + " and obj.globalRead = true")
+            .setCacheable(true).list();
       } else {
-        children = session.createQuery(
-            "from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent.id = " + parent.id + " and (obj.owner.id = " + user.id
-                + " OR obj.globalRead = true OR obj.id in " + selectFileUserPerm + " OR obj.id in " + selectFileGroupPerm + ")").setCacheable(true).list();
+        children = session
+            .createQuery(
+                "from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent.id = " + parent.id + " and (obj.owner.id = " + user.id
+                    + " OR obj.globalRead = true OR obj.id in " + selectFileUserPerm + " OR obj.id in " + selectFileGroupPerm + ")").setCacheable(true).list();
       }
     }
     for (PermissibleObject child : children) {
@@ -190,8 +223,8 @@ public class RepositoryHelper {
       }
       getPermissibleObjects(session, user, permissibleObjectList, child, instanceType);
     }
-  }  
-  
+  }
+
   public static void dumpTreeNode(RepositoryTreeNode parent, int depth) {
     Set<Folder> folders = parent.getFolders().keySet();
     List<File> files = parent.getFiles();
@@ -227,7 +260,7 @@ public class RepositoryHelper {
         }
         for (int i = 0; i < depth; i++) {
           System.out.print("   ");
-          if (i > 0 && i < depth-1) {
+          if (i > 0 && i < depth - 1) {
             System.out.print("|");
           }
         }

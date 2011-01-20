@@ -10,6 +10,9 @@ import org.hibernate.Session;
 public class AdvisoryHelper {
 
   public static UserAdvisory getUserAdvisory(Session session, PermissibleObject permissibleObject, User voter, String voterGUID) {
+    if (permissibleObject == null) {
+      return null;
+    }
     if (voter != null) {
       List<UserAdvisory> ratings = session.createQuery("from " + UserAdvisory.class.getSimpleName() + " where permissibleObject.id = " + permissibleObject.id + " and voter.id = " + voter.id).setCacheable(true).list();
       if (ratings != null && ratings.size() > 0) {

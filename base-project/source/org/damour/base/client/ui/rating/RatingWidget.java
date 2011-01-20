@@ -17,6 +17,7 @@ import com.google.gwt.event.dom.client.MouseUpEvent;
 import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -86,7 +87,7 @@ public class RatingWidget extends VerticalPanel {
     }
   };
 
-  public RatingWidget(PermissibleObject permissibleObject, UserRating fileRating, boolean showStatsLabel) {
+  public RatingWidget(PermissibleObject permissibleObject, UserRating fileRating, boolean fetchOnLoad, boolean showStatsLabel) {
     this.showStatsLabel = showStatsLabel;
     this.permissibleObject = permissibleObject;
     this.fileRating = fileRating;
@@ -106,7 +107,7 @@ public class RatingWidget extends VerticalPanel {
     if (showStatsLabel) {
       add(statsLabel);
     }
-    if (fileRating == null) {
+    if (fileRating == null && permissibleObject.getNumRatingVotes() > 0 && fetchOnLoad) {
       getUserRating(permissibleObject);
     } else {
       setStars();
