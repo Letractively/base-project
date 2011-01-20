@@ -1139,12 +1139,14 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     }
   }
 
-  public PermissibleObjectTreeNode getPermissibleObjectTree(PermissibleObject parent) throws SimpleMessageException {
+  public PermissibleObjectTreeNode getPermissibleObjectTree(PermissibleObject parent, int fetchDepth, int metaDataFetchDepth) throws SimpleMessageException {
     try {
       User authUser = getAuthenticatedUser(session.get());
       PermissibleObjectTreeNode root = new PermissibleObjectTreeNode();
-      parent = getPermissibleObject(parent.getId());
-      RepositoryHelper.buildPermissibleObjectTreeNode(session.get(), authUser, root, parent);
+      if (parent != null) {
+        parent = getPermissibleObject(parent.getId());
+      }
+      RepositoryHelper.buildPermissibleObjectTreeNode(session.get(), authUser, root, parent, 0, fetchDepth, metaDataFetchDepth);
       return root;
     } catch (Throwable t) {
       Logger.log(t);

@@ -48,6 +48,7 @@ public class CommentWidget extends VerticalPanel {
 
   private Comment workingOnComment;
 
+  private ICommentLayoutComplete layoutCallback;
   private int pageNumber = 0;
   private int pageSize = 10;
   private long numComments = 0;
@@ -59,8 +60,20 @@ public class CommentWidget extends VerticalPanel {
   private AsyncCallback<Boolean> deleteCommentCallback = new AsyncCallback<Boolean>() {
 
     public void onSuccess(Boolean result) {
-      pageCache.clear();
-      fetchPage();
+      BaseServiceCache.getService().getPageInfo(permissibleObject, Comment.class.getName(), pageSize, new AsyncCallback<PageInfo>() {
+        public void onFailure(Throwable caught) {
+        };
+
+        public void onSuccess(PageInfo pageInfo) {
+          numComments = pageInfo.getTotalRowCount();
+          lastPageNumber = pageInfo.getLastPageNumber();
+          while (pageNumber > lastPageNumber) {
+            pageNumber--;
+          }
+          pageCache.clear();
+          fetchPage();
+        };
+      });
     }
 
     public void onFailure(Throwable caught) {
@@ -85,8 +98,20 @@ public class CommentWidget extends VerticalPanel {
   private AsyncCallback<Boolean> submitCommentCallback = new AsyncCallback<Boolean>() {
 
     public void onSuccess(Boolean result) {
-      pageCache.clear();
-      fetchPage();
+      BaseServiceCache.getService().getPageInfo(permissibleObject, Comment.class.getName(), pageSize, new AsyncCallback<PageInfo>() {
+        public void onFailure(Throwable caught) {
+        };
+
+        public void onSuccess(PageInfo pageInfo) {
+          numComments = pageInfo.getTotalRowCount();
+          lastPageNumber = pageInfo.getLastPageNumber();
+          while (pageNumber > lastPageNumber) {
+            pageNumber--;
+          }
+          pageCache.clear();
+          fetchPage();
+        };
+      });
     }
 
     public void onFailure(Throwable caught) {
@@ -139,10 +164,13 @@ public class CommentWidget extends VerticalPanel {
     }
   };
 
-  public CommentWidget(final PermissibleObject permissibleObject, final List<PermissibleObject> comments, boolean paginate) {
+  public CommentWidget(final PermissibleObject permissibleObject, final List<PermissibleObject> comments, ICommentLayoutComplete layoutCallback,
+      boolean paginate, int pageSize) {
     this.permissibleObject = permissibleObject;
     this.comments = comments;
     this.paginate = paginate;
+    this.pageSize = pageSize;
+    this.layoutCallback = layoutCallback;
 
     maxCommentDepthListBox.addItem("None", "999999");
     maxCommentDepthListBox.addItem("1");
@@ -162,8 +190,10 @@ public class CommentWidget extends VerticalPanel {
     Timer t = new Timer() {
       public void run() {
         if (comments == null) {
-          BaseServiceCache.getService().getPageInfo(permissibleObject, Comment.class.getName(), pageSize, new AsyncCallback<PageInfo>() {
-            public void onFailure(Throwable caught) {};
+          BaseServiceCache.getService().getPageInfo(permissibleObject, Comment.class.getName(), CommentWidget.this.pageSize, new AsyncCallback<PageInfo>() {
+            public void onFailure(Throwable caught) {
+            };
+
             public void onSuccess(PageInfo pageInfo) {
               numComments = pageInfo.getTotalRowCount();
               lastPageNumber = pageInfo.getLastPageNumber();
@@ -171,7 +201,29 @@ public class CommentWidget extends VerticalPanel {
             };
           });
         } else {
-          loadCommentWidget(false);
+          numComments = comments.size();
+          if (CommentWidget.this.paginate) {
+            // make pages
+            lastPageNumber = new Double(Math.floor((double) (numComments - 1) / CommentWidget.this.pageSize)).longValue();
+
+            int currPage = -1;
+            List<PermissibleObject> sortedComments = sortComments(comments);
+            for (int i = 0; i < numComments; i++) {
+              if (i % CommentWidget.this.pageSize == 0) {
+                currPage++;
+              }
+              if (pageCache.get(currPage) == null) {
+                pageCache.put(currPage, new Page<PermissibleObject>());
+              }
+              Page<PermissibleObject> page = pageCache.get(currPage);
+              page.setPageNumber(currPage);
+              page.getResults().add(sortedComments.get(i));
+            }
+            if (pageCache.size() > 0) {
+              CommentWidget.this.comments = pageCache.get(0).getResults();
+            }
+          }
+          loadCommentWidget(true);
         }
       }
     };
@@ -195,8 +247,8 @@ public class CommentWidget extends VerticalPanel {
 
       int renderedComments = 0;
       boolean userCanManage = AuthenticationHandler.getInstance().getUser() != null
-          && (AuthenticationHandler.getInstance().getUser().isAdministrator() || AuthenticationHandler.getInstance().getUser().equals(
-              permissibleObject.getOwner()));
+          && (AuthenticationHandler.getInstance().getUser().isAdministrator() || AuthenticationHandler.getInstance().getUser()
+              .equals(permissibleObject.getOwner()));
       List<PermissibleObject> sortedComments = new ArrayList<PermissibleObject>();
       if (comments != null) {
         sortedComments.addAll(comments);
@@ -206,7 +258,7 @@ public class CommentWidget extends VerticalPanel {
       }
 
       for (PermissibleObject obj : sortedComments) {
-        final Comment comment = (Comment)obj;
+        final Comment comment = (Comment) obj;
         int commentDepth = getCommentDepth(comment);
 
         int maxDepth = Integer.parseInt(maxCommentDepthListBox.getValue(maxCommentDepthListBox.getSelectedIndex()));
@@ -216,7 +268,7 @@ public class CommentWidget extends VerticalPanel {
 
         boolean userIsAuthorOfComment = AuthenticationHandler.getInstance().getUser() != null && comment.getAuthor() != null
             && comment.getAuthor().equals(AuthenticationHandler.getInstance().getUser());
-        
+
         if (userCanManage || userIsAuthorOfComment || comment.isApproved()) {
 
           FlexTable commentHeaderPanel = new FlexTable();
@@ -373,11 +425,14 @@ public class CommentWidget extends VerticalPanel {
       add(createCommentPostPanel());
       add(commentDisclosurePanel);
     }
+    if (layoutCallback != null) {
+      layoutCallback.layoutComplete();
+    }
   }
 
   private Widget createPageControllerPanel(final FlexTable mainPanel) {
-    final IconButton nextPageImageButton = new IconButton(null, true, BaseImageBundle.images.next(), BaseImageBundle.images.next(), BaseImageBundle.images
-        .next(), BaseImageBundle.images.next());
+    final IconButton nextPageImageButton = new IconButton(null, true, BaseImageBundle.images.next(), BaseImageBundle.images.next(),
+        BaseImageBundle.images.next(), BaseImageBundle.images.next());
     nextPageImageButton.setSTYLE("commentToolBarButton");
     nextPageImageButton.addClickListener(new ClickListener() {
       public void onClick(Widget sender) {
@@ -400,8 +455,8 @@ public class CommentWidget extends VerticalPanel {
         fetchPage();
       }
     });
-    final IconButton lastPageImageButton = new IconButton(null, false, BaseImageBundle.images.last(), BaseImageBundle.images.last(), BaseImageBundle.images
-        .last(), BaseImageBundle.images.last());
+    final IconButton lastPageImageButton = new IconButton(null, false, BaseImageBundle.images.last(), BaseImageBundle.images.last(),
+        BaseImageBundle.images.last(), BaseImageBundle.images.last());
     lastPageImageButton.setSTYLE("commentToolBarButton");
     lastPageImageButton.addClickListener(new ClickListener() {
       public void onClick(Widget sender) {
@@ -409,8 +464,8 @@ public class CommentWidget extends VerticalPanel {
         fetchPage();
       }
     });
-    final IconButton firstPageImageButton = new IconButton(null, false, BaseImageBundle.images.first(), BaseImageBundle.images.first(), BaseImageBundle.images
-        .first(), BaseImageBundle.images.first());
+    final IconButton firstPageImageButton = new IconButton(null, false, BaseImageBundle.images.first(), BaseImageBundle.images.first(),
+        BaseImageBundle.images.first(), BaseImageBundle.images.first());
     firstPageImageButton.setSTYLE("commentToolBarButton");
     firstPageImageButton.addClickListener(new ClickListener() {
       public void onClick(Widget sender) {
@@ -431,7 +486,7 @@ public class CommentWidget extends VerticalPanel {
     buttonPanel.add(previousPageImageButton);
     Label pageLabel = new Label("Page " + (pageNumber + 1) + " of " + (lastPageNumber + 1), false);
     if (lastPageNumber < 0) {
-      pageLabel.setText("Page 0 of 0");
+      pageLabel.setText("Page 1 of 1");
     }
     DOM.setStyleAttribute(pageLabel.getElement(), "margin", "0 5px 0 5px");
     buttonPanel.add(pageLabel);
@@ -448,7 +503,9 @@ public class CommentWidget extends VerticalPanel {
     reloadImageButton.addClickListener(new ClickListener() {
       public void onClick(Widget sender) {
         BaseServiceCache.getService().getPageInfo(permissibleObject, Comment.class.getName(), pageSize, new AsyncCallback<PageInfo>() {
-          public void onFailure(Throwable caught) {};
+          public void onFailure(Throwable caught) {
+          };
+
           public void onSuccess(PageInfo pageInfo) {
             numComments = pageInfo.getTotalRowCount();
             lastPageNumber = pageInfo.getLastPageNumber();
@@ -475,8 +532,8 @@ public class CommentWidget extends VerticalPanel {
 
     IconButton flattenImageButton = null;
     if (flatten) {
-      flattenImageButton = new IconButton("Hierarchy", true, BaseImageBundle.images.hierarchy(), BaseImageBundle.images.hierarchy(), BaseImageBundle.images
-          .hierarchy(), BaseImageBundle.images.hierarchy());
+      flattenImageButton = new IconButton("Hierarchy", true, BaseImageBundle.images.hierarchy(), BaseImageBundle.images.hierarchy(),
+          BaseImageBundle.images.hierarchy(), BaseImageBundle.images.hierarchy());
       flattenImageButton.setTitle("Build a comment hierarchy");
     } else {
       flattenImageButton = new IconButton("Flatten", true, BaseImageBundle.images.flatten(), BaseImageBundle.images.flatten(),
@@ -627,7 +684,7 @@ public class CommentWidget extends VerticalPanel {
   private List<PermissibleObject> sortComments(List<PermissibleObject> comments) {
     List<PermissibleObject> sortedComments = new ArrayList<PermissibleObject>();
     for (PermissibleObject obj : comments) {
-      Comment comment = (Comment)obj;
+      Comment comment = (Comment) obj;
       if (!sortedComments.contains(comment)) {
         sortedComments.add(comment);
         Comment parentComment = comment.getParentComment();
@@ -700,7 +757,9 @@ public class CommentWidget extends VerticalPanel {
 
   private void submitComment(final Comment comment) {
     BaseServiceCache.getService().getPageInfo(permissibleObject, Comment.class.getName(), pageSize, new AsyncCallback<PageInfo>() {
-      public void onFailure(Throwable caught) {};
+      public void onFailure(Throwable caught) {
+      };
+
       public void onSuccess(PageInfo pageInfo) {
         numComments = pageInfo.getTotalRowCount();
         lastPageNumber = pageInfo.getLastPageNumber();
@@ -715,7 +774,9 @@ public class CommentWidget extends VerticalPanel {
 
   private void deleteComment(final Comment comment) {
     BaseServiceCache.getService().getPageInfo(permissibleObject, Comment.class.getName(), pageSize, new AsyncCallback<PageInfo>() {
-      public void onFailure(Throwable caught) {};
+      public void onFailure(Throwable caught) {
+      };
+
       public void onSuccess(PageInfo pageInfo) {
         numComments = pageInfo.getTotalRowCount();
         lastPageNumber = pageInfo.getLastPageNumber();

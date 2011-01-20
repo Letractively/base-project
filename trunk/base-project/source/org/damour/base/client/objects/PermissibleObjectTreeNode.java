@@ -6,6 +6,9 @@ import java.util.HashMap;
 public class PermissibleObjectTreeNode implements Serializable {
 
   public PermissibleObject parent = null;
+  public UserRating userRating = null;
+  public UserAdvisory userAdvisory = null;
+
   public HashMap<PermissibleObject, PermissibleObjectTreeNode> children = new HashMap<PermissibleObject, PermissibleObjectTreeNode>();
 
   public PermissibleObjectTreeNode() {
@@ -27,4 +30,19 @@ public class PermissibleObjectTreeNode implements Serializable {
     this.parent = parent;
   }
 
+  public UserRating getUserRating() {
+    return userRating;
+  }
+
+  public void setUserRating(UserRating userRating) {
+    this.userRating = userRating;
+  }
+
+  public UserAdvisory getUserAdvisory() {
+    return userAdvisory;
+  }
+
+  public void setUserAdvisory(UserAdvisory userAdvisory) {
+    this.userAdvisory = userAdvisory;
+  }
 }

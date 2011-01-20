@@ -91,11 +91,11 @@ public class AdvisoryWidget extends VerticalPanel {
     }
   };
 
-  public AdvisoryWidget(PermissibleObject permissibleObject, UserAdvisory fileAdvisory, boolean showStatsLabel) {
+  public AdvisoryWidget(PermissibleObject permissibleObject, UserAdvisory fileAdvisory, boolean fetchOnLoad, boolean showStatsLabel) {
     this.permissibleObject = permissibleObject;
     this.fileAdvisory = fileAdvisory;
     this.showStatsLabel = showStatsLabel;
-    if (fileAdvisory == null) {
+    if (fileAdvisory == null && permissibleObject.getNumAdvisoryVotes() > 0 && fetchOnLoad) {
       getFileUserAdvisory();
     }
 
