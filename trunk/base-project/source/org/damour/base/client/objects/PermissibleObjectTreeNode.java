@@ -8,6 +8,7 @@ public class PermissibleObjectTreeNode implements Serializable {
   public PermissibleObject parent = null;
   public UserRating userRating = null;
   public UserAdvisory userAdvisory = null;
+  public UserThumb userThumb = null;
 
   public HashMap<PermissibleObject, PermissibleObjectTreeNode> children = new HashMap<PermissibleObject, PermissibleObjectTreeNode>();
 
@@ -44,5 +45,13 @@ public class PermissibleObjectTreeNode implements Serializable {
 
   public void setUserAdvisory(UserAdvisory userAdvisory) {
     this.userAdvisory = userAdvisory;
+  }
+
+  public UserThumb getUserThumb() {
+    return userThumb;
+  }
+
+  public void setUserThumb(UserThumb userThumb) {
+    this.userThumb = userThumb;
   }
 }

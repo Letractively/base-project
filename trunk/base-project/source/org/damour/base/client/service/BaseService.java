@@ -26,6 +26,7 @@ import org.damour.base.client.objects.User;
 import org.damour.base.client.objects.UserAdvisory;
 import org.damour.base.client.objects.UserGroup;
 import org.damour.base.client.objects.UserRating;
+import org.damour.base.client.objects.UserThumb;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 
@@ -96,12 +97,14 @@ public interface BaseService extends RemoteService {
   public void addToTag(Tag tag, PermissibleObject permissibleObject) throws SimpleMessageException;
   public void addToTag(TagMembership tagMembership) throws SimpleMessageException;
   
-  // content rating & advisory
+  // content rating, advisory and thumbs
   public UserRating getUserRating(PermissibleObject permissibleObject) throws SimpleMessageException;
   public UserRating setUserRating(PermissibleObject permissibleObject, int rating) throws SimpleMessageException;
   public PermissibleObject getNextUnratedPermissibleObject(String objectType) throws SimpleMessageException;
   public UserAdvisory getUserAdvisory(PermissibleObject permissibleObject) throws SimpleMessageException;
   public UserAdvisory setUserAdvisory(PermissibleObject permissibleObject, int advisory) throws SimpleMessageException;
+  public UserThumb getUserThumb(PermissibleObject permissibleObject) throws SimpleMessageException;
+  public UserThumb setUserThumb(PermissibleObject permissibleObject, boolean like) throws SimpleMessageException;
 
   // file comments
   public Boolean submitComment(Comment comment) throws SimpleMessageException;

@@ -93,4 +93,9 @@ public interface BaseImageBundle extends ImageBundle, TreeImages {
   AbstractImagePrototype advisoryPG13();
   AbstractImagePrototype advisoryR();
   AbstractImagePrototype advisoryNC17();
+  
+  AbstractImagePrototype thumbUp();
+  AbstractImagePrototype thumbDown();
+  
+  
 }
