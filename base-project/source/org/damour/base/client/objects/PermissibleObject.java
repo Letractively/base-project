@@ -21,6 +21,9 @@ public class PermissibleObject implements Serializable, IHibernateFriendly, Comp
   public float averageAdvisory = 0f;
   public long numAdvisoryVotes = 0;
 
+  public long numUpVotes = 0;
+  public long numDownVotes = 0;
+
   public boolean allowComments = true;
   public boolean moderateComments = false;
 
@@ -151,7 +154,7 @@ public class PermissibleObject implements Serializable, IHibernateFriendly, Comp
   public void setKeywords(String keywords) {
     this.keywords = keywords;
   }
-  
+
   public PermissibleObject getParent() {
     return parent;
   }
@@ -236,6 +239,22 @@ public class PermissibleObject implements Serializable, IHibernateFriendly, Comp
     this.numAdvisoryVotes = numAdvisoryVotes;
   }
 
+  public long getNumUpVotes() {
+    return numUpVotes;
+  }
+
+  public void setNumUpVotes(long numUpVotes) {
+    this.numUpVotes = numUpVotes;
+  }
+
+  public long getNumDownVotes() {
+    return numDownVotes;
+  }
+
+  public void setNumDownVotes(long numDownVotes) {
+    this.numDownVotes = numDownVotes;
+  }
+
   /**
    * @return the allowComments
    */
@@ -286,7 +305,7 @@ public class PermissibleObject implements Serializable, IHibernateFriendly, Comp
     if (o instanceof PermissibleObject == false) {
       return 0;
     }
-    PermissibleObject other = (PermissibleObject)o;
+    PermissibleObject other = (PermissibleObject) o;
     return this.id.compareTo(other.getId());
   }
 

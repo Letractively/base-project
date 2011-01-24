@@ -120,6 +120,9 @@ public class RepositoryHelper {
       if (parent.getNumRatingVotes() > 0) {
         parentNode.setUserRating(RatingHelper.getUserRating(session, parent, user, voterGUID));
       }
+      if (parent.getNumUpVotes() > 0 || parent.getNumDownVotes() > 0) {
+        parentNode.setUserThumb(ThumbHelper.getUserThumb(session, parent, user, voterGUID));
+      }
     }
 
     if (currentDepth != -1 && currentDepth >= fetchDepth) {

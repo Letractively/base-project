@@ -35,6 +35,7 @@ import org.damour.base.client.objects.User;
 import org.damour.base.client.objects.UserAdvisory;
 import org.damour.base.client.objects.UserGroup;
 import org.damour.base.client.objects.UserRating;
+import org.damour.base.client.objects.UserThumb;
 import org.damour.base.client.utils.StringUtils;
 import org.damour.base.server.gwt.RemoteServiceServlet;
 import org.damour.base.server.hibernate.HibernateUtil;
@@ -48,6 +49,7 @@ import org.damour.base.server.hibernate.helpers.RatingHelper;
 import org.damour.base.server.hibernate.helpers.RepositoryHelper;
 import org.damour.base.server.hibernate.helpers.SecurityHelper;
 import org.damour.base.server.hibernate.helpers.TagHelper;
+import org.damour.base.server.hibernate.helpers.ThumbHelper;
 import org.damour.base.server.hibernate.helpers.UserHelper;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -754,6 +756,71 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       session.get().save(userRating);
       tx.commit();
       return userRating;
+    } catch (Throwable t) {
+      Logger.log(t);
+      try {
+        tx.rollback();
+      } catch (Throwable tt) {
+      }
+      throw new SimpleMessageException(t.getMessage());
+    }
+  }
+
+  public UserThumb getUserThumb(PermissibleObject permissibleObject) throws SimpleMessageException {
+    if (permissibleObject == null) {
+      throw new SimpleMessageException("PermissibleObject not supplied.");
+    }
+    User authUser = getAuthenticatedUser(session.get());
+    try {
+      permissibleObject = (PermissibleObject) session.get().load(PermissibleObject.class, permissibleObject.getId());
+      if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, permissibleObject, PERM.READ)) {
+        throw new SimpleMessageException("User is not authorized to get thumbs on this content.");
+      }
+      // find thumb based on remote address if needed
+      return ThumbHelper.getUserThumb(session.get(), permissibleObject, authUser, getVoterGUID());
+    } catch (Throwable t) {
+      Logger.log(t);
+      throw new SimpleMessageException(t.getMessage());
+    }
+  }
+
+  public UserThumb setUserThumb(PermissibleObject permissibleObject, boolean like) throws SimpleMessageException {
+    if (permissibleObject == null) {
+      throw new SimpleMessageException("PermissibleObject not supplied.");
+    }
+    User authUser = getAuthenticatedUser(session.get());
+    Transaction tx = session.get().beginTransaction();
+    try {
+      permissibleObject = (PermissibleObject) session.get().load(PermissibleObject.class, permissibleObject.getId());
+
+      if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, permissibleObject, PERM.READ)) {
+        throw new SimpleMessageException("User is not authorized to set thumbs on this content.");
+      }
+
+      UserThumb userThumb = ThumbHelper.getUserThumb(session.get(), permissibleObject, authUser, getVoterGUID());
+      // check if thumb already exists
+      if (userThumb != null) {
+        // TODO: consider changing the vote
+        // simply subtract the previous amount and decrement the numRatingVotes and redivide
+        throw new SimpleMessageException("Already voted.");
+      }
+
+      if (like) {
+        permissibleObject.setNumUpVotes(permissibleObject.getNumUpVotes() + 1);
+      } else {
+        permissibleObject.setNumDownVotes(permissibleObject.getNumDownVotes() + 1);
+      }
+      session.get().save(permissibleObject);
+
+      userThumb = new UserThumb();
+      userThumb.setPermissibleObject(permissibleObject);
+      userThumb.setLikeThumb(like);
+      userThumb.setVoter(authUser);
+      userThumb.setVoterGUID(getVoterGUID());
+
+      session.get().save(userThumb);
+      tx.commit();
+      return userThumb;
     } catch (Throwable t) {
       Logger.log(t);
       try {

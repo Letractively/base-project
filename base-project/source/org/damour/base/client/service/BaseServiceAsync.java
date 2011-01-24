@@ -24,6 +24,7 @@ import org.damour.base.client.objects.User;
 import org.damour.base.client.objects.UserAdvisory;
 import org.damour.base.client.objects.UserGroup;
 import org.damour.base.client.objects.UserRating;
+import org.damour.base.client.objects.UserThumb;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -94,12 +95,14 @@ public interface BaseServiceAsync {
   public void addToTag(Tag tag, PermissibleObject permissibleObject, AsyncCallback<Void> callback);
   public void addToTag(TagMembership tagMembership, AsyncCallback<Void> callback);
   
-  // content rating & advisory
+  // content rating, advisory and thumbs
   public void setUserRating(PermissibleObject permissibleObject, int rating, AsyncCallback<UserRating> callback);
   public void getUserRating(PermissibleObject permissibleObject, AsyncCallback<UserRating> callback);
   public void getNextUnratedPermissibleObject(String objectType, AsyncCallback<PermissibleObject> callback);
   public void setUserAdvisory(PermissibleObject permissibleObject, int advisory, AsyncCallback<UserAdvisory> callback);
   public void getUserAdvisory(PermissibleObject permissibleObject, AsyncCallback<UserAdvisory> callback);
+  public void setUserThumb(PermissibleObject permissibleObject, boolean like, AsyncCallback<UserThumb> callback);
+  public void getUserThumb(PermissibleObject permissibleObject, AsyncCallback<UserThumb> callback);
   
   // file comments
   public void submitComment(Comment comment, AsyncCallback<Boolean> callback);
