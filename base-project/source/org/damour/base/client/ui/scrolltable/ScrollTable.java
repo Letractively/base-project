@@ -95,4 +95,8 @@ public class ScrollTable extends VerticalPanel {
     dataTable.getCellFormatter().setWidth(row, col, columnWidths[col]);
   }
 
+  public void removeAllRows() {
+    dataTable.removeAllRows();
+  }
+  
 }
