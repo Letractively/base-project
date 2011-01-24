@@ -104,7 +104,7 @@ public class RepositoryHelper {
     parentNode.setFiles(files);
   }
 
-  public static void buildPermissibleObjectTreeNode(Session session, User user, PermissibleObjectTreeNode parentNode, PermissibleObject parent,
+  public static void buildPermissibleObjectTreeNode(Session session, User user, User owner, String voterGUID, PermissibleObjectTreeNode parentNode, PermissibleObject parent,
       int currentDepth, int fetchDepth, int metaDataFetchDepth) {
 
     if (!SecurityHelper.doesUserHavePermission(session, user, parent, PERM.READ)) {
@@ -115,10 +115,10 @@ public class RepositoryHelper {
 
     if (parent != null && (metaDataFetchDepth == -1 || currentDepth <= metaDataFetchDepth)) {
       if (parent.getNumAdvisoryVotes() > 0) {
-        parentNode.setUserAdvisory(AdvisoryHelper.getUserAdvisory(session, parent, user, null));
+        parentNode.setUserAdvisory(AdvisoryHelper.getUserAdvisory(session, parent, user, voterGUID));
       }
       if (parent.getNumRatingVotes() > 0) {
-        parentNode.setUserRating(RatingHelper.getUserRating(session, parent, user, null));
+        parentNode.setUserRating(RatingHelper.getUserRating(session, parent, user, voterGUID));
       }
     }
 
@@ -126,53 +126,104 @@ public class RepositoryHelper {
       return;
     }
 
-    String selectFileUserPerm = "(select perm.permissibleObject.id from " + Permission.class.getSimpleName()
-        + " as perm where perm.permissibleObject.id = obj.id and perm.securityPrincipal.id = " + user.id + " and perm.readPerm = true)";
-    String selectFileGroupPerm = "(select perm.permissibleObject.id from "
-        + Permission.class.getSimpleName()
-        + " as perm where perm.permissibleObject.id = obj.id and perm.readPerm = true and perm.securityPrincipal.id in (select membership.userGroup.id from GroupMembership as membership where membership.user.id = "
-        + user.id + "))";
-
     List<PermissibleObject> children = null;
     if (parent == null) {
       if (user != null && user.isAdministrator()) {
         // admin sees all
-        children = session.createQuery("from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent is null order by id").setCacheable(true)
-            .list();
+        if (owner != null) {
+          children = session
+              .createQuery(
+                  "from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent is null and obj.owner.id = " + owner.getId() + " order by id")
+              .setCacheable(true).list();
+        } else {
+          children = session.createQuery("from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent is null order by id").setCacheable(true)
+              .list();
+        }
       } else if (user == null) {
-        children = session
-            .createQuery("from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent is null and obj.globalRead = true order by id")
-            .setCacheable(true).list();
+        if (owner != null) {
+          children = session
+              .createQuery(
+                  "from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent is null and obj.globalRead = true and obj.owner.id = "
+                      + owner.getId() + " order by id").setCacheable(true).list();
+        } else {
+          children = session
+              .createQuery("from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent is null and obj.globalRead = true order by id")
+              .setCacheable(true).list();
+        }
       } else {
-        children = session
-            .createQuery(
-                "from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent is null and (obj.owner.id = " + user.id
-                    + " OR obj.globalRead = true OR obj.id in " + selectFileUserPerm + " OR obj.id in " + selectFileGroupPerm + ") order by id")
-            .setCacheable(true).list();
+        if (owner != null) {
+          children = session
+              .createQuery(
+                  "from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent is null and obj.owner.id = " + owner.getId()
+                      + " and (obj.owner.id = " + user.id + " OR obj.globalRead = true OR obj.id in " + getUserPermissionQuery(user) + " OR obj.id in "
+                      + getGroupPermissionQuery(user) + ") order by id").setCacheable(true).list();
+        } else {
+          children = session
+              .createQuery(
+                  "from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent is null and (obj.owner.id = " + user.id
+                      + " OR obj.globalRead = true OR obj.id in " + getUserPermissionQuery(user) + " OR obj.id in " + getGroupPermissionQuery(user)
+                      + ") order by id").setCacheable(true).list();
+        }
       }
     } else {
       if (user != null && user.isAdministrator()) {
         // admin sees all
-        children = session.createQuery("from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent.id = " + parent.id + " order by id")
-            .setCacheable(true).list();
+        if (owner != null) {
+          children = session
+              .createQuery(
+                  "from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent.id = " + parent.id + " and obj.owner.id = " + owner.getId()
+                      + " order by id").setCacheable(true).list();
+        } else {
+          children = session.createQuery("from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent.id = " + parent.id + " order by id")
+              .setCacheable(true).list();
+        }
       } else if (user == null) {
-        children = session
-            .createQuery(
-                "from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent.id = " + parent.id + " and obj.globalRead = true order by id")
-            .setCacheable(true).list();
+        if (owner != null) {
+          children = session
+              .createQuery(
+                  "from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent.id = " + parent.id
+                      + " and obj.globalRead = true and obj.owner.id = " + owner.getId() + " order by id").setCacheable(true).list();
+        } else {
+          children = session
+              .createQuery(
+                  "from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent.id = " + parent.id + " and obj.globalRead = true order by id")
+              .setCacheable(true).list();
+        }
       } else {
-        children = session
-            .createQuery(
-                "from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent.id = " + parent.id + " and (obj.owner.id = " + user.id
-                    + " OR obj.globalRead = true OR obj.id in " + selectFileUserPerm + " OR obj.id in " + selectFileGroupPerm + ") order by id")
-            .setCacheable(true).list();
+        if (owner != null) {
+          children = session
+              .createQuery(
+                  "from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent.id = " + parent.id + " and obj.owner.id = " + owner.getId()
+                      + " and (obj.owner.id = " + user.id + " OR obj.globalRead = true OR obj.id in " + getUserPermissionQuery(user) + " OR obj.id in "
+                      + getGroupPermissionQuery(user) + ") order by id").setCacheable(true).list();
+        } else {
+          children = session
+              .createQuery(
+                  "from " + PermissibleObject.class.getSimpleName() + " as obj where obj.parent.id = " + parent.id + " and (obj.owner.id = " + user.id
+                      + " OR obj.globalRead = true OR obj.id in " + getUserPermissionQuery(user) + " OR obj.id in " + getGroupPermissionQuery(user)
+                      + ") order by id").setCacheable(true).list();
+        }
       }
     }
     for (PermissibleObject child : children) {
       PermissibleObjectTreeNode childNode = new PermissibleObjectTreeNode();
       parentNode.getChildren().put(child, childNode);
-      buildPermissibleObjectTreeNode(session, user, childNode, child, currentDepth + 1, fetchDepth, metaDataFetchDepth);
+      buildPermissibleObjectTreeNode(session, user, owner, voterGUID, childNode, child, currentDepth + 1, fetchDepth, metaDataFetchDepth);
     }
+  }
+
+  private static String getUserPermissionQuery(User user) {
+    String query = "(select perm.permissibleObject.id from " + Permission.class.getSimpleName()
+        + " as perm where perm.permissibleObject.id = obj.id and perm.securityPrincipal.id = " + user.id + " and perm.readPerm = true)";
+    return query;
+  }
+
+  private static String getGroupPermissionQuery(User user) {
+    String query = "(select perm.permissibleObject.id from "
+        + Permission.class.getSimpleName()
+        + " as perm where perm.permissibleObject.id = obj.id and perm.readPerm = true and perm.securityPrincipal.id in (select membership.userGroup.id from GroupMembership as membership where membership.user.id = "
+        + user.id + "))";
+    return query;
   }
 
   public static void getPermissibleObjects(Session session, User user, List<PermissibleObject> permissibleObjectList, PermissibleObject parent,

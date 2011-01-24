@@ -730,7 +730,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         throw new SimpleMessageException("User is not authorized to set rating on this content.");
       }
 
-      UserRating userRating = RatingHelper.getUserRating(session.get(), permissibleObject, authUser, getThreadLocalRequest().getRemoteAddr());
+      UserRating userRating = RatingHelper.getUserRating(session.get(), permissibleObject, authUser, getVoterGUID());
       // check if rating already exists
       if (userRating != null) {
         // TODO: consider changing the vote
@@ -773,6 +773,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
         if ("voterGUID".equals(cookie.getName())) {
           hasVoterGUID = true;
           voterGUID = cookie.getValue();
+          break;
         }
       }
     }
@@ -828,7 +829,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       }
 
       // check if rating already exists
-      UserAdvisory userAdvisory = AdvisoryHelper.getUserAdvisory(session.get(), permissibleObject, authUser, getThreadLocalRequest().getRemoteAddr());
+      UserAdvisory userAdvisory = AdvisoryHelper.getUserAdvisory(session.get(), permissibleObject, authUser, getVoterGUID());
       if (userAdvisory != null) {
         throw new SimpleMessageException("Already voted.");
       }
@@ -1139,14 +1140,15 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     }
   }
 
-  public PermissibleObjectTreeNode getPermissibleObjectTree(PermissibleObject parent, int fetchDepth, int metaDataFetchDepth) throws SimpleMessageException {
+  public PermissibleObjectTreeNode getPermissibleObjectTree(PermissibleObject parent, User owner, int fetchDepth, int metaDataFetchDepth)
+      throws SimpleMessageException {
     try {
       User authUser = getAuthenticatedUser(session.get());
       PermissibleObjectTreeNode root = new PermissibleObjectTreeNode();
       if (parent != null) {
         parent = getPermissibleObject(parent.getId());
       }
-      RepositoryHelper.buildPermissibleObjectTreeNode(session.get(), authUser, root, parent, 0, fetchDepth, metaDataFetchDepth);
+      RepositoryHelper.buildPermissibleObjectTreeNode(session.get(), authUser, owner, getVoterGUID(), root, parent, 0, fetchDepth, metaDataFetchDepth);
       return root;
     } catch (Throwable t) {
       Logger.log(t);

@@ -26,7 +26,7 @@ public class PermissibleObject implements Serializable, IHibernateFriendly, Comp
 
   public boolean hidden = false;
 
-  public boolean globalRead = false;
+  public boolean globalRead = true;
   public boolean globalWrite = false;
   public boolean globalExecute = false;
 
