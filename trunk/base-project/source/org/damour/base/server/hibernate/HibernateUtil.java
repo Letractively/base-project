@@ -126,7 +126,7 @@ public class HibernateUtil {
               System.gc();
               long total = Runtime.getRuntime().totalMemory();
               long free = Runtime.getRuntime().freeMemory();
-              System.out.println(DecimalFormat.getNumberInstance().format(total) + " allocated " + DecimalFormat.getNumberInstance().format(total - free)
+              Logger.log(DecimalFormat.getNumberInstance().format(total) + " allocated " + DecimalFormat.getNumberInstance().format(total - free)
                   + " used " + DecimalFormat.getNumberInstance().format(free) + " free");
               try {
                 Thread.sleep(30000);
