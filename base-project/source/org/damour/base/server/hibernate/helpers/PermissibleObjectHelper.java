@@ -10,6 +10,7 @@ import org.damour.base.client.objects.PermissibleObject;
 import org.damour.base.client.objects.User;
 import org.damour.base.client.objects.UserAdvisory;
 import org.damour.base.client.objects.UserRating;
+import org.damour.base.client.objects.UserThumb;
 import org.damour.base.client.utils.StringUtils;
 import org.damour.base.server.hibernate.HibernateUtil;
 import org.damour.base.server.hibernate.ReflectionCache;
@@ -34,18 +35,22 @@ public class PermissibleObjectHelper {
     for (UserRating rating : ratings) {
       session.delete(rating);
     }
+    List<UserThumb> thumbs = ThumbHelper.getUserThumbs(session, permissibleObject);
+    for (UserThumb thumb : thumbs) {
+      session.delete(thumb);
+    }
 
     session.createQuery("delete FileData where permissibleObject.id = " + permissibleObject.id).executeUpdate();
 
     // also delete all permissions for this
     SecurityHelper.deletePermissions(session, permissibleObject);
-    
+
     // delete children
     List<PermissibleObject> children = getChildren(session, permissibleObject);
     for (PermissibleObject child : children) {
       deletePermissibleObject(session, child);
     }
-    
+
     // ok finally we can delete the file
     session.delete(permissibleObject);
 
@@ -75,14 +80,15 @@ public class PermissibleObjectHelper {
       return session.createQuery("from " + instanceType.getSimpleName() + " where owner.id = " + owner.id + " order by creationDate desc").setCacheable(true)
           .list();
     } else {
-      return session.createQuery(
-          "from " + instanceType.getSimpleName() + " where parent.id = " + parent.id + " and owner.id = " + owner.id + " order by creationDate desc")
+      return session
+          .createQuery(
+              "from " + instanceType.getSimpleName() + " where parent.id = " + parent.id + " and owner.id = " + owner.id + " order by creationDate desc")
           .setCacheable(true).list();
     }
   }
 
-  public static List<PermissibleObject> search(Session session, Class<?> searchObjectType, String userQuery, String sortField, boolean sortDescending, boolean searchNames, boolean searchDescriptions,
-      boolean searchKeywords, boolean useExactPhrase) {
+  public static List<PermissibleObject> search(Session session, Class<?> searchObjectType, String userQuery, String sortField, boolean sortDescending,
+      boolean searchNames, boolean searchDescriptions, boolean searchKeywords, boolean useExactPhrase) {
     if (userQuery == null) {
       return Collections.emptyList();
     }
@@ -92,7 +98,7 @@ public class PermissibleObjectHelper {
     if (!StringUtils.isEmpty(sortField)) {
       orderBy = " order by " + sortField + (sortDescending ? " desc" : " asc");
     }
-    
+
     String query = "from " + searchObjectType.getSimpleName();
 
     if (useExactPhrase) {

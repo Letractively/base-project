@@ -13,21 +13,29 @@ import com.google.gwt.event.dom.client.MouseOutEvent;
 import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.event.dom.client.MouseOverEvent;
 import com.google.gwt.event.dom.client.MouseOverHandler;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 public class ThumbsWidget extends HorizontalPanel {
 
-  Image thumbUp = new Image();
-  Image thumbDown = new Image();
+  private NumberFormat formatter = NumberFormat.getFormat("#,###");
 
-  PermissibleObject permissibleObject;
-  UserThumb userThumb;
+  private boolean showLikesLabel = true;
+  private boolean showDislikesLabel = true;
+
+  private Image thumbUp = new Image();
+  private Image thumbDown = new Image();
+
+  private PermissibleObject permissibleObject;
+  private UserThumb userThumb;
 
   MouseOverHandler overHandler = new MouseOverHandler() {
 
@@ -47,20 +55,23 @@ public class ThumbsWidget extends HorizontalPanel {
     }
   };
 
-  public ThumbsWidget(final PermissibleObject permissibleObject, UserThumb userThumb, boolean fetchOnLoad) {
+  public ThumbsWidget(final PermissibleObject permissibleObject, UserThumb userThumb, boolean fetchOnLoad, boolean showLikesLabel, boolean showDislikesLabel) {
     this.permissibleObject = permissibleObject;
     this.userThumb = userThumb;
+    this.showLikesLabel = showLikesLabel;
+    this.showDislikesLabel = showDislikesLabel;
 
+    setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
     setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
     BaseImageBundle.images.thumbUp().applyTo(thumbUp);
     BaseImageBundle.images.thumbDown().applyTo(thumbDown);
-    thumbUp.setTitle("Like");
-    thumbDown.setTitle("Dislike");
 
     thumbUp.addClickHandler(new ClickHandler() {
 
       public void onClick(ClickEvent event) {
-        setUserThumb(permissibleObject, true);
+        if (ThumbsWidget.this.userThumb == null) {
+          setUserThumb(permissibleObject, true);
+        }
       }
     });
     thumbUp.addMouseOverHandler(overHandler);
@@ -69,7 +80,9 @@ public class ThumbsWidget extends HorizontalPanel {
     thumbDown.addClickHandler(new ClickHandler() {
 
       public void onClick(ClickEvent event) {
-        setUserThumb(permissibleObject, false);
+        if (ThumbsWidget.this.userThumb == null) {
+          setUserThumb(permissibleObject, false);
+        }
       }
     });
     thumbDown.addMouseOverHandler(overHandler);
@@ -80,14 +93,49 @@ public class ThumbsWidget extends HorizontalPanel {
     } else {
       loadThumbUI();
     }
+
   }
 
   public void loadThumbUI() {
     clear();
-    add(new Label("Up:" + permissibleObject.getNumUpVotes()));
-    add(new Label("Dn:" + permissibleObject.getNumDownVotes()));
-    add(thumbUp);
-    add(thumbDown);
+    if (permissibleObject.getNumUpVotes() > 0 || permissibleObject.getNumDownVotes() > 0) {
+      VerticalPanel statsPanel = new VerticalPanel();
+
+      if (showLikesLabel) {
+        DOM.setStyleAttribute(statsPanel.getElement(), "fontSize", "7pt");
+        if (permissibleObject.getNumUpVotes() == 1) {
+          statsPanel.add(new Label(BaseApplication.getMessages().getString("thumbsUpOnePersonStatsLabel", "1 person likes this")));
+        } else if (permissibleObject.getNumUpVotes() > 1) {
+          statsPanel.add(new Label(BaseApplication.getMessages().getString("thumbsUpManyPeopleStatsLabel", "{0} people like this",
+              formatter.format(permissibleObject.getNumUpVotes()))));
+        }
+      }
+      if (showDislikesLabel) {
+        if (permissibleObject.getNumDownVotes() == 1) {
+          statsPanel.add(new Label(BaseApplication.getMessages().getString("thumbsDownOnePersonStatsLabel", "1 person dislikes this")));
+        } else if (permissibleObject.getNumDownVotes() == 1) {
+          statsPanel.add(new Label(BaseApplication.getMessages().getString("thumbsDownManyPeopleStatsLabel", "{0} people dislike this",
+              formatter.format(permissibleObject.getNumDownVotes()))));
+        }
+      }
+      if (statsPanel.getWidgetCount() > 0) {
+        add(statsPanel);
+      }
+    }
+    if (userThumb != null) {
+      if (userThumb.isLikeThumb()) {
+        thumbUp.setTitle(BaseApplication.getMessages().getString("youLikeThis", "You like this"));
+        add(thumbUp);
+      } else {
+        thumbDown.setTitle(BaseApplication.getMessages().getString("youDislikeThis", "You dislike this"));
+        add(thumbDown);
+      }
+    } else {
+      add(thumbUp);
+      add(thumbDown);
+      thumbUp.setTitle(BaseApplication.getMessages().getString("like", "Like"));
+      thumbDown.setTitle(BaseApplication.getMessages().getString("dislike", "Dislike"));
+    }
   }
 
   public void setUserThumb(final PermissibleObject permissibleObject, boolean like) {

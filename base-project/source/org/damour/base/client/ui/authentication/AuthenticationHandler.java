@@ -694,6 +694,8 @@ public class AuthenticationHandler {
         if (forcePrompt) {
           // try to login and get data
           showLoginDialog(true);
+        } else {
+          fireSetAuthenticatedUser(null);
         }
       }
 
