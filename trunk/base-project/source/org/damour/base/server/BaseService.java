@@ -297,7 +297,11 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
           md5.Update(newUser.getEmail());
           md5.Update(newUser.getPasswordHash());
 
-          String url = getThreadLocalRequest().getScheme() + "://" + getThreadLocalRequest().getServerName() + "/?u=" + newUser.getUsername() + "&v="
+          String portStr = "";
+          if (getThreadLocalRequest().getLocalPort() != 80) {
+            portStr = ":" + getThreadLocalRequest().getLocalPort();
+          }
+          String url = getThreadLocalRequest().getScheme() + "://" + getThreadLocalRequest().getServerName() + portStr + "/?u=" + newUser.getUsername() + "&v="
               + md5.asHex();
 
           String text = "Thank you for signing up with " + BaseSystem.getDomainName()
