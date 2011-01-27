@@ -9,12 +9,12 @@ import org.hibernate.Session;
 public class CommentHelper {
 
   public static List<Comment> getRootComments(Session session, PermissibleObject permissibleObject) {
-    return (List<Comment>) session.createQuery("from " + Comment.class.getSimpleName() + " where parentComment is null and id = " + permissibleObject.id).setCacheable(true).list();
+    return (List<Comment>) session.createQuery("from " + Comment.class.getSimpleName() + " where parentComment is null and parent.id = " + permissibleObject.id).setCacheable(true).list();
   }
 
   
   public static List<Comment> getComments(Session session, PermissibleObject permissibleObject) {
-    return (List<Comment>) session.createQuery("from " + Comment.class.getSimpleName() + " where id = " + permissibleObject.id).setCacheable(true).list();
+    return (List<Comment>) session.createQuery("from " + Comment.class.getSimpleName() + " where parent.id = " + permissibleObject.id).setCacheable(true).list();
   }
 
   public static List<Comment> getComments(Session session, Comment fileComment) {
