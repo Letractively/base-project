@@ -113,7 +113,7 @@ public class ThumbsWidget extends HorizontalPanel {
       if (showDislikesLabel) {
         if (permissibleObject.getNumDownVotes() == 1) {
           statsPanel.add(new Label(BaseApplication.getMessages().getString("thumbsDownOnePersonStatsLabel", "1 person dislikes this")));
-        } else if (permissibleObject.getNumDownVotes() == 1) {
+        } else if (permissibleObject.getNumDownVotes() > 1) {
           statsPanel.add(new Label(BaseApplication.getMessages().getString("thumbsDownManyPeopleStatsLabel", "{0} people dislike this",
               formatter.format(permissibleObject.getNumDownVotes()))));
         }
