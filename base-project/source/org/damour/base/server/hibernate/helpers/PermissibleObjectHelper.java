@@ -27,17 +27,23 @@ public class PermissibleObjectHelper {
     for (Comment comment : comments) {
       CommentHelper.deleteComment(session, comment);
     }
-    List<UserAdvisory> advisories = AdvisoryHelper.getUserAdvisories(session, permissibleObject);
-    for (UserAdvisory advisory : advisories) {
-      session.delete(advisory);
+    if (permissibleObject.getNumAdvisoryVotes() > 0) {
+      List<UserAdvisory> advisories = AdvisoryHelper.getUserAdvisories(session, permissibleObject);
+      for (UserAdvisory advisory : advisories) {
+        session.delete(advisory);
+      }
     }
-    List<UserRating> ratings = RatingHelper.getUserRatings(session, permissibleObject);
-    for (UserRating rating : ratings) {
-      session.delete(rating);
+    if (permissibleObject.getNumRatingVotes() > 0) {
+      List<UserRating> ratings = RatingHelper.getUserRatings(session, permissibleObject);
+      for (UserRating rating : ratings) {
+        session.delete(rating);
+      }
     }
-    List<UserThumb> thumbs = ThumbHelper.getUserThumbs(session, permissibleObject);
-    for (UserThumb thumb : thumbs) {
-      session.delete(thumb);
+    if (permissibleObject.getNumUpVotes() > 0 || permissibleObject.getNumDownVotes() > 0) {
+      List<UserThumb> thumbs = ThumbHelper.getUserThumbs(session, permissibleObject);
+      for (UserThumb thumb : thumbs) {
+        session.delete(thumb);
+      }
     }
 
     session.createQuery("delete FileData where permissibleObject.id = " + permissibleObject.id).executeUpdate();
