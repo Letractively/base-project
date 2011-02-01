@@ -23,9 +23,11 @@ public class PermissibleObjectHelper {
     }
 
     // we will need to delete all FileComment, FileUserAdvisory and FileUserRating
-    List<Comment> comments = CommentHelper.getRootComments(session, permissibleObject);
-    for (Comment comment : comments) {
-      CommentHelper.deleteComment(session, comment);
+    if (permissibleObject.getNumComments() > 0) {
+      List<Comment> comments = CommentHelper.getRootComments(session, permissibleObject);
+      for (Comment comment : comments) {
+        CommentHelper.deleteComment(session, comment);
+      }
     }
     if (permissibleObject.getNumAdvisoryVotes() > 0) {
       List<UserAdvisory> advisories = AdvisoryHelper.getUserAdvisories(session, permissibleObject);
