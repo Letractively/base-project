@@ -2,26 +2,37 @@ package org.damour.base.client.ui.buttons;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 
 public class Button extends com.google.gwt.user.client.ui.Label {
+
+  private Command command;
+
   public Button() {
     super();
-    init();
-    sinkEvents(Event.MOUSEEVENTS);
-  }
-
-  public Button(String text) {
-    super(text);
     init();
     sinkEvents(Event.MOUSEEVENTS);
     addClickHandler(new ClickHandler() {
       public void onClick(ClickEvent event) {
         setStyleName("my-button");
+        if (command != null) {
+          command.execute();
+        }
       }
     });
+  }
+
+  public Button(String text) {
+    this();
+    setText(text);
+  }
+
+  public Button(String text, Command cmd) {
+    this(text);
+    setCommand(cmd);
   }
 
   public void onBrowserEvent(Event event) {
@@ -69,4 +80,11 @@ public class Button extends com.google.gwt.user.client.ui.Label {
     DOM.setElementPropertyBoolean(getElement(), "disabled", !enabled);
   }
 
+  public Command getCommand() {
+    return command;
+  }
+
+  public void setCommand(Command command) {
+    this.command = command;
+  }
 }
