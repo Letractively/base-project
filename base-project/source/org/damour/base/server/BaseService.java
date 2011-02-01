@@ -120,6 +120,9 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     if (!BaseSystem.requireAccountValidation()) {
       return true;
     }
+    if (user == null) {
+      return false;
+    }
     return user.isValidated();
   }
 
@@ -130,8 +133,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     MD5 md5 = new MD5();
     md5.Update(password);
     String passwordHash = md5.asHex();
-    if (user != null && isAccountValidated(user) && user.getUsername().equals(username)
-        && ((internal && password.equals(user.getPasswordHash())) || user.getPasswordHash().equals(passwordHash))) {
+    if (user != null && isAccountValidated(user) && ((internal && password.equals(user.getPasswordHash())) || user.getPasswordHash().equals(passwordHash))) {
       Cookie userCookie = new Cookie("user", user.getUsername());
       userCookie.setPath("/");
       userCookie.setMaxAge(COOKIE_TIMEOUT);
@@ -146,7 +148,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       response.addCookie(voterCookie);
     } else {
       destroyAuthCookies(request, response);
-      if (!isAccountValidated(user)) {
+      if (user != null && !isAccountValidated(user)) {
         throw new SimpleMessageException("Could not login.  Account is not validated.");
       }
       throw new SimpleMessageException("Could not login.  Invalid username or password.");
@@ -941,7 +943,9 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     User authUser = getAuthenticatedUser(session.get());
     Transaction tx = session.get().beginTransaction();
     try {
-      comment.setParent((PermissibleObject) session.get().load(PermissibleObject.class, comment.getParent().getId()));
+      PermissibleObject parentPermissibleObject = (PermissibleObject) session.get().load(PermissibleObject.class, comment.getParent().getId());
+      parentPermissibleObject.setNumComments(parentPermissibleObject.getNumComments() + 1);
+      comment.setParent(parentPermissibleObject);
       if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, comment.getParent(), PERM.READ)) {
         throw new SimpleMessageException("User is not authorized to make comments on this content.");
       }
@@ -951,6 +955,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       // the comment is approved if we are not moderating or if the commenter is the file owner
       comment.setApproved(!comment.getParent().isModerateComments() || comment.getParent().getOwner().equals(authUser));
       session.get().save(comment);
+      session.get().save(parentPermissibleObject);
       tx.commit();
       return true;
     } catch (Throwable t) {

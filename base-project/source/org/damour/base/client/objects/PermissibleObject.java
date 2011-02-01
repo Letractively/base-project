@@ -24,6 +24,7 @@ public class PermissibleObject implements Serializable, IHibernateFriendly, Comp
   public long numUpVotes = 0;
   public long numDownVotes = 0;
 
+  public long numComments = 0;
   public boolean allowComments = true;
   public boolean moderateComments = false;
 
@@ -255,6 +256,14 @@ public class PermissibleObject implements Serializable, IHibernateFriendly, Comp
     this.numDownVotes = numDownVotes;
   }
 
+  public long getNumComments() {
+    return numComments;
+  }
+
+  public void setNumComments(long numComments) {
+    this.numComments = numComments;
+  }
+  
   /**
    * @return the allowComments
    */
