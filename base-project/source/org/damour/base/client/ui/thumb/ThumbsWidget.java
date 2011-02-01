@@ -30,6 +30,7 @@ public class ThumbsWidget extends HorizontalPanel {
 
   private boolean showLikesLabel = true;
   private boolean showDislikesLabel = true;
+  private boolean showLabelsOnLeft = true;
 
   private Image thumbUp = new Image();
   private Image thumbDown = new Image();
@@ -55,11 +56,13 @@ public class ThumbsWidget extends HorizontalPanel {
     }
   };
 
-  public ThumbsWidget(final PermissibleObject permissibleObject, UserThumb userThumb, boolean fetchOnLoad, boolean showLikesLabel, boolean showDislikesLabel) {
+  public ThumbsWidget(final PermissibleObject permissibleObject, UserThumb userThumb, boolean fetchOnLoad, boolean showLabelsOnLeft, boolean showLikesLabel,
+      boolean showDislikesLabel) {
     this.permissibleObject = permissibleObject;
     this.userThumb = userThumb;
     this.showLikesLabel = showLikesLabel;
     this.showDislikesLabel = showDislikesLabel;
+    this.showLabelsOnLeft = showLabelsOnLeft;
 
     setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
     setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
@@ -96,8 +99,7 @@ public class ThumbsWidget extends HorizontalPanel {
 
   }
 
-  public void loadThumbUI() {
-    clear();
+  private void loadLabels() {
     if (permissibleObject.getNumUpVotes() > 0 || permissibleObject.getNumDownVotes() > 0) {
       VerticalPanel statsPanel = new VerticalPanel();
 
@@ -122,6 +124,9 @@ public class ThumbsWidget extends HorizontalPanel {
         add(statsPanel);
       }
     }
+  }
+
+  private void loadThumbs() {
     if (userThumb != null) {
       if (userThumb.isLikeThumb()) {
         thumbUp.setTitle(BaseApplication.getMessages().getString("youLikeThis", "You like this"));
@@ -135,6 +140,17 @@ public class ThumbsWidget extends HorizontalPanel {
       add(thumbDown);
       thumbUp.setTitle(BaseApplication.getMessages().getString("like", "Like"));
       thumbDown.setTitle(BaseApplication.getMessages().getString("dislike", "Dislike"));
+    }
+  }
+
+  private void loadThumbUI() {
+    clear();
+    if (showLabelsOnLeft) {
+      loadLabels();
+      loadThumbs();
+    } else {
+      loadThumbs();
+      loadLabels();
     }
   }
 
