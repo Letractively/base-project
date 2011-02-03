@@ -31,7 +31,8 @@ public class RatingWidget extends VerticalPanel {
   boolean showStatsLabel = true;
   HorizontalPanel starPanel = new HorizontalPanel();
   PermissibleObject permissibleObject;
-  UserRating fileRating;
+  UserRating userRating;
+
   Image star1 = new Image();
   Image star2 = new Image();
   Image star3 = new Image();
@@ -41,7 +42,7 @@ public class RatingWidget extends VerticalPanel {
   ClickHandler starClickHandler = new ClickHandler() {
 
     public void onClick(ClickEvent event) {
-      if (fileRating == null) {
+      if (userRating == null) {
         // do vote
         int vote = 0;
         if (event.getSource() == star1) {
@@ -63,7 +64,7 @@ public class RatingWidget extends VerticalPanel {
   MouseOverHandler starOverHandler = new MouseOverHandler() {
 
     public void onMouseOver(MouseOverEvent event) {
-      if (fileRating == null) {
+      if (userRating == null) {
         DOM.setStyleAttribute(((Widget) event.getSource()).getElement(), "cursor", "hand");
         DOM.setStyleAttribute(((Widget) event.getSource()).getElement(), "cursor", "pointer");
         starMoused((Widget) event.getSource());
@@ -89,7 +90,7 @@ public class RatingWidget extends VerticalPanel {
   public RatingWidget(PermissibleObject permissibleObject, UserRating fileRating, boolean fetchOnLoad, boolean showStatsLabel) {
     this.showStatsLabel = showStatsLabel;
     this.permissibleObject = permissibleObject;
-    this.fileRating = fileRating;
+    this.userRating = fileRating;
     setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 
     setupStar(star1);
@@ -256,7 +257,7 @@ public class RatingWidget extends VerticalPanel {
       }
     }
 
-    if (showStatsLabel && fileRating != null) {
+    if (showStatsLabel && userRating != null) {
       String title = BaseApplication.getMessages().getString("ratingAlready", "Content Rating (You have already voted)");
       star1.setTitle(title);
       star2.setTitle(title);
@@ -272,12 +273,20 @@ public class RatingWidget extends VerticalPanel {
     }
   }
 
+  public UserRating getUserRating() {
+    return userRating;
+  }
+
+  public void setUserRating(UserRating userRating) {
+    this.userRating = userRating;
+  }
+  
   public void setUserRating(final PermissibleObject permissibleObject, int rating) {
     AsyncCallback<UserRating> callback = new AsyncCallback<UserRating>() {
 
       public void onSuccess(UserRating userFileRating) {
         if (userFileRating != null) {
-          RatingWidget.this.fileRating = userFileRating;
+          RatingWidget.this.userRating = userFileRating;
           if (userFileRating.getPermissibleObject() != null) {
             RatingWidget.this.permissibleObject = userFileRating.getPermissibleObject();
           }
@@ -298,7 +307,7 @@ public class RatingWidget extends VerticalPanel {
 
       public void onSuccess(UserRating userFileRating) {
         if (userFileRating != null) {
-          RatingWidget.this.fileRating = userFileRating;
+          RatingWidget.this.userRating = userFileRating;
           if (userFileRating.getPermissibleObject() != null) {
             RatingWidget.this.permissibleObject = userFileRating.getPermissibleObject();
           }

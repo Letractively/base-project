@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.zip.CRC32;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.GwtTransient;
 import com.google.gwt.user.server.rpc.SerializationPolicy;
 import com.google.gwt.user.server.rpc.impl.SerializedInstanceReference;
@@ -110,6 +111,17 @@ import com.google.gwt.user.server.rpc.impl.SerializedInstanceReference;
     TYPES_WHOSE_IMPLEMENTATION_IS_EXCLUDED_FROM_SIGNATURES.add(Short.class);
     TYPES_WHOSE_IMPLEMENTATION_IS_EXCLUDED_FROM_SIGNATURES.add(String.class);
     TYPES_WHOSE_IMPLEMENTATION_IS_EXCLUDED_FROM_SIGNATURES.add(Throwable.class);
+
+    try {
+      /*
+       * Work around for incompatible type hierarchy (and therefore signature)
+       * between JUnit3 and JUnit4. Do this via reflection so we don't force the
+       * server to depend on JUnit.
+       */
+      Class<?> clazz = Class.forName("junit.framework.AssertionFailedError");
+      TYPES_WHOSE_IMPLEMENTATION_IS_EXCLUDED_FROM_SIGNATURES.add(clazz);
+    } catch (ClassNotFoundException dontCare) {
+    }
   }
 
   /**
@@ -239,7 +251,15 @@ import com.google.gwt.user.server.rpc.impl.SerializedInstanceReference;
   private static Class<?> computeHasCustomFieldSerializer(Class<?> instanceType) {
     assert (instanceType != null);
     String qualifiedTypeName = instanceType.getName();
-    ClassLoader classLoader = SerializabilityUtil.class.getClassLoader();
+    /*
+     * This class is called from client code running in hosted mode as well as
+     * server code running in the servlet container.  In hosted mode, we want to
+     * load classes through the CompilingClassLoader$MultiParentClassLoader, not
+     * the system classloader.
+     */
+    ClassLoader classLoader = GWT.isClient()
+        ? SerializabilityUtil.class.getClassLoader()
+        : Thread.currentThread().getContextClassLoader();
     String simpleSerializerName = qualifiedTypeName + "_CustomFieldSerializer";
     Class<?> customSerializer = getCustomFieldSerializer(classLoader,
         simpleSerializerName);

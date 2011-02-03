@@ -7,6 +7,7 @@ import java.util.Set;
 import org.damour.base.client.utils.StringTokenizer;
 import org.damour.base.client.utils.StringUtils;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.Header;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
@@ -106,7 +107,13 @@ public class ResourceBundle {
     if (!StringUtils.isEmpty(path) && !path.endsWith("/")) {
       path = path + "/";
     }
+    if (!path.startsWith("/")) {
+      // relative path, we must adjust to module relative url
+      path = "/" + GWT.getModuleName() + "/" + path;
+    }
+    
     this.path = path;
+    
 
     // get the locale meta property if the url parameter is missing
     initCallbacks();

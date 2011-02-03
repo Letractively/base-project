@@ -4,6 +4,7 @@ import org.damour.base.client.BaseApplication;
 import org.damour.base.client.ui.IGenericCallback;
 import org.damour.base.client.utils.StringUtils;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
@@ -42,7 +43,7 @@ public class PrivacyPolicyDialog extends PromptDialogBox {
 
   private void fetchPrivacyString(final IGenericCallback<String> callback) {
     // populate with text from the policy
-    RequestBuilder rb = new RequestBuilder(RequestBuilder.GET, "messages/privacy.html");
+    RequestBuilder rb = new RequestBuilder(RequestBuilder.GET, GWT.getModuleName() + "/messages/privacy.html");
     try {
       rb.setCallback(new RequestCallback() {
         public void onError(Request request, Throwable exception) {

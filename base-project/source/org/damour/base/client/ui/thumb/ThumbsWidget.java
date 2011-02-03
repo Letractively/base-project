@@ -100,11 +100,11 @@ public class ThumbsWidget extends HorizontalPanel {
   }
 
   private void loadLabels() {
+    VerticalPanel statsPanel = new VerticalPanel();
+    DOM.setStyleAttribute(statsPanel.getElement(), "fontSize", "7pt");
     if (permissibleObject.getNumUpVotes() > 0 || permissibleObject.getNumDownVotes() > 0) {
-      VerticalPanel statsPanel = new VerticalPanel();
 
       if (showLikesLabel) {
-        DOM.setStyleAttribute(statsPanel.getElement(), "fontSize", "7pt");
         if (permissibleObject.getNumUpVotes() == 1) {
           statsPanel.add(new Label(BaseApplication.getMessages().getString("thumbsUpOnePersonStatsLabel", "1 person likes this")));
         } else if (permissibleObject.getNumUpVotes() > 1) {
@@ -120,9 +120,12 @@ public class ThumbsWidget extends HorizontalPanel {
               formatter.format(permissibleObject.getNumDownVotes()))));
         }
       }
-      if (statsPanel.getWidgetCount() > 0) {
-        add(statsPanel);
-      }
+    } else {
+      DOM.setStyleAttribute(statsPanel.getElement(), "fontSize", "8pt");
+      statsPanel.add(new Label("Like this!"));
+    }
+    if (statsPanel.getWidgetCount() > 0) {
+      add(statsPanel);
     }
   }
 
@@ -195,5 +198,13 @@ public class ThumbsWidget extends HorizontalPanel {
       }
     };
     BaseServiceCache.getService().getUserThumb(permissibleObject, callback);
+  }
+  
+  public UserThumb getUserThumb() {
+    return userThumb;
+  }
+
+  public void setUserThumb(UserThumb userThumb) {
+    this.userThumb = userThumb;
   }
 }

@@ -89,9 +89,20 @@ public class ParameterParser {
   /**
    * Returns a Map of the URL query parameters for the host page; since changing the map would not change the window's location, the map returned is immutable.
    * 
+   * @return a map from URL query parameter names to the value
+   */
+  public Map<String, String> getParameterMap() {
+    ensureParameterMap();
+    return paramMap;
+  }
+
+  
+  /**
+   * Returns a Map of the URL query parameters for the host page; since changing the map would not change the window's location, the map returned is immutable.
+   * 
    * @return a map from URL query parameter names to a list of values
    */
-  public Map<String, List<String>> getParameterMap() {
+  public Map<String, List<String>> getListParameterMap() {
     if (listParamMap == null) {
       listParamMap = buildListParamMap(queryString);
     }
@@ -99,7 +110,7 @@ public class ParameterParser {
   }
   
   public List<String> getParameterValues(String name) {
-    return getParameterMap().get(name);
+    return getListParameterMap().get(name);
   }
   
 }
