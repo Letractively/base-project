@@ -78,7 +78,7 @@ public class RemoteServiceServlet extends AbstractRemoteServiceServlet
           + ", is not in the same web application as this servlet, "
           + contextPath
           + ".  Your module may not be properly configured or your client and server code maybe out of date.";
-      servlet.log(message, null);
+      servlet.log(message);
     } else {
       // Strip off the context path from the module base URL. It should be a
       // strict prefix.
@@ -106,7 +106,7 @@ public class RemoteServiceServlet extends AbstractRemoteServiceServlet
           String message = "ERROR: The serialization policy file '"
               + serializationPolicyFilePath
               + "' was not found; did you forget to include it in this deployment?";
-          servlet.log(message, null);
+          servlet.log(message);
         }
       } finally {
         if (is != null) {
@@ -129,9 +129,26 @@ public class RemoteServiceServlet extends AbstractRemoteServiceServlet
   private final Map<String, SerializationPolicy> serializationPolicyCache = new HashMap<String, SerializationPolicy>();
 
   /**
-   * The default constructor.
+   * The implementation of the service.
+   */
+  private final Object delegate;
+
+  /**
+   * The default constructor used by service implementations that
+   * extend this class.  The servlet will delegate AJAX requests to
+   * the appropriate method in the subclass.
    */
   public RemoteServiceServlet() {
+    this.delegate = this;
+  }
+
+  /**
+   * The wrapping constructor used by service implementations that are
+   * separate from this class.  The servlet will delegate AJAX
+   * requests to the appropriate method in the given object.
+   */
+  public RemoteServiceServlet(Object delegate) {
+    this.delegate = delegate;
   }
 
   public final SerializationPolicy getSerializationPolicy(String moduleBaseURL,
@@ -153,8 +170,7 @@ public class RemoteServiceServlet extends AbstractRemoteServiceServlet
               + strongName
               + "' for module '"
               + moduleBaseURL
-              + "'; a legacy, 1.3.3 compatible, serialization policy will be used.  You may experience SerializationExceptions as a result.",
-          null);
+              + "'; a legacy, 1.3.3 compatible, serialization policy will be used.  You may experience SerializationExceptions as a result.");
       serializationPolicy = RPC.getDefaultSerializationPolicy();
     }
 
@@ -189,10 +205,13 @@ public class RemoteServiceServlet extends AbstractRemoteServiceServlet
    *           exception (the exception will be the one thrown by the service)
    */
   public String processCall(String payload) throws SerializationException {
+    // First, check for possible XSRF situation
+    checkPermutationStrongName();
+
     try {
-      RPCRequest rpcRequest = RPC.decodeRequest(payload, this.getClass(), this);
+      RPCRequest rpcRequest = RPC.decodeRequest(payload, delegate.getClass(), this);
       onAfterRequestDeserialized(rpcRequest);
-      return RPC.invokeAndEncodeResponse(this, rpcRequest.getMethod(),
+      return RPC.invokeAndEncodeResponse(delegate, rpcRequest.getMethod(),
           rpcRequest.getParameters(), rpcRequest.getSerializationPolicy(),
           rpcRequest.getFlags());
     } catch (IncompatibleRemoteServiceException ex) {
@@ -237,6 +256,24 @@ public class RemoteServiceServlet extends AbstractRemoteServiceServlet
     // Write the response.
     //
     writeResponse(request, response, responsePayload);
+  }
+
+  /**
+   * This method is called by {@link #processCall(String)} and will throw a
+   * SecurityException if {@link #getPermutationStrongName()} returns
+   * <code>null</code>. This method can be overridden to be a no-op if there are
+   * clients that are not expected to provide the
+   * {@value com.google.gwt.user.client.rpc.RpcRequestBuilder#STRONG_NAME_HEADER}
+   * header.
+   * 
+   * @throws SecurityException if {@link #getPermutationStrongName()} returns
+   *           <code>null</code>
+   */
+  protected void checkPermutationStrongName() throws SecurityException {
+    if (getPermutationStrongName() == null) {
+      throw new SecurityException(
+          "Blocked request without GWT permutation header (XSRF attack?)");
+    }
   }
 
   /**

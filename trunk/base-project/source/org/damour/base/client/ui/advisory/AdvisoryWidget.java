@@ -37,7 +37,8 @@ public class AdvisoryWidget extends VerticalPanel {
   boolean showStatsLabel = true;
 
   PermissibleObject permissibleObject;
-  UserAdvisory fileAdvisory;
+  UserAdvisory userAdvisory;
+
   Image G = new Image();
   Image PG = new Image();
   Image PG13 = new Image();
@@ -54,7 +55,7 @@ public class AdvisoryWidget extends VerticalPanel {
   private MouseMoveHandler mouseMoveHandler = new MouseMoveHandler() {
 
     public void onMouseMove(MouseMoveEvent event) {
-      if (fileAdvisory == null) {
+      if (userAdvisory == null) {
         // bring up content advisory popup
         if (contentAdvisoryPopup.getWidget() == ratingPanel && contentAdvisoryPopup.isShowing()) {
           return;
@@ -71,7 +72,7 @@ public class AdvisoryWidget extends VerticalPanel {
   private ClickHandler ratingHandler = new ClickHandler() {
 
     public void onClick(ClickEvent event) {
-      if (fileAdvisory == null) {
+      if (userAdvisory == null) {
         // do vote
         int vote = 0;
         if (event.getSource() == G || event.getSource() == GRB) {
@@ -93,7 +94,7 @@ public class AdvisoryWidget extends VerticalPanel {
 
   public AdvisoryWidget(PermissibleObject permissibleObject, UserAdvisory fileAdvisory, boolean fetchOnLoad, boolean showStatsLabel) {
     this.permissibleObject = permissibleObject;
-    this.fileAdvisory = fileAdvisory;
+    this.userAdvisory = fileAdvisory;
     this.showStatsLabel = showStatsLabel;
     if (fileAdvisory == null && permissibleObject.getNumAdvisoryVotes() > 0 && fetchOnLoad) {
       getFileUserAdvisory();
@@ -165,7 +166,7 @@ public class AdvisoryWidget extends VerticalPanel {
     setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
     add(advisoryImage);
     if (showStatsLabel) {
-      if (fileAdvisory == null) {
+      if (userAdvisory == null) {
         advisoryImage.setTitle(BaseApplication.getMessages().getString("contentAdvisory", "Content Advisory"));
       } else {
         advisoryImage.setTitle(BaseApplication.getMessages().getString("contentAdvisoryAlready", "Content Advisory (You have already voted)"));
@@ -176,12 +177,20 @@ public class AdvisoryWidget extends VerticalPanel {
     }
   }
 
+  public UserAdvisory getUserAdvisory() {
+    return userAdvisory;
+  }
+
+  public void setUserAdvisory(UserAdvisory userAdvisory) {
+    this.userAdvisory = userAdvisory;
+  }
+  
   public void setFileUserAdvisory(int advisory) {
     AsyncCallback<UserAdvisory> callback = new AsyncCallback<UserAdvisory>() {
 
       public void onSuccess(UserAdvisory userFileAdvisory) {
         if (userFileAdvisory != null) {
-          AdvisoryWidget.this.fileAdvisory = userFileAdvisory;
+          AdvisoryWidget.this.userAdvisory = userFileAdvisory;
           if (userFileAdvisory.getPermissibleObject() != null) {
             AdvisoryWidget.this.permissibleObject = userFileAdvisory.getPermissibleObject();
           }
@@ -202,7 +211,7 @@ public class AdvisoryWidget extends VerticalPanel {
 
       public void onSuccess(UserAdvisory userFileAdvisory) {
         if (userFileAdvisory != null) {
-          AdvisoryWidget.this.fileAdvisory = userFileAdvisory;
+          AdvisoryWidget.this.userAdvisory = userFileAdvisory;
           if (userFileAdvisory.getPermissibleObject() != null) {
             AdvisoryWidget.this.permissibleObject = userFileAdvisory.getPermissibleObject();
           }
