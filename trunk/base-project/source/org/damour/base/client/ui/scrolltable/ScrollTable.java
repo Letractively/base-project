@@ -98,5 +98,9 @@ public class ScrollTable extends VerticalPanel {
   public void removeAllRows() {
     dataTable.removeAllRows();
   }
+ 
+  public Widget getWidget(int row, int column) {
+    return dataTable.getWidget(row, column);
+  }
   
 }

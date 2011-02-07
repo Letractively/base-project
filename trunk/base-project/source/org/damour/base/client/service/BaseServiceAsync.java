@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import org.damour.base.client.exceptions.SimpleMessageException;
 import org.damour.base.client.objects.Comment;
 import org.damour.base.client.objects.File;
 import org.damour.base.client.objects.FileUploadStatus;
@@ -77,6 +78,8 @@ public interface BaseServiceAsync {
   public void updatePermissibleObject(PermissibleObject permissibleObject, AsyncCallback<PermissibleObject> callback);
   public void getFileUploadStatus(AsyncCallback<FileUploadStatus> callback);
   public void searchPermissibleObjects(PermissibleObject parent, String query, String sortField, boolean sortDescending, String searchObjectType, boolean searchNames, boolean searchDescriptions, boolean searchKeywords, boolean useExactPhrase, AsyncCallback<List<PermissibleObject>> callback);
+  public void getCustomCounter1(PermissibleObject permissibleObject, AsyncCallback<Long> callback);
+  public void incrementCustomCounter1(PermissibleObject permissibleObject, AsyncCallback<Long> callback);
   // for debug purposes: simply return what was given, proving the serialization of the desired object
   public void echoPermissibleObject(PermissibleObject permissibleObject, AsyncCallback<PermissibleObject> callback);
 
@@ -112,7 +115,7 @@ public interface BaseServiceAsync {
   // advertising/feedback rpc
   public void submitAdvertisingInfo(String contactName, String email, String company, String phone, String comments, AsyncCallback<Boolean> callback);
   public void submitFeedback(String contactName, String email, String phone, String comments, AsyncCallback<Boolean> callback);
-  
+  public void sendEmail(PermissibleObject permissibleObject, String subject, String message, String fromAddress, String fromName, String toAddresses, AsyncCallback<Void> callback) throws SimpleMessageException;
   
   
 }

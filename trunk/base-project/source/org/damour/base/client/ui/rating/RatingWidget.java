@@ -39,6 +39,8 @@ public class RatingWidget extends VerticalPanel {
   Image star4 = new Image();
   Image star5 = new Image();
 
+  private boolean isSubmitting = false;
+  
   ClickHandler starClickHandler = new ClickHandler() {
 
     public void onClick(ClickEvent event) {
@@ -56,6 +58,7 @@ public class RatingWidget extends VerticalPanel {
         } else if (event.getSource() == star5) {
           vote = 5;
         }
+        DOM.setStyleAttribute(((Widget) event.getSource()).getElement(), "cursor", "wait");
         setUserRating(permissibleObject, vote);
       }
     }
@@ -64,10 +67,16 @@ public class RatingWidget extends VerticalPanel {
   MouseOverHandler starOverHandler = new MouseOverHandler() {
 
     public void onMouseOver(MouseOverEvent event) {
+      if (isSubmitting) {
+        DOM.setStyleAttribute(((Widget) event.getSource()).getElement(), "cursor", "wait");
+        return;
+      }
       if (userRating == null) {
         DOM.setStyleAttribute(((Widget) event.getSource()).getElement(), "cursor", "hand");
         DOM.setStyleAttribute(((Widget) event.getSource()).getElement(), "cursor", "pointer");
         starMoused((Widget) event.getSource());
+      } else {
+        DOM.setStyleAttribute(((Widget) event.getSource()).getElement(), "cursor", "default");
       }
     }
   };
@@ -271,6 +280,21 @@ public class RatingWidget extends VerticalPanel {
       star4.setTitle(statText);
       star5.setTitle(statText);
     }
+    
+    if (isSubmitting) {
+      DOM.setStyleAttribute(star1.getElement(), "cursor", "wait");
+      DOM.setStyleAttribute(star2.getElement(), "cursor", "wait");
+      DOM.setStyleAttribute(star3.getElement(), "cursor", "wait");
+      DOM.setStyleAttribute(star4.getElement(), "cursor", "wait");
+      DOM.setStyleAttribute(star5.getElement(), "cursor", "wait");
+    } else {
+      DOM.setStyleAttribute(star1.getElement(), "cursor", "default");
+      DOM.setStyleAttribute(star2.getElement(), "cursor", "default");
+      DOM.setStyleAttribute(star3.getElement(), "cursor", "default");
+      DOM.setStyleAttribute(star4.getElement(), "cursor", "default");
+      DOM.setStyleAttribute(star5.getElement(), "cursor", "default");
+    }
+    
   }
 
   public UserRating getUserRating() {
@@ -282,9 +306,14 @@ public class RatingWidget extends VerticalPanel {
   }
   
   public void setUserRating(final PermissibleObject permissibleObject, int rating) {
+    if (isSubmitting) {
+      return;
+    }
+    isSubmitting = true;
     AsyncCallback<UserRating> callback = new AsyncCallback<UserRating>() {
 
       public void onSuccess(UserRating userFileRating) {
+        isSubmitting = false;
         if (userFileRating != null) {
           RatingWidget.this.userRating = userFileRating;
           if (userFileRating.getPermissibleObject() != null) {
@@ -295,6 +324,7 @@ public class RatingWidget extends VerticalPanel {
       }
 
       public void onFailure(Throwable t) {
+        isSubmitting = false;
         MessageDialogBox dialog = new MessageDialogBox(BaseApplication.getMessages().getString("error", "Error"), t.getMessage(), false, true, true);
         dialog.center();
       }

@@ -94,8 +94,11 @@ public interface BaseImageBundle extends ImageBundle, TreeImages {
   AbstractImagePrototype advisoryR();
   AbstractImagePrototype advisoryNC17();
   
+  // thumb widget
   AbstractImagePrototype thumbUp();
   AbstractImagePrototype thumbDown();
   
+  // email widget
+  AbstractImagePrototype email16x16();
   
 }

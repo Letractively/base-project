@@ -28,6 +28,11 @@ public class PermissibleObject implements Serializable, IHibernateFriendly, Comp
   public boolean allowComments = true;
   public boolean moderateComments = false;
 
+  // counters which may be optionally used by clients
+  public Long customCounter1 = new Long(0);
+  public Long customCounter2 = new Long(0);
+  public Long customCounter3 = new Long(0);
+
   public boolean hidden = false;
 
   public boolean globalRead = true;
@@ -263,7 +268,7 @@ public class PermissibleObject implements Serializable, IHibernateFriendly, Comp
   public void setNumComments(long numComments) {
     this.numComments = numComments;
   }
-  
+
   /**
    * @return the allowComments
    */
@@ -292,6 +297,39 @@ public class PermissibleObject implements Serializable, IHibernateFriendly, Comp
    */
   public void setModerateComments(boolean moderateComments) {
     this.moderateComments = moderateComments;
+  }
+
+  public Long getCustomCounter1() {
+    if (customCounter1 == null) {
+      customCounter1 = new Long(0);
+    }
+    return customCounter1;
+  }
+
+  public void setCustomCounter1(Long customCounter1) {
+    this.customCounter1 = customCounter1;
+  }
+
+  public Long getCustomCounter2() {
+    if (customCounter2 == null) {
+      customCounter2 = new Long(0);
+    }
+    return customCounter2;
+  }
+
+  public void setCustomCounter2(Long customCounter2) {
+    this.customCounter2 = customCounter2;
+  }
+
+  public Long getCustomCounter3() {
+    if (customCounter3 == null) {
+      customCounter3 = new Long(0);
+    }
+    return customCounter3;
+  }
+
+  public void setCustomCounter3(Long customCounter3) {
+    this.customCounter3 = customCounter3;
   }
 
   public boolean isHidden() {
