@@ -38,12 +38,18 @@ public class ThumbsWidget extends HorizontalPanel {
   private PermissibleObject permissibleObject;
   private UserThumb userThumb;
 
+  private boolean isSubmitting = false;
+
   MouseOverHandler overHandler = new MouseOverHandler() {
 
     public void onMouseOver(MouseOverEvent event) {
       if (userThumb == null) {
         DOM.setStyleAttribute(((Widget) event.getSource()).getElement(), "cursor", "hand");
         DOM.setStyleAttribute(((Widget) event.getSource()).getElement(), "cursor", "pointer");
+      } else if (isSubmitting) {
+        DOM.setStyleAttribute(((Widget) event.getSource()).getElement(), "cursor", "wait");
+      } else {
+        DOM.setStyleAttribute(((Widget) event.getSource()).getElement(), "cursor", "default");
       }
     }
   };
@@ -52,7 +58,7 @@ public class ThumbsWidget extends HorizontalPanel {
 
     public void onMouseOut(MouseOutEvent event) {
       DOM.setStyleAttribute(((Widget) event.getSource()).getElement(), "cursor", "default");
-      loadThumbUI();
+      // loadThumbUI();
     }
   };
 
@@ -72,6 +78,7 @@ public class ThumbsWidget extends HorizontalPanel {
     thumbUp.addClickHandler(new ClickHandler() {
 
       public void onClick(ClickEvent event) {
+        DOM.setStyleAttribute(((Widget) event.getSource()).getElement(), "cursor", "wait");
         if (ThumbsWidget.this.userThumb == null) {
           setUserThumb(permissibleObject, true);
         }
@@ -83,6 +90,7 @@ public class ThumbsWidget extends HorizontalPanel {
     thumbDown.addClickHandler(new ClickHandler() {
 
       public void onClick(ClickEvent event) {
+        DOM.setStyleAttribute(((Widget) event.getSource()).getElement(), "cursor", "wait");
         if (ThumbsWidget.this.userThumb == null) {
           setUserThumb(permissibleObject, false);
         }
@@ -107,7 +115,7 @@ public class ThumbsWidget extends HorizontalPanel {
       if (showLikesLabel) {
         if (permissibleObject.getNumUpVotes() == 1) {
           statsPanel.add(new Label(BaseApplication.getMessages().getString("thumbsUpOnePersonStatsLabel", "1 person likes this")));
-        } else if (permissibleObject.getNumUpVotes() > 1) {
+        } else { //if (permissibleObject.getNumUpVotes() > 1) {
           statsPanel.add(new Label(BaseApplication.getMessages().getString("thumbsUpManyPeopleStatsLabel", "{0} people like this",
               formatter.format(permissibleObject.getNumUpVotes()))));
         }
@@ -158,9 +166,14 @@ public class ThumbsWidget extends HorizontalPanel {
   }
 
   public void setUserThumb(final PermissibleObject permissibleObject, boolean like) {
+    if (isSubmitting) {
+      return;
+    }
+    isSubmitting = true;
     AsyncCallback<UserThumb> callback = new AsyncCallback<UserThumb>() {
 
       public void onSuccess(UserThumb userThumb) {
+        isSubmitting = false;
         if (userThumb != null) {
           ThumbsWidget.this.userThumb = userThumb;
           if (userThumb.getPermissibleObject() != null) {
@@ -171,6 +184,7 @@ public class ThumbsWidget extends HorizontalPanel {
       }
 
       public void onFailure(Throwable t) {
+        isSubmitting = false;
         MessageDialogBox dialog = new MessageDialogBox(BaseApplication.getMessages().getString("error", "Error"), t.getMessage(), false, true, true);
         dialog.center();
       }
@@ -199,7 +213,7 @@ public class ThumbsWidget extends HorizontalPanel {
     };
     BaseServiceCache.getService().getUserThumb(permissibleObject, callback);
   }
-  
+
   public UserThumb getUserThumb() {
     return userThumb;
   }

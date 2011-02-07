@@ -22,6 +22,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 public class AdvisoryWidget extends VerticalPanel {
 
@@ -52,6 +53,8 @@ public class AdvisoryWidget extends VerticalPanel {
   RadioButton RRB = new RadioButton("");
   RadioButton NC17RB = new RadioButton("");
 
+  private boolean isSubmitting = false;
+  
   private MouseMoveHandler mouseMoveHandler = new MouseMoveHandler() {
 
     public void onMouseMove(MouseMoveEvent event) {
@@ -86,6 +89,7 @@ public class AdvisoryWidget extends VerticalPanel {
         } else if (event.getSource() == NC17 || event.getSource() == NC17RB) {
           vote = 5;
         }
+        DOM.setStyleAttribute(((Widget) event.getSource()).getElement(), "cursor", "wait");
         setFileUserAdvisory(vote);
         contentAdvisoryPopup.hide();
       }
@@ -186,9 +190,14 @@ public class AdvisoryWidget extends VerticalPanel {
   }
   
   public void setFileUserAdvisory(int advisory) {
+    if (isSubmitting) {
+      return;
+    }
+    isSubmitting = true;
     AsyncCallback<UserAdvisory> callback = new AsyncCallback<UserAdvisory>() {
 
       public void onSuccess(UserAdvisory userFileAdvisory) {
+        isSubmitting = false;
         if (userFileAdvisory != null) {
           AdvisoryWidget.this.userAdvisory = userFileAdvisory;
           if (userFileAdvisory.getPermissibleObject() != null) {
@@ -199,6 +208,7 @@ public class AdvisoryWidget extends VerticalPanel {
       }
 
       public void onFailure(Throwable t) {
+        isSubmitting = false;
         MessageDialogBox dialog = new MessageDialogBox(BaseApplication.getMessages().getString("error", "Error"), t.getMessage(), false, true, true);
         dialog.center();
       }

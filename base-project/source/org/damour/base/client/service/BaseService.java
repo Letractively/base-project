@@ -79,6 +79,8 @@ public interface BaseService extends RemoteService {
   public PermissibleObject updatePermissibleObject(PermissibleObject permissibleObject) throws SimpleMessageException;
   public FileUploadStatus getFileUploadStatus() throws SimpleMessageException;
   public List<PermissibleObject> searchPermissibleObjects(PermissibleObject parent, String query, String sortField, boolean sortDescending, String searchObjectType, boolean searchNames, boolean searchDescriptions, boolean searchKeywords, boolean useExactPhrase) throws SimpleMessageException;
+  public Long getCustomCounter1(PermissibleObject permissibleObject);
+  public Long incrementCustomCounter1(PermissibleObject permissibleObject);
   // for debug purposes: simply return what was given, proving the serialization of the desired object
   public PermissibleObject echoPermissibleObject(PermissibleObject permissibleObject) throws SimpleMessageException;
 
@@ -114,4 +116,6 @@ public interface BaseService extends RemoteService {
   // advertising/feedback rpc
   public Boolean submitAdvertisingInfo(String contactName, String email, String company, String phone, String comments) throws SimpleMessageException;
   public Boolean submitFeedback(String contactName, String email, String phone, String comments) throws SimpleMessageException;
+  public void sendEmail(PermissibleObject permissibleObject, String subject, String message, String fromAddress, String fromName, String toAddresses) throws SimpleMessageException;
+
 }

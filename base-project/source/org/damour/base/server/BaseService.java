@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.UUID;
 
 import javax.servlet.http.Cookie;
@@ -1464,6 +1465,40 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     }
   }
 
+  public Long getCustomCounter1(PermissibleObject permissibleObject) {
+    if (permissibleObject == null) {
+      throw new SimpleMessageException("PermissibleObject not supplied.");
+    }
+    try {
+      permissibleObject = (PermissibleObject) session.get().load(PermissibleObject.class, permissibleObject.getId());
+      return permissibleObject.getCustomCounter1();
+    } catch (Throwable t) {
+      Logger.log(t);
+      throw new SimpleMessageException(t.getMessage());
+    }
+  }
+
+  public Long incrementCustomCounter1(PermissibleObject permissibleObject) {
+    if (permissibleObject == null) {
+      throw new SimpleMessageException("PermissibleObject not supplied.");
+    }
+    Transaction tx = session.get().beginTransaction();
+    try {
+      permissibleObject = (PermissibleObject) session.get().load(PermissibleObject.class, permissibleObject.getId());
+      permissibleObject.setCustomCounter1(permissibleObject.getCustomCounter1() + 1);
+      session.get().save(permissibleObject);
+      tx.commit();
+      return permissibleObject.getCustomCounter1();
+    } catch (Throwable t) {
+      Logger.log(t);
+      try {
+        tx.rollback();
+      } catch (Throwable tt) {
+      }
+      throw new SimpleMessageException(t.getMessage());
+    }
+  }
+
   public PermissibleObject echoPermissibleObject(PermissibleObject permissibleObject) throws SimpleMessageException {
     return permissibleObject;
   }
@@ -1692,6 +1727,36 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       } catch (Throwable tt) {
       }
       throw new SimpleMessageException(t.getMessage());
+    }
+  }
+
+  public void sendEmail(PermissibleObject permissibleObject, final String subject, final String message, String fromAddress, String fromName, String toAddresses) {
+    User user = null;
+    try {
+      user = getAuthenticatedUser();
+    } catch (Throwable t) {
+    }
+    if (user != null) {
+      fromName = user.getFirstname();
+      fromAddress = user.getEmail();
+    }
+    StringTokenizer st = new StringTokenizer(toAddresses, ";");
+    while (st.hasMoreTokens()) {
+      String toAddress = st.nextToken();
+      String toName = st.nextToken();
+      
+      // replace {toAddress} with toAddress on server
+      // replace {toName} with toName on server
+      String tmpSubject = subject;
+      tmpSubject = tmpSubject.replace("{toAddress}", toAddress); //$NON-NLS-1$ 
+      tmpSubject = tmpSubject.replace("{toName}", toName); //$NON-NLS-1$ 
+      
+      String tmpMessage = message;
+      tmpMessage = tmpMessage.replace("{toAddress}", toAddress); //$NON-NLS-1$ 
+      tmpMessage = tmpMessage.replace("{toName}", toName); //$NON-NLS-1$ 
+
+      
+      BaseSystem.getEmailService().sendMessage(BaseSystem.getSmtpHost(), fromAddress, fromName, toAddress, tmpSubject, tmpMessage);
     }
   }
 
