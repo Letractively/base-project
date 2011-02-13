@@ -3,6 +3,9 @@
   cursor: hand;
 }
 
+.hasBusyCursor {
+	cursor: wait;
+}
 
 .genericImageButton {
   cursor: pointer;

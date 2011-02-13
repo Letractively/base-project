@@ -31,6 +31,34 @@ public class BaseSystem {
     }
   }
 
+  public static String getBaseUrl(HttpServletRequest request) {
+    StringBuffer sb = new StringBuffer();
+    sb.append(request.getScheme());
+    sb.append("://");
+    sb.append(request.getServerName());
+    if (request.getServerPort() != 80) {
+      sb.append(":");
+      sb.append(request.getServerPort());
+    }
+    return sb.toString();
+  }
+
+  public static String patchURL(String unsafeURL) {
+    if (unsafeURL == null) {
+      return null;
+    }
+    unsafeURL = unsafeURL.replaceAll("\"", "").replaceAll("\'", "").replaceAll("\\?", "-").replaceAll(" ", "-");
+    unsafeURL = unsafeURL.replaceAll("\\(", "").replaceAll("\\)", "").replaceAll("\\[", "").replaceAll("\\]", "");
+    unsafeURL = unsafeURL.replaceAll("\\$", "").replaceAll("\\@", "-").replaceAll("\\!", "-").replaceAll("\\&", "-");
+    unsafeURL = unsafeURL.replaceAll("\\+", "-").replaceAll("\\<", "").replaceAll("\\>", "").replaceAll("/", "-");
+    unsafeURL = unsafeURL.replaceAll(":", "-").replaceAll("\\{", "").replaceAll("\\}", "").replaceAll(",", "-");
+    unsafeURL = unsafeURL.replaceAll(";", "-").replaceAll("`", "");
+    while (unsafeURL.contains("--")) {
+      unsafeURL = unsafeURL.replaceAll("--", "-");
+    }
+    return unsafeURL;
+  }
+  
   public static String getDomainName() {
     return domainName;
   }
@@ -88,10 +116,18 @@ public class BaseSystem {
   public static IEmailService getEmailService() {
     if (emailService == null) {
       try {
-        emailService = (IEmailService) Class.forName(getSettings().getProperty("IEmailServiceImpl")).newInstance();
+        if (!StringUtils.isEmpty(getSettings().getProperty("IEmailServiceImpl"))) {
+          emailService = (IEmailService) Class.forName(getSettings().getProperty("IEmailServiceImpl")).newInstance();
+        } else {
+          emailService = new EmailHelper();
+        }
       } catch (Throwable t) {
-        emailService = new EmailHelper();
         Logger.log(t);
+        try {
+          emailService = new EmailHelper();
+        } catch (Throwable tt) {
+          Logger.log(t);
+        }
       }
     }
     return emailService;

@@ -23,6 +23,7 @@ public interface BaseImageBundle extends ImageBundle, TreeImages {
   AbstractImagePrototype treeLeaf();
 
   // file manager
+  AbstractImagePrototype file16x16();
   AbstractImagePrototype open_32();
   AbstractImagePrototype open_disabled_32();
   AbstractImagePrototype save_16();
@@ -46,6 +47,7 @@ public interface BaseImageBundle extends ImageBundle, TreeImages {
   AbstractImagePrototype gif32();
   AbstractImagePrototype jpg32();
   AbstractImagePrototype bmp32();
+  AbstractImagePrototype image16();
   AbstractImagePrototype movie32();
   AbstractImagePrototype audio32();
   AbstractImagePrototype text32();
@@ -54,6 +56,7 @@ public interface BaseImageBundle extends ImageBundle, TreeImages {
   AbstractImagePrototype location_16();
   AbstractImagePrototype location_disabled_16();
   AbstractImagePrototype showHide16();
+  AbstractImagePrototype find16x16();
   
   // comment widget
   AbstractImagePrototype next();
@@ -66,10 +69,12 @@ public interface BaseImageBundle extends ImageBundle, TreeImages {
   AbstractImagePrototype refresh_16();
   AbstractImagePrototype refresh_disabled_16();
   AbstractImagePrototype reply();
+  AbstractImagePrototype add();
   AbstractImagePrototype delete();
   AbstractImagePrototype delete_disabled();
   AbstractImagePrototype approve();
   AbstractImagePrototype empty16x16();
+  AbstractImagePrototype empty8x8();
   
   // combo menu button icons
   AbstractImagePrototype downArrow();
@@ -101,4 +106,7 @@ public interface BaseImageBundle extends ImageBundle, TreeImages {
   // email widget
   AbstractImagePrototype email16x16();
   
+  // disclosure icons
+  AbstractImagePrototype disclosureOpen();
+  AbstractImagePrototype disclosureClose();
 }

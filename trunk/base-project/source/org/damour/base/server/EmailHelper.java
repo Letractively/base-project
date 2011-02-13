@@ -12,7 +12,7 @@ public class EmailHelper implements IEmailService {
   private static EmailHelper instance = new EmailHelper();
 
   public EmailHelper() {
-    System.out.println("EmailHelper instanced");
+    Logger.log("EmailHelper instanced");
   }
   
   public static EmailHelper getInstance() {
@@ -20,7 +20,7 @@ public class EmailHelper implements IEmailService {
   }
 
   public void sendDebugMessage(String text) {
-    String from = "admin@" + BaseSystem.getDomainName();
+    String from = BaseSystem.getAdminEmailAddress();
     String to = from;
     String subject = BaseSystem.getDomainName() + " DEBUG";
     String message = "<BR/>" + text + "<BR/>";
@@ -56,7 +56,7 @@ public class EmailHelper implements IEmailService {
 
   public void emailException(Throwable t) {
     String trace = Logger.convertStringToHTML(Logger.convertThrowableToString(t));
-    String from = "admin@" + BaseSystem.getDomainName();
+    String from = BaseSystem.getAdminEmailAddress();
     String to = from;
     String subject = "A critical server error has occurred.";
     String message = "<BR/>" + t.getMessage() + "<BR/>" + trace;

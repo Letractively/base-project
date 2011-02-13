@@ -8,7 +8,8 @@ import org.damour.base.client.objects.RepositoryTreeNode;
 import org.damour.base.client.ui.buttons.IconButton;
 import org.damour.base.client.ui.toolbar.ToolBar;
 
-import com.google.gwt.user.client.ui.ClickListener;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.TreeListener;
@@ -17,20 +18,28 @@ import com.google.gwt.user.client.ui.Widget;
 
 public class FileManagerPanel extends VerticalPanel implements TreeListener, IRepositoryCallback {
 
-  IconButton openImageButton = new IconButton(null, false, BaseImageBundle.images.open_32(), BaseImageBundle.images.open_32(), BaseImageBundle.images.open_32(), BaseImageBundle.images.open_disabled_32());
-  IconButton downloadImageButton = new IconButton(null, false, BaseImageBundle.images.download(), BaseImageBundle.images.download(), BaseImageBundle.images.download(), BaseImageBundle.images.download_disabled());
-  IconButton uploadFileButton = new IconButton(null, false, BaseImageBundle.images.upload(), BaseImageBundle.images.upload(), BaseImageBundle.images.upload(), BaseImageBundle.images.upload_disabled());
-  IconButton uploadPhotoButton = new IconButton(null, false, BaseImageBundle.images.upload(), BaseImageBundle.images.upload(), BaseImageBundle.images.upload(), BaseImageBundle.images.upload_disabled());
-  IconButton propertiesImageButton = new IconButton(null, false, BaseImageBundle.images.properties16(), BaseImageBundle.images.properties16(), BaseImageBundle.images.properties16(), BaseImageBundle.images.properties_disabled_16());
-  IconButton newFolderImageButton = new IconButton(null, false, BaseImageBundle.images.newFolder(), BaseImageBundle.images.newFolder(), BaseImageBundle.images.newFolder(), BaseImageBundle.images.newFolder_disabled());
-  IconButton renameImageButton = new IconButton(null, false, BaseImageBundle.images.rename(), BaseImageBundle.images.rename(), BaseImageBundle.images.rename(), BaseImageBundle.images.rename_disabled());
-  IconButton deleteImageButton = new IconButton(null, false, BaseImageBundle.images.delete(), BaseImageBundle.images.delete(), BaseImageBundle.images.delete(), BaseImageBundle.images.delete_disabled());
+  IconButton openImageButton = new IconButton(null, false, BaseImageBundle.images.open_32(), BaseImageBundle.images.open_32(),
+      BaseImageBundle.images.open_32(), BaseImageBundle.images.open_disabled_32());
+  IconButton downloadImageButton = new IconButton(null, false, BaseImageBundle.images.download(), BaseImageBundle.images.download(),
+      BaseImageBundle.images.download(), BaseImageBundle.images.download_disabled());
+  IconButton uploadFileButton = new IconButton(null, false, BaseImageBundle.images.upload(), BaseImageBundle.images.upload(), BaseImageBundle.images.upload(),
+      BaseImageBundle.images.upload_disabled());
+  IconButton uploadPhotoButton = new IconButton(null, false, BaseImageBundle.images.upload(), BaseImageBundle.images.upload(), BaseImageBundle.images.upload(),
+      BaseImageBundle.images.upload_disabled());
+  IconButton propertiesImageButton = new IconButton(null, false, BaseImageBundle.images.properties16(), BaseImageBundle.images.properties16(),
+      BaseImageBundle.images.properties16(), BaseImageBundle.images.properties_disabled_16());
+  IconButton newFolderImageButton = new IconButton(null, false, BaseImageBundle.images.newFolder(), BaseImageBundle.images.newFolder(),
+      BaseImageBundle.images.newFolder(), BaseImageBundle.images.newFolder_disabled());
+  IconButton renameImageButton = new IconButton(null, false, BaseImageBundle.images.rename(), BaseImageBundle.images.rename(), BaseImageBundle.images.rename(),
+      BaseImageBundle.images.rename_disabled());
+  IconButton deleteImageButton = new IconButton(null, false, BaseImageBundle.images.delete(), BaseImageBundle.images.delete(), BaseImageBundle.images.delete(),
+      BaseImageBundle.images.delete_disabled());
 
   RepositoryTree repositoryTree;
   boolean showFoldersOnly = false;
   // a hidden file starts with a dot (.)
   boolean showHiddenFiles = false;
-  
+
   public FileManagerPanel(String title) {
     this(title, null, false);
   }
@@ -53,19 +62,21 @@ public class FileManagerPanel extends VerticalPanel implements TreeListener, IRe
     ToolBar toolbar = new ToolBar();
     toolbar.add(new Label(title, false));
 
-    IconButton reloadImageButton = new IconButton(null, false, BaseImageBundle.images.refresh_16(), BaseImageBundle.images.refresh_16(), BaseImageBundle.images.refresh_16(), BaseImageBundle.images.refresh_disabled_16());
+    IconButton reloadImageButton = new IconButton(null, false, BaseImageBundle.images.refresh_16(), BaseImageBundle.images.refresh_16(),
+        BaseImageBundle.images.refresh_16(), BaseImageBundle.images.refresh_disabled_16());
     reloadImageButton.setTitle("Refresh File Manager");
-    reloadImageButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    reloadImageButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         repositoryTree.fetchRepositoryTree(FileManagerPanel.this);
       }
     });
     toolbar.add(reloadImageButton);
 
-    final IconButton sortImageButton = new IconButton(null, false, BaseImageBundle.images.sort(), BaseImageBundle.images.sort(), BaseImageBundle.images.sort(), BaseImageBundle.images.sort());
+    final IconButton sortImageButton = new IconButton(null, false, BaseImageBundle.images.sort(), BaseImageBundle.images.sort(), BaseImageBundle.images.sort(),
+        BaseImageBundle.images.sort());
     sortImageButton.setTitle("Sort Files by Name");
-    sortImageButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    sortImageButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         repositoryTree.setAnimationEnabled(false);
         repositoryTree.setSortAToZ(!repositoryTree.isSortAToZ(), FileManagerPanel.this);
         repositoryTree.setAnimationEnabled(true);
@@ -73,21 +84,22 @@ public class FileManagerPanel extends VerticalPanel implements TreeListener, IRe
     });
     toolbar.add(sortImageButton);
 
-    final IconButton toggleHiddenFilesImageButton = new IconButton(null, false, BaseImageBundle.images.showHide16(), BaseImageBundle.images.showHide16(), BaseImageBundle.images.showHide16(), BaseImageBundle.images.showHide16());
+    final IconButton toggleHiddenFilesImageButton = new IconButton(null, false, BaseImageBundle.images.showHide16(), BaseImageBundle.images.showHide16(),
+        BaseImageBundle.images.showHide16(), BaseImageBundle.images.showHide16());
     toggleHiddenFilesImageButton.setTitle("Show/Hide Hidden Files");
-    toggleHiddenFilesImageButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    toggleHiddenFilesImageButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         repositoryTree.setAnimationEnabled(false);
         repositoryTree.setShowHiddenFiles(!repositoryTree.isShowHiddenFiles(), FileManagerPanel.this);
         repositoryTree.setAnimationEnabled(true);
       }
     });
-    toolbar.add(toggleHiddenFilesImageButton);    
-    
+    toolbar.add(toggleHiddenFilesImageButton);
+
     propertiesImageButton.setEnabled(false);
     propertiesImageButton.setTitle("Properties");
-    propertiesImageButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    propertiesImageButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         ManageObjectPropertiesCommand cmd = new ManageObjectPropertiesCommand((PermissibleObject) repositoryTree.getLastItem().getUserObject());
         cmd.execute();
       }
@@ -96,8 +108,8 @@ public class FileManagerPanel extends VerticalPanel implements TreeListener, IRe
 
     newFolderImageButton.setEnabled(false);
     newFolderImageButton.setTitle("Create New Folder");
-    newFolderImageButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    newFolderImageButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         CreateNewFolderCommand cmd = new CreateNewFolderCommand(repositoryTree, FileManagerPanel.this);
         cmd.execute();
       }
@@ -106,8 +118,8 @@ public class FileManagerPanel extends VerticalPanel implements TreeListener, IRe
 
     renameImageButton.setEnabled(false);
     renameImageButton.setTitle("Rename");
-    renameImageButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    renameImageButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         RenameObjectCommand cmd = new RenameObjectCommand((PermissibleObject) repositoryTree.getLastItem().getUserObject(), FileManagerPanel.this);
         cmd.execute();
 
@@ -117,8 +129,8 @@ public class FileManagerPanel extends VerticalPanel implements TreeListener, IRe
 
     deleteImageButton.setEnabled(false);
     deleteImageButton.setTitle("Delete");
-    deleteImageButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    deleteImageButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         DeleteObjectCommand cmd = new DeleteObjectCommand((PermissibleObject) repositoryTree.getLastItem().getUserObject(), FileManagerPanel.this);
         cmd.execute();
       }
@@ -127,8 +139,8 @@ public class FileManagerPanel extends VerticalPanel implements TreeListener, IRe
 
     openImageButton.setEnabled(false);
     openImageButton.setTitle("Open File");
-    openImageButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    openImageButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         OpenFileCommand cmd = new OpenFileCommand((File) repositoryTree.getLastItem().getUserObject(), false);
         cmd.execute();
       }
@@ -137,8 +149,8 @@ public class FileManagerPanel extends VerticalPanel implements TreeListener, IRe
 
     uploadFileButton.setEnabled(false);
     uploadFileButton.setTitle("Upload File to Selected Folder");
-    uploadFileButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    uploadFileButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         UploadFileCommand cmd = new UploadFileCommand((PermissibleObject) repositoryTree.getLastItem().getUserObject(), FileManagerPanel.this);
         cmd.execute();
       }
@@ -147,8 +159,8 @@ public class FileManagerPanel extends VerticalPanel implements TreeListener, IRe
 
     downloadImageButton.setEnabled(false);
     downloadImageButton.setTitle("Download File");
-    downloadImageButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    downloadImageButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         DownloadFileCommand cmd = new DownloadFileCommand((File) repositoryTree.getLastItem().getUserObject());
         cmd.execute();
       }

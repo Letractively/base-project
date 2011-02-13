@@ -1,6 +1,7 @@
 package org.damour.base.client.ui.comment;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -10,6 +11,7 @@ import org.damour.base.client.objects.Comment;
 import org.damour.base.client.objects.Page;
 import org.damour.base.client.objects.PageInfo;
 import org.damour.base.client.objects.PermissibleObject;
+import org.damour.base.client.objects.PermissibleObjectTreeNode;
 import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.authentication.AuthenticationHandler;
 import org.damour.base.client.ui.buttons.Button;
@@ -18,12 +20,16 @@ import org.damour.base.client.ui.dialogs.IDialogCallback;
 import org.damour.base.client.ui.dialogs.IDialogValidatorCallback;
 import org.damour.base.client.ui.dialogs.MessageDialogBox;
 import org.damour.base.client.ui.dialogs.PromptDialogBox;
+import org.damour.base.client.utils.CursorUtils;
 import org.damour.base.client.utils.StringUtils;
 
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.ChangeListener;
 import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.DisclosurePanel;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -139,14 +145,15 @@ public class CommentWidget extends VerticalPanel {
   };
 
   private AsyncCallback<List<PermissibleObject>> allCommentsCallback = new AsyncCallback<List<PermissibleObject>>() {
-
     public void onSuccess(List<PermissibleObject> comments) {
+      CursorUtils.setDefaultCursor(CommentWidget.this);
       CommentWidget.this.comments = comments;
       numComments = comments.size();
       loadCommentWidget(true);
     }
 
     public void onFailure(Throwable caught) {
+      CursorUtils.setDefaultCursor(CommentWidget.this);
       MessageDialogBox dialog = new MessageDialogBox("Error", caught.getMessage(), false, true, true);
       dialog.center();
     }
@@ -179,8 +186,9 @@ public class CommentWidget extends VerticalPanel {
     maxCommentDepthListBox.addItem("4");
     maxCommentDepthListBox.addItem("5");
     maxCommentDepthListBox.setSelectedIndex(0);
-    maxCommentDepthListBox.addChangeListener(new ChangeListener() {
-      public void onChange(Widget sender) {
+    maxCommentDepthListBox.addChangeHandler(new ChangeHandler() {
+
+      public void onChange(ChangeEvent event) {
         loadCommentWidget(true);
       }
     });
@@ -291,9 +299,9 @@ public class CommentWidget extends VerticalPanel {
           BaseImageBundle.images.reply().applyTo(replyCommentImage);
           replyCommentImage.setStyleName("commentActionButton");
           replyCommentImage.setTitle("Reply to this comment");
-          replyCommentImage.addClickListener(new ClickListener() {
+          replyCommentImage.addClickHandler(new ClickHandler() {
 
-            public void onClick(Widget sender) {
+            public void onClick(ClickEvent event) {
               replyToComment(comment);
             }
           });
@@ -324,9 +332,9 @@ public class CommentWidget extends VerticalPanel {
               BaseImageBundle.images.approve().applyTo(approveCommentImage);
               approveCommentImage.setStyleName("commentActionButton");
               approveCommentImage.setTitle("Approve comment");
-              approveCommentImage.addClickListener(new ClickListener() {
+              approveCommentImage.addClickHandler(new ClickHandler() {
 
-                public void onClick(Widget sender) {
+                public void onClick(ClickEvent event) {
                   workingOnComment = comment;
                   approveComment(comment);
                 }
@@ -347,9 +355,9 @@ public class CommentWidget extends VerticalPanel {
             BaseImageBundle.images.delete().applyTo(deleteCommentImage);
             deleteCommentImage.setStyleName("commentActionButton");
             deleteCommentImage.setTitle("Remove comment");
-            deleteCommentImage.addClickListener(new ClickListener() {
+            deleteCommentImage.addClickHandler(new ClickHandler() {
 
-              public void onClick(Widget sender) {
+              public void onClick(ClickEvent event) {
                 IDialogCallback callback = new IDialogCallback() {
 
                   public void cancelPressed() {
@@ -385,6 +393,7 @@ public class CommentWidget extends VerticalPanel {
             commentsPanel.add(commentHeaderPanel);
           }
 
+          // Label commentLabel = new Label(comment.getId() + " " + comment.getComment(), true);
           Label commentLabel = new Label(comment.getComment(), true);
           if (comment.isApproved()) {
             commentLabel.setStyleName("comment");
@@ -434,8 +443,8 @@ public class CommentWidget extends VerticalPanel {
     final IconButton nextPageImageButton = new IconButton(null, true, BaseImageBundle.images.next(), BaseImageBundle.images.next(),
         BaseImageBundle.images.next(), BaseImageBundle.images.next());
     nextPageImageButton.setSTYLE("commentToolBarButton");
-    nextPageImageButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    nextPageImageButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         if (pageNumber == lastPageNumber) {
           return;
         }
@@ -446,8 +455,8 @@ public class CommentWidget extends VerticalPanel {
     final IconButton previousPageImageButton = new IconButton(null, false, BaseImageBundle.images.previous(), BaseImageBundle.images.previous(),
         BaseImageBundle.images.previous(), BaseImageBundle.images.previous());
     previousPageImageButton.setSTYLE("commentToolBarButton");
-    previousPageImageButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    previousPageImageButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         if (pageNumber == 0) {
           return;
         }
@@ -458,8 +467,8 @@ public class CommentWidget extends VerticalPanel {
     final IconButton lastPageImageButton = new IconButton(null, false, BaseImageBundle.images.last(), BaseImageBundle.images.last(),
         BaseImageBundle.images.last(), BaseImageBundle.images.last());
     lastPageImageButton.setSTYLE("commentToolBarButton");
-    lastPageImageButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    lastPageImageButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         pageNumber = (int) lastPageNumber;
         fetchPage();
       }
@@ -467,8 +476,8 @@ public class CommentWidget extends VerticalPanel {
     final IconButton firstPageImageButton = new IconButton(null, false, BaseImageBundle.images.first(), BaseImageBundle.images.first(),
         BaseImageBundle.images.first(), BaseImageBundle.images.first());
     firstPageImageButton.setSTYLE("commentToolBarButton");
-    firstPageImageButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    firstPageImageButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         pageNumber = 0;
         fetchPage();
       }
@@ -500,8 +509,8 @@ public class CommentWidget extends VerticalPanel {
         BaseImageBundle.images.refresh_16(), BaseImageBundle.images.refresh_disabled_16());
     reloadImageButton.setSTYLE("commentToolBarButton");
     reloadImageButton.setTitle("Refresh comments");
-    reloadImageButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    reloadImageButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         BaseServiceCache.getService().getPageInfo(permissibleObject, Comment.class.getName(), pageSize, new AsyncCallback<PageInfo>() {
           public void onFailure(Throwable caught) {
           };
@@ -520,8 +529,8 @@ public class CommentWidget extends VerticalPanel {
         BaseImageBundle.images.sort(), BaseImageBundle.images.sort(), BaseImageBundle.images.sort());
     sortImageButton.setSTYLE("commentToolBarButton");
     sortImageButton.setTitle(sortDescending ? "Show oldest comments first" : "Show most recent comments first");
-    sortImageButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    sortImageButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         sortDescending = !sortDescending;
         // this could be optimized if we have all the pages, then we have all the data
         // we could do it all on the client
@@ -541,8 +550,8 @@ public class CommentWidget extends VerticalPanel {
       flattenImageButton.setTitle("Flatten the comment hierarchy");
     }
     flattenImageButton.setSTYLE("commentToolBarButton");
-    flattenImageButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    flattenImageButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         flatten = !flatten;
         loadCommentWidget(forceOpen);
       }
@@ -587,9 +596,8 @@ public class CommentWidget extends VerticalPanel {
     HorizontalPanel buttonPanel = new HorizontalPanel();
     // create buttons
     final Button submitButton = new Button("Submit");
-    submitButton.addClickListener(new ClickListener() {
-
-      public void onClick(Widget sender) {
+    submitButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         String commentStr = commentTextArea.getText();
         if (commentStr == null || "".equals(commentStr.trim())) {
           return;
@@ -606,9 +614,8 @@ public class CommentWidget extends VerticalPanel {
       }
     });
     final Button clearButton = new Button("Clear");
-    clearButton.addClickListener(new ClickListener() {
-
-      public void onClick(Widget sender) {
+    clearButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         commentTextArea.setText("");
         submitButton.setEnabled(true);
       }
@@ -682,30 +689,109 @@ public class CommentWidget extends VerticalPanel {
   }
 
   private List<PermissibleObject> sortComments(List<PermissibleObject> comments) {
-    List<PermissibleObject> sortedComments = new ArrayList<PermissibleObject>();
+    List<Comment> commentSet = new ArrayList<Comment>();
+
     for (PermissibleObject obj : comments) {
       Comment comment = (Comment) obj;
-      if (!sortedComments.contains(comment)) {
-        sortedComments.add(comment);
-        Comment parentComment = comment.getParentComment();
-        PermissibleObject previousParentComment = null;
-        while (parentComment != null) {
-          // insert parents ahead of their child, if not already
-          if (previousParentComment != null) {
-            if (!sortedComments.contains(parentComment)) {
-              sortedComments.add(sortedComments.indexOf(previousParentComment), parentComment);
-            }
-          } else {
-            if (!sortedComments.contains(parentComment)) {
-              sortedComments.add(sortedComments.indexOf(comment), parentComment);
-            }
+      commentSet.add(comment);
+      Comment parent = comment.getParentComment();
+      do {
+        if (parent != null) {
+          if (!commentSet.contains(parent)) {
+            commentSet.add(parent);
           }
-          previousParentComment = parentComment;
-          parentComment = parentComment.getParentComment();
+          parent = parent.getParentComment();
+        }
+      } while (parent != null);
+    }
+
+    // create bare nodes for each element
+    PermissibleObjectTreeNode rootNode = new PermissibleObjectTreeNode();
+
+    for (Comment comment : commentSet) {
+      PermissibleObjectTreeNode node = new PermissibleObjectTreeNode();
+      node.setObject(comment);
+      if (comment.getParentComment() == null) {
+        if (!rootNode.getChildren().containsKey(comment)) {
+          rootNode.getChildren().put(comment, node);
+        }
+      } else {
+        // try to find parent in rootNode tree
+        PermissibleObjectTreeNode parent = findParentCommentNode(rootNode, node);
+        if (parent == null) {
+          // this nodes parent cannot be found, let's add all of his parents
+          List<Comment> parentComments = new ArrayList<Comment>();
+          Comment parentComment = comment.getParentComment();
+          do {
+            if (parentComment != null) {
+              parentComments.add(parentComment);
+              parentComment = parentComment.getParentComment();
+            }
+          } while (parent != null);
+          if (parentComments.size() == 0) {
+            rootNode.getChildren().put(comment, node);
+          } else {
+            // reverse the order of the list and add/find existing parents
+            Collections.reverse(parentComments);
+            for (Comment myParentComment : parentComments) {
+              PermissibleObjectTreeNode myParentCommentNode = new PermissibleObjectTreeNode();
+              myParentCommentNode.setObject(myParentComment);
+              PermissibleObjectTreeNode parentParent = findParentCommentNode(rootNode, myParentCommentNode);
+              if (parentParent == null) {
+                rootNode.getChildren().put(myParentComment, myParentCommentNode);
+              } else {
+                if (!parentParent.getChildren().containsKey(myParentComment)) {
+                  parentParent.getChildren().put(myParentComment, myParentCommentNode);
+                }
+              }
+            }
+            // we better find it now
+            parent = findParentCommentNode(rootNode, node);
+            parent.getChildren().put(comment, node);
+          }
+        } else {
+          if (!parent.getChildren().containsKey(comment)) {
+            parent.getChildren().put(comment, node);
+          }
         }
       }
     }
-    return sortedComments;
+
+    // march the tree
+    ArrayList<PermissibleObject> list = new ArrayList<PermissibleObject>();
+    marchTree(list, rootNode);
+
+    return list;
+  }
+
+  private void marchTree(List<PermissibleObject> comments, PermissibleObjectTreeNode node) {
+    if (node.getObject() != null) {
+      comments.add(node.getObject());
+    }
+
+    // let's sort the children so the list makes sense
+    List<PermissibleObject> permissibleObjects = new ArrayList<PermissibleObject>(node.getChildren().keySet());
+    Collections.sort(permissibleObjects);
+
+    for (PermissibleObject object : permissibleObjects) {
+      marchTree(comments, node.getChildren().get(object));
+    }
+  }
+
+  private PermissibleObjectTreeNode findParentCommentNode(PermissibleObjectTreeNode rootNode, PermissibleObjectTreeNode node) {
+    if (node.getObject().equals(rootNode.getObject())) {
+      return rootNode;
+    }
+    for (PermissibleObject obj : rootNode.getChildren().keySet()) {
+      if (obj.equals(((Comment) node.getObject()).getParentComment())) {
+        return rootNode.getChildren().get(obj);
+      }
+      PermissibleObjectTreeNode possibleParent = findParentCommentNode(rootNode.getChildren().get(obj), node);
+      if (possibleParent != null) {
+        return possibleParent;
+      }
+    }
+    return null;
   }
 
   private int getCommentDepth(Comment comment) {
@@ -751,20 +837,24 @@ public class CommentWidget extends VerticalPanel {
         BaseServiceCache.getService().getPage(permissibleObject, Comment.class.getName(), "id", sortDescending, pageNumber, pageSize, pageCallback);
       }
     } else {
+      CursorUtils.setBusyCursor(CommentWidget.this);
       BaseServiceCache.getService().getPermissibleObjects(permissibleObject, Comment.class.getName(), allCommentsCallback);
     }
   }
 
   private void submitComment(final Comment comment) {
+    CursorUtils.setBusyCursor(this);
     BaseServiceCache.getService().getPageInfo(permissibleObject, Comment.class.getName(), pageSize, new AsyncCallback<PageInfo>() {
       public void onFailure(Throwable caught) {
-      };
+        CursorUtils.setDefaultCursor(CommentWidget.this);
+      }
 
       public void onSuccess(PageInfo pageInfo) {
+        CursorUtils.setDefaultCursor(CommentWidget.this);
         numComments = pageInfo.getTotalRowCount();
         lastPageNumber = pageInfo.getLastPageNumber();
         BaseServiceCache.getService().submitComment(comment, submitCommentCallback);
-      };
+      }
     });
   }
 
