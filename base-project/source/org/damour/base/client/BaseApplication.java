@@ -54,7 +54,12 @@ public class BaseApplication implements EntryPoint, StartupListener {
                 if (user != null && user.isValidated()) {
                   AuthenticationHandler.getInstance().setUser(user);
                   AuthenticationHandler.getInstance().handleUserAuthentication(false);
-                  MessageDialogBox.alert("Account validation successful.");
+                  MessageDialogBox.alert("Account validation successful.", new IGenericCallback<Void>() {
+                    public void invoke(Void object) {
+                      Window.Location.assign(Window.Location.getHref().substring(0, Window.Location.getHref().indexOf("?")));
+                    }
+                  });
+                  
                 } else {
                   MessageDialogBox.alert("Could not validate account.");
                 }

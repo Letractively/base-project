@@ -24,7 +24,7 @@ public class GmailHelper implements IEmailService {
   private static GmailHelper instance = new GmailHelper();
 
   public GmailHelper() {
-    System.out.println("GmailHelper instanced");
+    Logger.log("GmailHelper instanced");
     Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
   }
 
@@ -34,7 +34,7 @@ public class GmailHelper implements IEmailService {
 
   public void emailException(Throwable t) {
     String trace = Logger.convertStringToHTML(Logger.convertThrowableToString(t));
-    String from = "admin@" + BaseSystem.getDomainName();
+    String from = BaseSystem.getAdminEmailAddress();
     String to = from;
     String subject = "A critical server error has occurred.";
     String message = "<BR/>" + t.getMessage() + "<BR/>" + trace;
@@ -42,7 +42,7 @@ public class GmailHelper implements IEmailService {
   }
 
   public void sendDebugMessage(String text) {
-    String from = "admin@" + BaseSystem.getDomainName();
+    String from = BaseSystem.getAdminEmailAddress();
     String to = from;
     String subject = BaseSystem.getDomainName() + " DEBUG";
     String message = "<BR/>" + text + "<BR/>";

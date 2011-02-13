@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.damour.base.client.objects.PermissibleObject;
+import org.damour.base.client.objects.PermissibleObjectTreeNode;
 import org.damour.base.server.hibernate.helpers.PermissibleObjectHelper;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -35,9 +36,9 @@ public class SearchTest {
 
     tx.commit();
 
-    List<PermissibleObject> results = PermissibleObjectHelper.search(session, PermissibleObject.class, "abc xxx", "name", true, true, true, true, false);
-    for (PermissibleObject result : results) {
-      System.out.println("Found: " + result.getName());
+    List<PermissibleObjectTreeNode> results = PermissibleObjectHelper.search(session, null, null, PermissibleObject.class, "abc xxx", "name", true, true, true, true, false);
+    for (PermissibleObjectTreeNode result : results) {
+      System.out.println("Found: " + result.getObject().getName());
     }
     
     tx = session.beginTransaction();

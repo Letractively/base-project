@@ -1,12 +1,14 @@
 package org.damour.base.server.hibernate.helpers;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 
 import org.damour.base.client.objects.Comment;
 import org.damour.base.client.objects.PermissibleObject;
+import org.damour.base.client.objects.PermissibleObjectTreeNode;
 import org.damour.base.client.objects.User;
 import org.damour.base.client.objects.UserAdvisory;
 import org.damour.base.client.objects.UserRating;
@@ -60,8 +62,10 @@ public class PermissibleObjectHelper {
     }
 
     // ok finally we can delete the file
-    session.delete(permissibleObject);
-
+    System.out.println("deleting: " + permissibleObject.getClass().getName() + "->" + permissibleObject.getId());
+    session.delete(permissibleObject);   
+    session.flush();
+    
     List<Field> fields = ReflectionCache.getFields(permissibleObject.getClass());
     for (Field field : fields) {
       if (!field.getName().startsWith("parent") && PermissibleObject.class.isAssignableFrom(field.getType())) {
@@ -73,6 +77,8 @@ public class PermissibleObjectHelper {
         }
       }
     }
+    
+
   }
 
   public static List<PermissibleObject> getChildren(Session session, PermissibleObject parent) {
@@ -95,8 +101,8 @@ public class PermissibleObjectHelper {
     }
   }
 
-  public static List<PermissibleObject> search(Session session, Class<?> searchObjectType, String userQuery, String sortField, boolean sortDescending,
-      boolean searchNames, boolean searchDescriptions, boolean searchKeywords, boolean useExactPhrase) {
+  public static List<PermissibleObjectTreeNode> search(Session session, User user, String voterGUID, Class<?> searchObjectType, String userQuery,
+      String sortField, boolean sortDescending, boolean searchNames, boolean searchDescriptions, boolean searchKeywords, boolean useExactPhrase) {
     if (userQuery == null) {
       return Collections.emptyList();
     }
@@ -172,7 +178,24 @@ public class PermissibleObjectHelper {
     }
 
     query += orderBy;
-    return HibernateUtil.getInstance().executeQuery(session, query, true);
+
+    List<PermissibleObject> objects = HibernateUtil.getInstance().executeQuery(session, query, true);
+    List<PermissibleObjectTreeNode> treeNodes = new ArrayList<PermissibleObjectTreeNode>();
+    for (PermissibleObject object : objects) {
+      PermissibleObjectTreeNode treeNode = new PermissibleObjectTreeNode();
+      treeNode.setObject(object);
+      treeNodes.add(treeNode);
+      if (object.getNumAdvisoryVotes() > 0) {
+        treeNode.setUserAdvisory(AdvisoryHelper.getUserAdvisory(session, object, user, voterGUID));
+      }
+      if (object.getNumRatingVotes() > 0) {
+        treeNode.setUserRating(RatingHelper.getUserRating(session, object, user, voterGUID));
+      }
+      if (object.getNumUpVotes() > 0 || object.getNumDownVotes() > 0) {
+        treeNode.setUserThumb(ThumbHelper.getUserThumb(session, object, user, voterGUID));
+      }
+    }
+    return treeNodes;
   }
 
 }

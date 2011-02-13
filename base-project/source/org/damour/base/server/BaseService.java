@@ -955,6 +955,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       }
       // the comment is approved if we are not moderating or if the commenter is the file owner
       comment.setApproved(!comment.getParent().isModerateComments() || comment.getParent().getOwner().equals(authUser));
+      comment.setAuthorIP(getThreadLocalRequest().getRemoteAddr());
       session.get().save(comment);
       session.get().save(parentPermissibleObject);
       tx.commit();
@@ -1078,12 +1079,6 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
           if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, hibNewObject, PERM.WRITE)) {
             throw new SimpleMessageException("User is not authorized to overwrite object.");
           }
-          // hibNewObject.setGlobalRead(permissibleObject.isGlobalRead());
-          // hibNewObject.setGlobalWrite(permissibleObject.isGlobalWrite());
-          // hibNewObject.setGlobalExecute(permissibleObject.isGlobalExecute());
-          // hibNewObject.setName(permissibleObject.getName());
-          // hibNewObject.setDescription(permissibleObject.getDescription());
-          // hibNewObject.setParent(permissibleObject.getParent());
           List<Field> fields = ReflectionCache.getFields(permissibleObject.getClass());
           for (Field field : fields) {
             try {
@@ -1365,24 +1360,30 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       if (!authUser.isAdministrator() && !hibPermissibleObject.getOwner().equals(authUser)) {
         throw new SimpleMessageException("User is not authorized to update this object.");
       }
-      // otherwise hibernate will be upset:
-      hibPermissibleObject.setName(permissibleObject.getName());
-      hibPermissibleObject.setOwner(newOwner);
-      hibPermissibleObject.setGlobalRead(permissibleObject.isGlobalRead());
-      hibPermissibleObject.setGlobalWrite(permissibleObject.isGlobalWrite());
-      hibPermissibleObject.setGlobalExecute(permissibleObject.isGlobalExecute());
-
-      // update 'child' fields (for example, image has child permissibles)
+      // update fields (for example, image has child permissibles)
       List<Field> fields = ReflectionCache.getFields(hibPermissibleObject.getClass());
       for (Field field : fields) {
         try {
           if (!field.getName().equals("parent") && PermissibleObject.class.isAssignableFrom(field.getType())) {
             Object obj = field.get(hibPermissibleObject);
-            PermissibleObject childObj = (PermissibleObject) obj;
-            childObj.setGlobalRead(hibPermissibleObject.isGlobalRead());
-            childObj.setGlobalWrite(hibPermissibleObject.isGlobalWrite());
-            childObj.setGlobalExecute(hibPermissibleObject.isGlobalExecute());
-            session.get().save(childObj);
+            if (obj == null) {
+              field.set(hibPermissibleObject, field.get(permissibleObject));
+              obj = field.get(hibPermissibleObject);
+              if (obj != null) {
+                PermissibleObject hibSubObj = ((PermissibleObject) session.get().load(PermissibleObject.class, ((PermissibleObject) obj).getId()));
+                obj = hibSubObj;
+              }
+            }
+            if (obj != null) {
+              PermissibleObject childObj = (PermissibleObject) obj;
+              childObj.setGlobalRead(hibPermissibleObject.isGlobalRead());
+              childObj.setGlobalWrite(hibPermissibleObject.isGlobalWrite());
+              childObj.setGlobalExecute(hibPermissibleObject.isGlobalExecute());
+              session.get().save(childObj);
+            }
+          }
+          if (!field.getName().equals("parent")) {
+            field.set(hibPermissibleObject, field.get(permissibleObject));
           }
         } catch (Exception e) {
           Logger.log(e);
@@ -1543,13 +1544,14 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     }
   }
 
-  public List<PermissibleObject> searchPermissibleObjects(PermissibleObject parent, String query, String sortField, boolean sortDescending,
+  public List<PermissibleObjectTreeNode> searchPermissibleObjects(PermissibleObject parent, String query, String sortField, boolean sortDescending,
       String searchObjectType, boolean searchNames, boolean searchDescriptions, boolean searchKeywords, boolean useExactPhrase) throws SimpleMessageException {
+    User user = getAuthenticatedUser(session.get());
     // return all permissible objects which match the name/description
     try {
       Class<?> clazz = Class.forName(searchObjectType);
-      return PermissibleObjectHelper.search(session.get(), clazz, query, sortField, sortDescending, searchNames, searchDescriptions, searchKeywords,
-          useExactPhrase);
+      return PermissibleObjectHelper.search(session.get(), user, getVoterGUID(), clazz, query, sortField, sortDescending, searchNames, searchDescriptions,
+          searchKeywords, useExactPhrase);
     } catch (Throwable t) {
       throw new SimpleMessageException(t.getMessage());
     }
@@ -1744,18 +1746,17 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     while (st.hasMoreTokens()) {
       String toAddress = st.nextToken();
       String toName = st.nextToken();
-      
+
       // replace {toAddress} with toAddress on server
       // replace {toName} with toName on server
       String tmpSubject = subject;
       tmpSubject = tmpSubject.replace("{toAddress}", toAddress); //$NON-NLS-1$ 
       tmpSubject = tmpSubject.replace("{toName}", toName); //$NON-NLS-1$ 
-      
+
       String tmpMessage = message;
       tmpMessage = tmpMessage.replace("{toAddress}", toAddress); //$NON-NLS-1$ 
       tmpMessage = tmpMessage.replace("{toName}", toName); //$NON-NLS-1$ 
 
-      
       BaseSystem.getEmailService().sendMessage(BaseSystem.getSmtpHost(), fromAddress, fromName, toAddress, tmpSubject, tmpMessage);
     }
   }

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.ClickListener;
@@ -40,6 +42,19 @@ public class IconButton extends FlexTable implements MouseListener {
 
     setCellPadding(0);
     setCellSpacing(0);
+
+    addClickHandler(new ClickHandler() {
+
+      public void onClick(ClickEvent event) {
+        if (command != null) {
+          try {
+            command.execute();
+          } catch (Exception e) {
+            // don't fail because some idiot you are calling fails
+          }
+        }
+      }
+    });
 
     label.setWordWrap(false);
     label.setText(labelText);
@@ -100,29 +115,7 @@ public class IconButton extends FlexTable implements MouseListener {
   public void onMouseUp(final Widget sender, final int x, final int y) {
     if (enabled) {
       removeStyleDependentName("pressed");
-      if (command != null) {
-        try {
-          command.execute();
-        } catch (Exception e) {
-          // don't fail because some idiot you are calling fails
-        }
-      }
-      for (ClickListener listener : listeners) {
-        try {
-          listener.onClick(this);
-        } catch (Exception e) {
-          // don't fail because some idiot you are calling fails
-        }
-      }
     }
-  }
-
-  public void addClickListener(ClickListener listener) {
-    listeners.add(listener);
-  }
-
-  public void removeClickListener(ClickListener listener) {
-    listeners.remove(listener);
   }
 
   private static native void preventTextSelection(Element ele)
