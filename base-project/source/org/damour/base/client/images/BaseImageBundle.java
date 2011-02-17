@@ -106,6 +106,9 @@ public interface BaseImageBundle extends ImageBundle, TreeImages {
   // email widget
   AbstractImagePrototype email16x16();
   
+  // permalink widget
+  AbstractImagePrototype permalink();
+  
   // disclosure icons
   AbstractImagePrototype disclosureOpen();
   AbstractImagePrototype disclosureClose();

@@ -37,13 +37,19 @@ public class StringTokenizer {
     int i;
     for (i = 0; i < chars.length; i++) {
       if (delimiterList.contains(chars[i])) {
-        tokens.add(text.substring(sindex, i));
+        String str = text.substring(sindex, i);
+        if (!StringUtils.isEmpty(str)) {
+          tokens.add(str);
+        }
         sindex = i + 1;
       }
     }
 
     if (sindex < i) {
-      tokens.add(text.substring(sindex));
+      String str = text.substring(sindex);
+      if (!StringUtils.isEmpty(str)) {
+        tokens.add(str);
+      }
     }
   }
 

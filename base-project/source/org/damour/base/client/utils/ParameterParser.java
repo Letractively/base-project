@@ -7,12 +7,33 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.gwt.http.client.URL;
+import com.google.gwt.user.client.Window;
 
 public class ParameterParser {
 
   private String queryString;
   private Map<String, String> paramMap;
   private Map<String, List<String>> listParamMap;
+  private List<String> orderedParameterNames = new ArrayList<String>();
+
+  public static String convertRESTtoQueryString(String restURL) {
+    // convert stuff like this:
+    // /view/take-test/id/12345/name/Test-Name-1.html
+    // to this:
+    // ?view=take-test&id=12345&name=Test-Name-1.html
+    String queryString = "";
+    if (!StringUtils.isEmpty(restURL)) {
+      StringTokenizer st = new StringTokenizer(restURL, "/");
+      int numTokens = st.countTokens();
+      for (int i = 0; i < numTokens;) {
+        if (i + 1 < numTokens) {
+          queryString += ((i == 0) ? "?" : "&") + st.tokenAt(i) + "=" + st.tokenAt(i + 1);
+        }
+        i += 2;
+      }
+    }
+    return queryString;
+  }
 
   public ParameterParser(String queryString) {
     if (queryString != null) {
@@ -29,6 +50,7 @@ public class ParameterParser {
       if (queryString != null && queryString.length() > 1) {
         for (String kvPair : queryString.split("&")) {
           String[] kv = kvPair.split("=", 2);
+          orderedParameterNames.add(kv[0]);
           if (kv.length > 1) {
             paramMap.put(kv[0], URL.decodeComponent(kv[1]));
           } else {
@@ -96,7 +118,6 @@ public class ParameterParser {
     return paramMap;
   }
 
-  
   /**
    * Returns a Map of the URL query parameters for the host page; since changing the map would not change the window's location, the map returned is immutable.
    * 
@@ -108,9 +129,18 @@ public class ParameterParser {
     }
     return listParamMap;
   }
-  
+
   public List<String> getParameterValues(String name) {
     return getListParameterMap().get(name);
   }
-  
+
+  public List<String> getOrderedParameterNames() {
+    ensureParameterMap();
+    return orderedParameterNames;
+  }
+
+  public void setOrderedParameterNames(List<String> orderedParameterNames) {
+    this.orderedParameterNames = orderedParameterNames;
+  }
+
 }
