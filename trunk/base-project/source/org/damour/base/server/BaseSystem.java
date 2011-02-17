@@ -1,6 +1,7 @@
 package org.damour.base.server;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
@@ -43,22 +44,27 @@ public class BaseSystem {
     return sb.toString();
   }
 
-  public static String patchURL(String unsafeURL) {
+  public static String patchURL(final String unsafeURL) {
     if (unsafeURL == null) {
       return null;
     }
-    unsafeURL = unsafeURL.replaceAll("\"", "").replaceAll("\'", "").replaceAll("\\?", "-").replaceAll(" ", "-");
-    unsafeURL = unsafeURL.replaceAll("\\(", "").replaceAll("\\)", "").replaceAll("\\[", "").replaceAll("\\]", "");
-    unsafeURL = unsafeURL.replaceAll("\\$", "").replaceAll("\\@", "-").replaceAll("\\!", "-").replaceAll("\\&", "-");
-    unsafeURL = unsafeURL.replaceAll("\\+", "-").replaceAll("\\<", "").replaceAll("\\>", "").replaceAll("/", "-");
-    unsafeURL = unsafeURL.replaceAll(":", "-").replaceAll("\\{", "").replaceAll("\\}", "").replaceAll(",", "-");
-    unsafeURL = unsafeURL.replaceAll(";", "-").replaceAll("`", "");
-    while (unsafeURL.contains("--")) {
-      unsafeURL = unsafeURL.replaceAll("--", "-");
+    String safeURL = unsafeURL.replaceAll("\"", "").replaceAll("\'", "").replaceAll("\\?", "-").replaceAll(" ", "-");
+    safeURL = unsafeURL.replaceAll("\\(", "").replaceAll("\\)", "").replaceAll("\\[", "").replaceAll("\\]", "");
+    safeURL = unsafeURL.replaceAll("\\$", "").replaceAll("\\@", "-").replaceAll("\\!", "-").replaceAll("\\&", "-");
+    safeURL = unsafeURL.replaceAll("\\+", "-").replaceAll("\\<", "").replaceAll("\\>", "").replaceAll("/", "-");
+    safeURL = unsafeURL.replaceAll(":", "-").replaceAll("\\{", "").replaceAll("\\}", "").replaceAll(",", "-");
+    safeURL = unsafeURL.replaceAll(";", "-").replaceAll("`", "");
+    while (safeURL.contains("--")) {
+      safeURL = safeURL.replaceAll("--", "-");
     }
-    return unsafeURL;
+    try {
+      return java.net.URLEncoder.encode(safeURL, "UTF-8");
+    } catch (UnsupportedEncodingException e) {
+      Logger.log(e);
+      return safeURL;
+    }
   }
-  
+
   public static String getDomainName() {
     return domainName;
   }

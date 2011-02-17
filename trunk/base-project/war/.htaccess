@@ -1,4 +1,7 @@
 RewriteEngine on
+
+RewriteRule ^sitemap.xml$ /sitemap.jsp
+
 RewriteRule ^files/(.*)_inline_(.*)$ /servlet/org.damour.base.server.GetFileService?file=$1&disposition=inline&name=$2
 RewriteRule ^files/(.*)_attachment_(.*)$ /servlet/org.damour.base.server.GetFileService?file=$1&disposition=attachment&name=$2
 

@@ -43,7 +43,7 @@ public class PrivacyPolicyDialog extends PromptDialogBox {
 
   private void fetchPrivacyString(final IGenericCallback<String> callback) {
     // populate with text from the policy
-    RequestBuilder rb = new RequestBuilder(RequestBuilder.GET, GWT.getModuleName() + "/messages/privacy.html");
+    RequestBuilder rb = new RequestBuilder(RequestBuilder.GET, "/" + GWT.getModuleName() + "/messages/privacy.html");
     try {
       rb.setCallback(new RequestCallback() {
         public void onError(Request request, Throwable exception) {
