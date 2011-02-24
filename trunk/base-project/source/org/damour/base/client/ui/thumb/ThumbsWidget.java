@@ -78,8 +78,8 @@ public class ThumbsWidget extends HorizontalPanel {
     thumbUp.addClickHandler(new ClickHandler() {
 
       public void onClick(ClickEvent event) {
-        DOM.setStyleAttribute(((Widget) event.getSource()).getElement(), "cursor", "wait");
         if (ThumbsWidget.this.userThumb == null) {
+          DOM.setStyleAttribute(((Widget) event.getSource()).getElement(), "cursor", "wait");
           setUserThumb(permissibleObject, true);
         }
       }
@@ -90,8 +90,8 @@ public class ThumbsWidget extends HorizontalPanel {
     thumbDown.addClickHandler(new ClickHandler() {
 
       public void onClick(ClickEvent event) {
-        DOM.setStyleAttribute(((Widget) event.getSource()).getElement(), "cursor", "wait");
         if (ThumbsWidget.this.userThumb == null) {
+          DOM.setStyleAttribute(((Widget) event.getSource()).getElement(), "cursor", "wait");
           setUserThumb(permissibleObject, false);
         }
       }
@@ -176,9 +176,7 @@ public class ThumbsWidget extends HorizontalPanel {
         isSubmitting = false;
         if (userThumb != null) {
           ThumbsWidget.this.userThumb = userThumb;
-          if (userThumb.getPermissibleObject() != null) {
-            ThumbsWidget.this.permissibleObject = userThumb.getPermissibleObject();
-          }
+          userThumb.getPermissibleObject().mergeInto(permissibleObject);
           loadThumbUI();
         }
       }
@@ -198,9 +196,7 @@ public class ThumbsWidget extends HorizontalPanel {
       public void onSuccess(UserThumb userThumb) {
         if (userThumb != null) {
           ThumbsWidget.this.userThumb = userThumb;
-          if (userThumb.getPermissibleObject() != null) {
-            ThumbsWidget.this.permissibleObject = userThumb.getPermissibleObject();
-          }
+          userThumb.getPermissibleObject().mergeInto(permissibleObject);
         }
         loadThumbUI();
       }

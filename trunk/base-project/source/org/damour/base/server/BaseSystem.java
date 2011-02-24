@@ -48,12 +48,13 @@ public class BaseSystem {
     if (unsafeURL == null) {
       return null;
     }
-    String safeURL = unsafeURL.replaceAll("\"", "").replaceAll("\'", "").replaceAll("\\?", "-").replaceAll(" ", "-");
-    safeURL = unsafeURL.replaceAll("\\(", "").replaceAll("\\)", "").replaceAll("\\[", "").replaceAll("\\]", "");
-    safeURL = unsafeURL.replaceAll("\\$", "").replaceAll("\\@", "-").replaceAll("\\!", "-").replaceAll("\\&", "-");
-    safeURL = unsafeURL.replaceAll("\\+", "-").replaceAll("\\<", "").replaceAll("\\>", "").replaceAll("/", "-");
-    safeURL = unsafeURL.replaceAll(":", "-").replaceAll("\\{", "").replaceAll("\\}", "").replaceAll(",", "-");
-    safeURL = unsafeURL.replaceAll(";", "-").replaceAll("`", "");
+    String safeURL = unsafeURL;
+    safeURL = safeURL.replaceAll("\"", "").replaceAll("\'", "").replaceAll("\\?", "-").replaceAll(" ", "-");
+    safeURL = safeURL.replaceAll("\\(", "").replaceAll("\\)", "").replaceAll("\\[", "").replaceAll("\\]", "");
+    safeURL = safeURL.replaceAll("\\$", "").replaceAll("\\@", "-").replaceAll("\\!", "-").replaceAll("\\&", "-");
+    safeURL = safeURL.replaceAll("\\+", "-").replaceAll("\\<", "").replaceAll("\\>", "").replaceAll("/", "-");
+    safeURL = safeURL.replaceAll(":", "-").replaceAll("\\{", "").replaceAll("\\}", "").replaceAll(",", "-");
+    safeURL = safeURL.replaceAll(";", "-").replaceAll("`", "");
     while (safeURL.contains("--")) {
       safeURL = safeURL.replaceAll("--", "-");
     }

@@ -40,7 +40,7 @@ public class RatingWidget extends VerticalPanel {
   Image star5 = new Image();
 
   private boolean isSubmitting = false;
-  
+
   ClickHandler starClickHandler = new ClickHandler() {
 
     public void onClick(ClickEvent event) {
@@ -280,7 +280,7 @@ public class RatingWidget extends VerticalPanel {
       star4.setTitle(statText);
       star5.setTitle(statText);
     }
-    
+
     if (isSubmitting) {
       DOM.setStyleAttribute(star1.getElement(), "cursor", "wait");
       DOM.setStyleAttribute(star2.getElement(), "cursor", "wait");
@@ -294,7 +294,7 @@ public class RatingWidget extends VerticalPanel {
       DOM.setStyleAttribute(star4.getElement(), "cursor", "default");
       DOM.setStyleAttribute(star5.getElement(), "cursor", "default");
     }
-    
+
   }
 
   public UserRating getUserRating() {
@@ -304,7 +304,7 @@ public class RatingWidget extends VerticalPanel {
   public void setUserRating(UserRating userRating) {
     this.userRating = userRating;
   }
-  
+
   public void setUserRating(final PermissibleObject permissibleObject, int rating) {
     if (isSubmitting) {
       return;
@@ -316,9 +316,7 @@ public class RatingWidget extends VerticalPanel {
         isSubmitting = false;
         if (userFileRating != null) {
           RatingWidget.this.userRating = userFileRating;
-          if (userFileRating.getPermissibleObject() != null) {
-            RatingWidget.this.permissibleObject = userFileRating.getPermissibleObject();
-          }
+          userFileRating.getPermissibleObject().mergeInto(permissibleObject);
         }
         setStars();
       }
@@ -338,9 +336,7 @@ public class RatingWidget extends VerticalPanel {
       public void onSuccess(UserRating userFileRating) {
         if (userFileRating != null) {
           RatingWidget.this.userRating = userFileRating;
-          if (userFileRating.getPermissibleObject() != null) {
-            RatingWidget.this.permissibleObject = userFileRating.getPermissibleObject();
-          }
+          userFileRating.getPermissibleObject().mergeInto(permissibleObject);
         }
         setStars();
       }

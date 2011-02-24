@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.damour.base.client.BaseApplication;
-import org.damour.base.client.exceptions.SimpleMessageException;
 import org.damour.base.client.objects.User;
 import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.buttons.Button;
