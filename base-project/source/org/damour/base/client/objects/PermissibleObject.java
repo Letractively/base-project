@@ -356,4 +356,39 @@ public class PermissibleObject implements Serializable, IHibernateFriendly, Comp
     return this.id.compareTo(other.getId());
   }
 
+  public void mergeInto(PermissibleObject target) {
+    PermissibleObject source = this;
+    // literally set everything from source to target
+    target.id = source.id;
+    target.owner = source.owner;
+    target.name = source.name;
+    target.description = source.description;
+    target.keywords = source.keywords;
+    target.parent = source.parent;
+    target.creationDate = source.creationDate;
+    target.lastModifiedDate = source.lastModifiedDate;
+    target.averageRating = source.averageRating;
+    target.numRatingVotes = source.numRatingVotes;
+    target.averageAdvisory = source.averageAdvisory;
+    target.numAdvisoryVotes = source.numAdvisoryVotes;
+    target.numUpVotes = source.numUpVotes;
+    target.numDownVotes = source.numDownVotes;
+    target.numComments = source.numComments;
+    target.allowComments = source.allowComments;
+    target.moderateComments = source.moderateComments;
+    target.customCounter1 = source.customCounter1;
+    target.customCounter2 = source.customCounter2;
+    target.customCounter3 = source.customCounter3;
+    target.hidden = source.hidden;
+    target.globalRead = source.globalRead;
+    target.globalWrite = source.globalWrite;
+    target.globalExecute = source.globalExecute;
+  }
+
+  public String toString() {
+    String toString = "id:" + getId() + " parentId:" + (getParent() != null ? getParent().getId() : "-") + " class:"
+        + getClass().getName().substring(getClass().getName().lastIndexOf(".") + 1) + " name:" + getName() + " owner:" + getOwner().getUsername();
+    return toString;
+  }
+
 }

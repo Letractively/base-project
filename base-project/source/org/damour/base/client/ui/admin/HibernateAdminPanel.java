@@ -6,16 +6,16 @@ import org.damour.base.client.objects.HibernateStat;
 import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.buttons.Button;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
 public class HibernateAdminPanel extends VerticalPanel {
 
@@ -34,15 +34,15 @@ public class HibernateAdminPanel extends VerticalPanel {
     statsTable.setCellSpacing(5);
     add(statsTable);
     Button refreshButton = new Button("Refresh");
-    refreshButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    refreshButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         fetchHibernateStats();
       }
     });
     Button resetButton = new Button("Reset");
     resetButton.setTitle("Reset Hibernate");
-    resetButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    resetButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         resetHibernate();
       }
     });
@@ -77,8 +77,8 @@ public class HibernateAdminPanel extends VerticalPanel {
     row++;
     for (final HibernateStat stat : stats) {
       Button evictButton = new Button("X");
-      evictButton.addClickListener(new ClickListener() {
-        public void onClick(Widget sender) {
+      evictButton.addClickHandler(new ClickHandler() {
+        public void onClick(ClickEvent event) {
           evictClassFromCache(stat.getRegionName());
         }
       });
@@ -90,7 +90,7 @@ public class HibernateAdminPanel extends VerticalPanel {
       if (stat.getCacheHits() == 0 || stat.getCachePuts() == 0) {
         statsTable.setWidget(row, 4, new Label(pf.format(0)));
       } else {
-        statsTable.setWidget(row, 4, new Label(pf.format(((float)stat.getCacheHits())/ ((float)(stat.getCacheHits() + stat.getCachePuts())))));
+        statsTable.setWidget(row, 4, new Label(pf.format(((float) stat.getCacheHits()) / ((float) (stat.getCacheHits() + stat.getCachePuts())))));
       }
       statsTable.setWidget(row, 5, new Label(nf.format(stat.getNumObjectsInCache())));
       statsTable.setWidget(row, 6, new Label(nf.format(stat.getMemoryUsed())));

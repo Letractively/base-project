@@ -28,6 +28,7 @@ import org.damour.base.client.objects.UserGroup;
 import org.damour.base.client.objects.UserRating;
 import org.damour.base.client.objects.UserThumb;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.RemoteService;
 
 public interface BaseService extends RemoteService {
@@ -46,6 +47,8 @@ public interface BaseService extends RemoteService {
   public MemoryStats getMemoryStats() throws SimpleMessageException;
   public MemoryStats requestGarbageCollection() throws SimpleMessageException;
   public Date getServerStartupDate() throws SimpleMessageException;
+  public void ping();
+  public String executeHQL(String query, boolean executeUpdate) throws SimpleMessageException;
   
   // users/group admin methods
   public List<String> getUsernames() throws SimpleMessageException;
@@ -77,6 +80,7 @@ public interface BaseService extends RemoteService {
   public List<Permission> getPermissions(PermissibleObject permissibleObject) throws SimpleMessageException;
   public void setPermissions(PermissibleObject permissibleObject, List<Permission> permissions) throws SimpleMessageException;
   public PermissibleObject updatePermissibleObject(PermissibleObject permissibleObject) throws SimpleMessageException;
+  public List<PermissibleObject> updatePermissibleObjects(List<PermissibleObject> permissibleObjects) throws SimpleMessageException;
   public FileUploadStatus getFileUploadStatus() throws SimpleMessageException;
   public List<PermissibleObjectTreeNode> searchPermissibleObjects(PermissibleObject parent, String query, String sortField, boolean sortDescending, String searchObjectType, boolean searchNames, boolean searchDescriptions, boolean searchKeywords, boolean useExactPhrase) throws SimpleMessageException;
   public Long getCustomCounter1(PermissibleObject permissibleObject);

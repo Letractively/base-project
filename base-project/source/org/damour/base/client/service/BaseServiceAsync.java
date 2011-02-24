@@ -45,7 +45,9 @@ public interface BaseServiceAsync {
   public void getMemoryStats(AsyncCallback<MemoryStats> callback);
   public void requestGarbageCollection(AsyncCallback<MemoryStats> callback);
   public void getServerStartupDate(AsyncCallback<Date> callback);
-
+  public void ping(AsyncCallback<Void> callback);
+  public void executeHQL(String query, boolean executeUpdate, AsyncCallback<String> callback);
+  
   public void getUsernames(AsyncCallback<List<String>> callback);
   // users/group admin methods
   public void getUsers(AsyncCallback<List<User>> callback);
@@ -76,6 +78,7 @@ public interface BaseServiceAsync {
   public void getPermissions(PermissibleObject permissibleObject, AsyncCallback<List<Permission>> callback);
   public void setPermissions(PermissibleObject permissibleObject, List<Permission> permissions, AsyncCallback<Void> callback);
   public void updatePermissibleObject(PermissibleObject permissibleObject, AsyncCallback<PermissibleObject> callback);
+  public void updatePermissibleObjects(List<PermissibleObject> permissibleObjects, AsyncCallback<List<PermissibleObject>> callback);
   public void getFileUploadStatus(AsyncCallback<FileUploadStatus> callback);
   public void searchPermissibleObjects(PermissibleObject parent, String query, String sortField, boolean sortDescending, String searchObjectType, boolean searchNames, boolean searchDescriptions, boolean searchKeywords, boolean useExactPhrase, AsyncCallback<List<PermissibleObjectTreeNode>> callback);
   public void getCustomCounter1(PermissibleObject permissibleObject, AsyncCallback<Long> callback);

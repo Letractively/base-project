@@ -708,6 +708,45 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     return new Date(BaseSystem.getStartupDate());
   }
 
+  public void ping() {
+    // NOOP
+    Logger.log("Ping received from: " + getThreadLocalRequest().getRemoteAddr());
+  }
+  
+  public String executeHQL(String query, boolean executeUpdate) {
+    if (StringUtils.isEmpty(query)) {
+      throw new SimpleMessageException("Query not supplied.");
+    }
+    User authUser = getAuthenticatedUser(session.get());
+    if (authUser == null || !authUser.isAdministrator()) {
+      throw new SimpleMessageException("Insufficient authorization.");
+    }
+    Transaction tx = null;
+    try {
+      tx = session.get().beginTransaction();
+      String result;
+      if (executeUpdate) {
+        result = "Rows affected: " + session.get().createQuery(query).executeUpdate();
+      } else {
+        List<?> list = session.get().createQuery(query).list();
+        result = "Objects returned: " + list.size() + "\r\n";
+        for (int i=0;i<list.size();i++) {
+          result += "Obj[" + i + "]: " + list.get(i).toString() + "\r\n";
+        }
+      }
+      
+      tx.commit();
+      return result;
+    } catch (Throwable t) {
+      Logger.log(t);
+      try {
+        tx.rollback();
+      } catch (Throwable tt) {
+      }
+      throw new SimpleMessageException(t.getMessage());
+    }
+  }
+  
   public UserRating getUserRating(PermissibleObject permissibleObject) throws SimpleMessageException {
     if (permissibleObject == null) {
       throw new SimpleMessageException("PermissibleObject not supplied.");
@@ -1402,6 +1441,13 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       }
       throw new SimpleMessageException(t.getMessage());
     }
+  }
+
+  public List<PermissibleObject> updatePermissibleObjects(List<PermissibleObject> permissibleObjects) throws SimpleMessageException {
+    for (PermissibleObject object : permissibleObjects) {
+      updatePermissibleObject(object);
+    }
+    return permissibleObjects;
   }
 
   public void setPermissions(PermissibleObject permissibleObject, List<Permission> permissions) throws SimpleMessageException {

@@ -62,7 +62,6 @@ public class PermissibleObjectHelper {
     }
 
     // ok finally we can delete the file
-    System.out.println("deleting: " + permissibleObject.getClass().getName() + "->" + permissibleObject.getId());
     session.delete(permissibleObject);   
     session.flush();
     

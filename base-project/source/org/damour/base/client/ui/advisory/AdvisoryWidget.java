@@ -6,13 +6,11 @@ import org.damour.base.client.objects.PermissibleObject;
 import org.damour.base.client.objects.UserAdvisory;
 import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.dialogs.MessageDialogBox;
+import org.damour.base.client.utils.CursorUtils;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.MouseMoveEvent;
-import com.google.gwt.event.dom.client.MouseMoveHandler;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -28,50 +26,27 @@ public class AdvisoryWidget extends VerticalPanel {
 
   private static PopupPanel contentAdvisoryPopup = new PopupPanel(true, false);
 
-  private static Timer timer = new Timer() {
+  private boolean showStatsLabel = true;
 
-    public void run() {
-      contentAdvisoryPopup.hide();
-    }
-  };
+  private PermissibleObject permissibleObject;
+  private UserAdvisory userAdvisory;
 
-  boolean showStatsLabel = true;
-
-  PermissibleObject permissibleObject;
-  UserAdvisory userAdvisory;
-
-  Image G = new Image();
-  Image PG = new Image();
-  Image PG13 = new Image();
-  Image R = new Image();
-  Image NC17 = new Image();
+  private Image advisoryImage = new Image();
+  private Image G = new Image();
+  private Image PG = new Image();
+  private Image PG13 = new Image();
+  private Image R = new Image();
+  private Image NC17 = new Image();
 
   private Grid ratingPanel = new Grid(5, 2);
-  RadioButton GRB = new RadioButton("");
-  RadioButton PGRB = new RadioButton("");
-  RadioButton PG13RB = new RadioButton("");
-  RadioButton RRB = new RadioButton("");
-  RadioButton NC17RB = new RadioButton("");
+  private RadioButton GRB = new RadioButton("");
+  private RadioButton PGRB = new RadioButton("");
+  private RadioButton PG13RB = new RadioButton("");
+  private RadioButton RRB = new RadioButton("");
+  private RadioButton NC17RB = new RadioButton("");
 
   private boolean isSubmitting = false;
-  
-  private MouseMoveHandler mouseMoveHandler = new MouseMoveHandler() {
 
-    public void onMouseMove(MouseMoveEvent event) {
-      if (userAdvisory == null) {
-        // bring up content advisory popup
-        if (contentAdvisoryPopup.getWidget() == ratingPanel && contentAdvisoryPopup.isShowing()) {
-          return;
-        }
-        contentAdvisoryPopup.setStyleName("advisoryPopup");
-        contentAdvisoryPopup.setWidget(ratingPanel);
-        contentAdvisoryPopup.setPopupPosition(event.getClientX(), event.getClientY());
-        contentAdvisoryPopup.show();
-        timer.cancel();
-        timer.schedule(4000);
-      }
-    }
-  };
   private ClickHandler ratingHandler = new ClickHandler() {
 
     public void onClick(ClickEvent event) {
@@ -143,7 +118,6 @@ public class AdvisoryWidget extends VerticalPanel {
   private void buildAdvisoryImagePanel() {
     clear();
 
-    Image advisoryImage = new Image();
     Label statsLabel = new Label();
     DOM.setStyleAttribute(statsLabel.getElement(), "fontSize", "8pt");
 
@@ -151,8 +125,8 @@ public class AdvisoryWidget extends VerticalPanel {
       BaseImageBundle.images.advisoryNR().applyTo(advisoryImage);
       statsLabel.setText(BaseApplication.getMessages().getString("notRated", "Not Rated"));
     } else if (permissibleObject != null) {
-      statsLabel
-          .setText(BaseApplication.getMessages().getString("advisoryStatsLabel", "Rating based on {0} votes", "" + permissibleObject.getNumAdvisoryVotes()));
+      statsLabel.setText(BaseApplication.getMessages().getString("advisoryStatsLabel", "Rating based on {0} votes",
+          "" + permissibleObject.getNumAdvisoryVotes()));
       if (permissibleObject.getAverageAdvisory() > 0 && permissibleObject.getAverageAdvisory() <= 1) {
         BaseImageBundle.images.advisoryG().applyTo(advisoryImage);
       } else if (permissibleObject.getAverageAdvisory() > 1 && permissibleObject.getAverageAdvisory() <= 2) {
@@ -165,7 +139,24 @@ public class AdvisoryWidget extends VerticalPanel {
         BaseImageBundle.images.advisoryNC17().applyTo(advisoryImage);
       }
     }
-    advisoryImage.addMouseMoveHandler(mouseMoveHandler);
+
+    advisoryImage.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
+        if (userAdvisory == null) {
+          // bring up content advisory popup
+          if (contentAdvisoryPopup.getWidget() == ratingPanel && contentAdvisoryPopup.isShowing()) {
+            return;
+          }
+          contentAdvisoryPopup.setStyleName("advisoryPopup");
+          contentAdvisoryPopup.setWidget(ratingPanel);
+          contentAdvisoryPopup.setPopupPosition(event.getClientX(), event.getClientY());
+          contentAdvisoryPopup.show();
+        }
+      }
+    });
+    if (userAdvisory == null) {
+      CursorUtils.setHandCursor(advisoryImage);
+    }
     setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
     setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
     add(advisoryImage);
@@ -188,7 +179,7 @@ public class AdvisoryWidget extends VerticalPanel {
   public void setUserAdvisory(UserAdvisory userAdvisory) {
     this.userAdvisory = userAdvisory;
   }
-  
+
   public void setFileUserAdvisory(int advisory) {
     if (isSubmitting) {
       return;
@@ -199,10 +190,9 @@ public class AdvisoryWidget extends VerticalPanel {
       public void onSuccess(UserAdvisory userFileAdvisory) {
         isSubmitting = false;
         if (userFileAdvisory != null) {
+          CursorUtils.setDefaultCursor(advisoryImage);
           AdvisoryWidget.this.userAdvisory = userFileAdvisory;
-          if (userFileAdvisory.getPermissibleObject() != null) {
-            AdvisoryWidget.this.permissibleObject = userFileAdvisory.getPermissibleObject();
-          }
+          userFileAdvisory.getPermissibleObject().mergeInto(permissibleObject);
         }
         buildAdvisoryImagePanel();
       }
@@ -221,10 +211,9 @@ public class AdvisoryWidget extends VerticalPanel {
 
       public void onSuccess(UserAdvisory userFileAdvisory) {
         if (userFileAdvisory != null) {
+          CursorUtils.setDefaultCursor(advisoryImage);
           AdvisoryWidget.this.userAdvisory = userFileAdvisory;
-          if (userFileAdvisory.getPermissibleObject() != null) {
-            AdvisoryWidget.this.permissibleObject = userFileAdvisory.getPermissibleObject();
-          }
+          userFileAdvisory.getPermissibleObject().mergeInto(permissibleObject);
         }
         buildAdvisoryImagePanel();
       }
