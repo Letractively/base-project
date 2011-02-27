@@ -46,11 +46,12 @@ public class AdvisoryWidget extends VerticalPanel {
   private RadioButton NC17RB = new RadioButton("");
 
   private boolean isSubmitting = false;
+  private boolean interactive = true;
 
   private ClickHandler ratingHandler = new ClickHandler() {
 
     public void onClick(ClickEvent event) {
-      if (userAdvisory == null) {
+      if (interactive && userAdvisory == null) {
         // do vote
         int vote = 0;
         if (event.getSource() == G || event.getSource() == GRB) {
@@ -71,11 +72,12 @@ public class AdvisoryWidget extends VerticalPanel {
     }
   };
 
-  public AdvisoryWidget(PermissibleObject permissibleObject, UserAdvisory fileAdvisory, boolean fetchOnLoad, boolean showStatsLabel) {
+  public AdvisoryWidget(PermissibleObject permissibleObject, UserAdvisory fileAdvisory, boolean interactive, boolean fetchOnLoad, boolean showStatsLabel) {
     this.permissibleObject = permissibleObject;
     this.userAdvisory = fileAdvisory;
     this.showStatsLabel = showStatsLabel;
-    if (fileAdvisory == null && permissibleObject.getNumAdvisoryVotes() > 0 && fetchOnLoad) {
+    this.interactive = interactive;
+    if (interactive && fileAdvisory == null && permissibleObject.getNumAdvisoryVotes() > 0 && fetchOnLoad) {
       getFileUserAdvisory();
     }
 
@@ -142,7 +144,7 @@ public class AdvisoryWidget extends VerticalPanel {
 
     advisoryImage.addClickHandler(new ClickHandler() {
       public void onClick(ClickEvent event) {
-        if (userAdvisory == null) {
+        if (interactive && userAdvisory == null) {
           // bring up content advisory popup
           if (contentAdvisoryPopup.getWidget() == ratingPanel && contentAdvisoryPopup.isShowing()) {
             return;
@@ -154,7 +156,7 @@ public class AdvisoryWidget extends VerticalPanel {
         }
       }
     });
-    if (userAdvisory == null) {
+    if (interactive && userAdvisory == null) {
       CursorUtils.setHandCursor(advisoryImage);
     }
     setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);

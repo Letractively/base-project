@@ -40,11 +40,12 @@ public class RatingWidget extends VerticalPanel {
   Image star5 = new Image();
 
   private boolean isSubmitting = false;
+  private boolean interactive = true;
 
   ClickHandler starClickHandler = new ClickHandler() {
 
     public void onClick(ClickEvent event) {
-      if (userRating == null) {
+      if (interactive && userRating == null) {
         // do vote
         int vote = 0;
         if (event.getSource() == star1) {
@@ -71,7 +72,7 @@ public class RatingWidget extends VerticalPanel {
         DOM.setStyleAttribute(((Widget) event.getSource()).getElement(), "cursor", "wait");
         return;
       }
-      if (userRating == null) {
+      if (interactive && userRating == null) {
         DOM.setStyleAttribute(((Widget) event.getSource()).getElement(), "cursor", "hand");
         DOM.setStyleAttribute(((Widget) event.getSource()).getElement(), "cursor", "pointer");
         starMoused((Widget) event.getSource());
@@ -96,10 +97,11 @@ public class RatingWidget extends VerticalPanel {
     }
   };
 
-  public RatingWidget(PermissibleObject permissibleObject, UserRating fileRating, boolean fetchOnLoad, boolean showStatsLabel) {
+  public RatingWidget(PermissibleObject permissibleObject, UserRating fileRating, boolean interactive, boolean fetchOnLoad, boolean showStatsLabel) {
     this.showStatsLabel = showStatsLabel;
     this.permissibleObject = permissibleObject;
     this.userRating = fileRating;
+    this.interactive = interactive;
     setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 
     setupStar(star1);
@@ -116,7 +118,7 @@ public class RatingWidget extends VerticalPanel {
     if (showStatsLabel) {
       add(statsLabel);
     }
-    if (fileRating == null && permissibleObject.getNumRatingVotes() > 0 && fetchOnLoad) {
+    if (interactive && fileRating == null && permissibleObject.getNumRatingVotes() > 0 && fetchOnLoad) {
       getUserRating(permissibleObject);
     } else {
       setStars();
