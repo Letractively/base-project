@@ -28,7 +28,6 @@ import org.damour.base.client.objects.UserGroup;
 import org.damour.base.client.objects.UserRating;
 import org.damour.base.client.objects.UserThumb;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.RemoteService;
 
 public interface BaseService extends RemoteService {
@@ -112,6 +111,14 @@ public interface BaseService extends RemoteService {
   public UserThumb getUserThumb(PermissibleObject permissibleObject) throws SimpleMessageException;
   public UserThumb setUserThumb(PermissibleObject permissibleObject, boolean like) throws SimpleMessageException;
 
+  // top rated/most liked api
+  public List<PermissibleObject> getMostRated(int maxResults, String classType) throws SimpleMessageException;
+  public List<PermissibleObject> getTopRated(int maxResults, int minNumVotes, String classType) throws SimpleMessageException;
+  public List<PermissibleObject> getBottomRated(int maxResults, int minNumVotes, String classType) throws SimpleMessageException;
+  public List<PermissibleObject> getMostLiked(int maxResults, int minNumVotes, String classType) throws SimpleMessageException;
+  public List<PermissibleObject> getMostDisliked(int maxResults, int minNumVotes, String classType) throws SimpleMessageException;
+  public List<PermissibleObject> getCreatedSince(int maxResults, long createdSinceMillis, String classType) throws SimpleMessageException;
+  
   // file comments
   public Boolean submitComment(Comment comment) throws SimpleMessageException;
   public Boolean approveComment(Comment comment) throws SimpleMessageException;

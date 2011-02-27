@@ -110,6 +110,14 @@ public interface BaseServiceAsync {
   public void setUserThumb(PermissibleObject permissibleObject, boolean like, AsyncCallback<UserThumb> callback);
   public void getUserThumb(PermissibleObject permissibleObject, AsyncCallback<UserThumb> callback);
   
+  // top rated/most liked api
+  public void getMostRated(int maxResults, String classType, AsyncCallback<List<PermissibleObject>> callback);
+  public void getTopRated(int maxResults, int minNumVotes, String classType, AsyncCallback<List<PermissibleObject>> callback);
+  public void getBottomRated(int maxResults, int minNumVotes, String classType, AsyncCallback<List<PermissibleObject>> callback);
+  public void getMostLiked(int maxResults, int minNumVotes, String classType, AsyncCallback<List<PermissibleObject>> callback);
+  public void getMostDisliked(int maxResults, int minNumVotes, String classType, AsyncCallback<List<PermissibleObject>> callback);
+  public void getCreatedSince(int maxResults, long createdSinceMillis, String classType, AsyncCallback<List<PermissibleObject>> callback);
+  
   // file comments
   public void submitComment(Comment comment, AsyncCallback<Boolean> callback);
   public void approveComment(Comment comment, AsyncCallback<Boolean> callback);
