@@ -69,7 +69,7 @@ public class PermissibleObjectTreeNodeTest {
     session = HibernateUtil.getInstance().getSession();
     // as user, get files i can see
     PermissibleObjectTreeNode root = new PermissibleObjectTreeNode();
-    RepositoryHelper.buildPermissibleObjectTreeNode(session, user, null, null, root, null, 0, -1, -1);
+    RepositoryHelper.buildPermissibleObjectTreeNode(session, user, null, null, root, null, null, 0, -1, -1);
     RepositoryHelper.dumpTreeNode(root, 0);
     session.close();
     System.out.println("End dump");

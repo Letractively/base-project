@@ -21,6 +21,7 @@ import org.damour.base.client.objects.FileUploadStatus;
 import org.damour.base.client.objects.Folder;
 import org.damour.base.client.objects.GroupMembership;
 import org.damour.base.client.objects.HibernateStat;
+import org.damour.base.client.objects.IAnonymousPermissibleObject;
 import org.damour.base.client.objects.MemoryStats;
 import org.damour.base.client.objects.Page;
 import org.damour.base.client.objects.PageInfo;
@@ -908,7 +909,8 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       List<PermissibleObject> mostRated = new ArrayList<PermissibleObject>();
       String simpleClassName = Class.forName(classType).getSimpleName();
       List<PermissibleObject> list = session.get()
-          .createQuery("from " + simpleClassName + " where numRatingVotes >= " + minNumVotes + " order by averageRating desc").setMaxResults(maxResults).setCacheable(true).list();
+          .createQuery("from " + simpleClassName + " where numRatingVotes >= " + minNumVotes + " order by averageRating desc").setMaxResults(maxResults)
+          .setCacheable(true).list();
       for (PermissibleObject permissibleObject : list) {
         if (SecurityHelper.doesUserHavePermission(session.get(), authUser, permissibleObject, PERM.READ)) {
           mostRated.add(permissibleObject);
@@ -930,7 +932,8 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       List<PermissibleObject> mostRated = new ArrayList<PermissibleObject>();
       String simpleClassName = Class.forName(classType).getSimpleName();
       List<PermissibleObject> list = session.get()
-          .createQuery("from " + simpleClassName + " where numRatingVotes >= " + minNumVotes + " order by averageRating asc").setMaxResults(maxResults).setCacheable(true).list();
+          .createQuery("from " + simpleClassName + " where numRatingVotes >= " + minNumVotes + " order by averageRating asc").setMaxResults(maxResults)
+          .setCacheable(true).list();
       for (PermissibleObject permissibleObject : list) {
         if (SecurityHelper.doesUserHavePermission(session.get(), authUser, permissibleObject, PERM.READ)) {
           mostRated.add(permissibleObject);
@@ -974,7 +977,8 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       List<PermissibleObject> mostRated = new ArrayList<PermissibleObject>();
       String simpleClassName = Class.forName(classType).getSimpleName();
       List<PermissibleObject> list = session.get()
-          .createQuery("from " + simpleClassName + " where numDownVotes >= " + minNumVotes + " order by numDownVotes desc").setMaxResults(maxResults).setCacheable(true).list();
+          .createQuery("from " + simpleClassName + " where numDownVotes >= " + minNumVotes + " order by numDownVotes desc").setMaxResults(maxResults)
+          .setCacheable(true).list();
       for (PermissibleObject permissibleObject : list) {
         if (SecurityHelper.doesUserHavePermission(session.get(), authUser, permissibleObject, PERM.READ)) {
           mostRated.add(permissibleObject);
@@ -1233,6 +1237,9 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       throw new SimpleMessageException("Object not supplied.");
     }
     User authUser = getAuthenticatedUser(session.get());
+    if (authUser == null && permissibleObject instanceof IAnonymousPermissibleObject) {
+      authUser = UserHelper.getUser(session.get(), "anonymous");
+    }
     if (authUser == null) {
       throw new SimpleMessageException("User is not authenticated.");
     }
@@ -1242,7 +1249,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       if (permissibleObject.getParent() != null) {
         permissibleObject.setParent((PermissibleObject) session.get().load(PermissibleObject.class, permissibleObject.getParent().getId()));
       }
-      if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, permissibleObject.getParent(), PERM.WRITE)) {
+      if (!SecurityHelper.doesUserHavePermission(session.get(), authUser, permissibleObject.getParent(), PERM.CREATE_CHILD)) {
         throw new SimpleMessageException("User is not authorized to write to parent folder.");
       }
       if (permissibleObject.getId() != null) {
@@ -1272,12 +1279,12 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
           if (!"parent".equals(field.getName())) {
             Object obj = field.get(permissibleObject);
             if (obj instanceof PermissibleObject) {
-              System.out.println("updating: " + field.getName());
               PermissibleObject childObj = (PermissibleObject) obj;
               PermissibleObject hibChild = (PermissibleObject) session.get().load(PermissibleObject.class, childObj.getId());
               hibChild.setGlobalRead(permissibleObject.isGlobalRead());
               hibChild.setGlobalWrite(permissibleObject.isGlobalWrite());
               hibChild.setGlobalExecute(permissibleObject.isGlobalExecute());
+              hibChild.setGlobalCreateChild(permissibleObject.isGlobalCreateChild());
               field.set(permissibleObject, hibChild);
             }
           }
@@ -1384,7 +1391,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     }
   }
 
-  public PermissibleObjectTreeNode getPermissibleObjectTree(PermissibleObject parent, User owner, int fetchDepth, int metaDataFetchDepth)
+  public PermissibleObjectTreeNode getPermissibleObjectTree(PermissibleObject parent, User owner, List<String> acceptedClasses, int fetchDepth, int metaDataFetchDepth)
       throws SimpleMessageException {
     try {
       User authUser = getAuthenticatedUser(session.get());
@@ -1392,7 +1399,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       if (parent != null) {
         parent = getPermissibleObject(parent.getId());
       }
-      RepositoryHelper.buildPermissibleObjectTreeNode(session.get(), authUser, owner, getVoterGUID(), root, parent, 0, fetchDepth, metaDataFetchDepth);
+      RepositoryHelper.buildPermissibleObjectTreeNode(session.get(), authUser, owner, getVoterGUID(), root, parent, acceptedClasses, 0, fetchDepth, metaDataFetchDepth);
       return root;
     } catch (Throwable t) {
       Logger.log(t);
@@ -1551,6 +1558,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
               childObj.setGlobalRead(hibPermissibleObject.isGlobalRead());
               childObj.setGlobalWrite(hibPermissibleObject.isGlobalWrite());
               childObj.setGlobalExecute(hibPermissibleObject.isGlobalExecute());
+              childObj.setGlobalCreateChild(hibPermissibleObject.isGlobalCreateChild());
               session.get().save(childObj);
             }
           }
@@ -1618,6 +1626,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
               childObj.setGlobalRead(permissibleObject.isGlobalRead());
               childObj.setGlobalWrite(permissibleObject.isGlobalWrite());
               childObj.setGlobalExecute(permissibleObject.isGlobalExecute());
+              childObj.setGlobalCreateChild(permissibleObject.isGlobalCreateChild());
               SecurityHelper.deletePermissions(session.get(), childObj);
               for (Permission permission : permissions) {
                 Permission newPerm = new Permission();
@@ -1626,6 +1635,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
                 newPerm.setReadPerm(permission.isReadPerm());
                 newPerm.setWritePerm(permission.isWritePerm());
                 newPerm.setExecutePerm(permission.isExecutePerm());
+                newPerm.setCreateChildPerm(permission.isCreateChildPerm());
                 session.get().save(newPerm);
               }
             }

@@ -66,7 +66,7 @@ public interface BaseService extends RemoteService {
   // file/content/permissions methods
   public PermissibleObject getPermissibleObject(Long id) throws SimpleMessageException;
   public RepositoryTreeNode getRepositoryTree() throws SimpleMessageException;
-  public PermissibleObjectTreeNode getPermissibleObjectTree(PermissibleObject parent, User owner, int fetchDepth, int metaDataFetchDepth) throws SimpleMessageException;
+  public PermissibleObjectTreeNode getPermissibleObjectTree(PermissibleObject parent, User owner, List<String> acceptedClasses, int fetchDepth, int metaDataFetchDepth) throws SimpleMessageException;
   public PermissibleObject savePermissibleObject(PermissibleObject permissibleObject) throws SimpleMessageException;
   public List<PermissibleObject> savePermissibleObjects(List<PermissibleObject> permissibleObjects) throws SimpleMessageException;
   public void deletePermissibleObject(PermissibleObject permissibleObject) throws SimpleMessageException;

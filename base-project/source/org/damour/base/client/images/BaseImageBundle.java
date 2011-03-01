@@ -57,6 +57,8 @@ public interface BaseImageBundle extends ImageBundle, TreeImages {
   AbstractImagePrototype location_disabled_16();
   AbstractImagePrototype showHide16();
   AbstractImagePrototype find16x16();
+  AbstractImagePrototype edit16();
+  AbstractImagePrototype editPencil16();
   
   // comment widget
   AbstractImagePrototype next();

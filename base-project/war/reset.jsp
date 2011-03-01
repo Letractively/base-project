@@ -1,6 +1,6 @@
-<%@ page import="org.damour.base.server.hibernate.*"%>
+<%@page import="org.damour.base.server.BaseSystem"%>
 <%
-  HibernateUtil.resetHibernate();
-  out.println("HibernateUtil reset complete.<BR>");
+  BaseSystem.reset();
+  out.println("System reset complete.<BR>");
 %>
 
