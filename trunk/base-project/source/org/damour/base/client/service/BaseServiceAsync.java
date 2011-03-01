@@ -65,7 +65,7 @@ public interface BaseServiceAsync {
   // file/content/permissions methods
   public void getPermissibleObject(Long id, AsyncCallback<PermissibleObject> callback);
   public void getRepositoryTree(AsyncCallback<RepositoryTreeNode> callback);
-  public void getPermissibleObjectTree(PermissibleObject parent, User owner, int fetchDepth, int metaDataFetchDepth, AsyncCallback<PermissibleObjectTreeNode> callback);
+  public void getPermissibleObjectTree(PermissibleObject parent, User owner, List<String> acceptedClasses, int fetchDepth, int metaDataFetchDepth, AsyncCallback<PermissibleObjectTreeNode> callback);
   public void savePermissibleObject(PermissibleObject permissibleObject, AsyncCallback<PermissibleObject> callback);
   public void savePermissibleObjects(List<PermissibleObject> permissibleObjects, AsyncCallback<List<PermissibleObject>> callback);
   public void deletePermissibleObject(PermissibleObject permissibleObject, AsyncCallback<Void> callback);

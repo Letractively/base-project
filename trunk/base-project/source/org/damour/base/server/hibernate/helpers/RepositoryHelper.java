@@ -92,12 +92,15 @@ public class RepositoryHelper {
   }
 
   public static void buildPermissibleObjectTreeNode(Session session, User user, User owner, String voterGUID, PermissibleObjectTreeNode parentNode,
-      PermissibleObject parent, int currentDepth, int fetchDepth, int metaDataFetchDepth) {
+      PermissibleObject parent, List<String> acceptedClasses, int currentDepth, int fetchDepth, int metaDataFetchDepth) {
 
     if (!SecurityHelper.doesUserHavePermission(session, user, parent, PERM.READ)) {
       return;
     }
 
+    if (parent != null && acceptedClasses != null && !acceptedClasses.contains(parent.getClass().getName())) {
+      return;
+    }
     parentNode.setObject(parent);
 
     if (parent != null && (metaDataFetchDepth == -1 || currentDepth <= metaDataFetchDepth)) {
@@ -196,9 +199,13 @@ public class RepositoryHelper {
       }
     }
     for (PermissibleObject child : children) {
+      if (acceptedClasses != null && !acceptedClasses.contains(child.getClass().getName())) {
+        continue;
+      }
+
       PermissibleObjectTreeNode childNode = new PermissibleObjectTreeNode();
       parentNode.getChildren().put(child, childNode);
-      buildPermissibleObjectTreeNode(session, user, owner, voterGUID, childNode, child, currentDepth + 1, fetchDepth, metaDataFetchDepth);
+      buildPermissibleObjectTreeNode(session, user, owner, voterGUID, childNode, child, acceptedClasses, currentDepth + 1, fetchDepth, metaDataFetchDepth);
     }
   }
 

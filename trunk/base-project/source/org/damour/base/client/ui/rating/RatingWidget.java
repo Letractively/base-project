@@ -113,7 +113,7 @@ public class RatingWidget extends VerticalPanel {
     add(starPanel);
 
     statsLabel = new Label(BaseApplication.getMessages().getString("ratingStatsLabel", "{0} rating from {1} users",
-        NumberFormat.getFormat("#.#").format(permissibleObject.getAverageRating()), "" + permissibleObject.getNumRatingVotes()), false);
+        NumberFormat.getFormat("0.0").format(permissibleObject.getAverageRating()), "" + permissibleObject.getNumRatingVotes()), false);
     DOM.setStyleAttribute(statsLabel.getElement(), "fontSize", "8pt");
     if (showStatsLabel) {
       add(statsLabel);
@@ -178,7 +178,7 @@ public class RatingWidget extends VerticalPanel {
 
   public void setStars() {
     String statText = BaseApplication.getMessages().getString("ratingStatsLabel", "{0} rating from {1} users",
-        NumberFormat.getFormat("#.#").format(permissibleObject.getAverageRating()), "" + permissibleObject.getNumRatingVotes());
+        NumberFormat.getFormat("0.0").format(permissibleObject.getAverageRating()), "" + permissibleObject.getNumRatingVotes());
     statsLabel.setText(statText);
     if (permissibleObject.getNumRatingVotes() == 0) {
       BaseImageBundle.images.starNoVotes().applyTo(star1);

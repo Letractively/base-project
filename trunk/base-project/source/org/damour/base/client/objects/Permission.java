@@ -5,14 +5,15 @@ import java.io.Serializable;
 public class Permission implements Serializable, IHibernateFriendly {
 
   public static enum PERM {
-    READ, WRITE, EXECUTE
+    READ, WRITE, EXECUTE, CREATE_CHILD
   };
 
   public PermissibleObject permissibleObject;
   public SecurityPrincipal securityPrincipal;
-  public boolean readPerm = false;
-  public boolean writePerm = false;
-  public boolean executePerm = false;
+  public Boolean readPerm = false;
+  public Boolean writePerm = false;
+  public Boolean executePerm = false;
+  public Boolean createChildPerm = false;
 
   public Permission() {
   }
@@ -28,6 +29,20 @@ public class Permission implements Serializable, IHibernateFriendly {
 
   public boolean isFieldUnique(String fieldName) {
     return false;
+  }
+
+  public Boolean isCreateChildPerm() {
+    if (createChildPerm == null) {
+      createChildPerm = false;
+    }
+    return createChildPerm;
+  }
+
+  public void setCreateChildPerm(Boolean createChildPerm) {
+    if (createChildPerm == null) {
+      createChildPerm = false;
+    }
+    this.createChildPerm = createChildPerm;
   }
 
   public boolean isReadPerm() {

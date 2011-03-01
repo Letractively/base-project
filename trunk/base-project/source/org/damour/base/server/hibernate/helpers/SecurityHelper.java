@@ -20,8 +20,8 @@ public class SecurityHelper {
   }
 
   public static List<Permission> getPermissions(Session session, SecurityPrincipal principal, PermissibleObject object) {
-    return session.createQuery(
-        "from " + Permission.class.getSimpleName() + " where securityPrincipal.id = " + principal.id + " and permissibleObject.id = " + object.id)
+    return session
+        .createQuery("from " + Permission.class.getSimpleName() + " where securityPrincipal.id = " + principal.id + " and permissibleObject.id = " + object.id)
         .setCacheable(true).list();
   }
 
@@ -119,8 +119,9 @@ public class SecurityHelper {
   }
 
   public static GroupMembership getGroupMembership(Session session, User user, UserGroup group) {
-    List<GroupMembership> memberships = session.createQuery(
-        "from " + GroupMembership.class.getSimpleName() + " where userGroup.id = " + group.id + " and user.id = " + user.id).setCacheable(true).list();
+    List<GroupMembership> memberships = session
+        .createQuery("from " + GroupMembership.class.getSimpleName() + " where userGroup.id = " + group.id + " and user.id = " + user.id).setCacheable(true)
+        .list();
     if (memberships != null && memberships.size() > 0) {
       return memberships.get(0);
     }
@@ -151,6 +152,8 @@ public class SecurityHelper {
       return true;
     } else if (permission.equals(PERM.EXECUTE) && object.isGlobalExecute()) {
       return true;
+    } else if (permission.equals(PERM.CREATE_CHILD) && object.isGlobalCreateChild()) {
+      return true;
     }
     return false;
   }
@@ -161,6 +164,8 @@ public class SecurityHelper {
     } else if (permission.equals(PERM.WRITE) && perm.isWritePerm()) {
       return true;
     } else if (permission.equals(PERM.EXECUTE) && perm.isExecutePerm()) {
+      return true;
+    } else if (permission.equals(PERM.CREATE_CHILD) && perm.isCreateChildPerm()) {
       return true;
     }
     return false;

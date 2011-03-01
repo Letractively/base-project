@@ -38,6 +38,7 @@ public class PermissibleObject implements Serializable, IHibernateFriendly, Comp
   public boolean globalRead = true;
   public boolean globalWrite = false;
   public boolean globalExecute = false;
+  public Boolean globalCreateChild = false;
 
   public PermissibleObject() {
   }
@@ -92,6 +93,20 @@ public class PermissibleObject implements Serializable, IHibernateFriendly, Comp
 
   public void setGlobalExecute(boolean globalExecute) {
     this.globalExecute = globalExecute;
+  }
+
+  public boolean isGlobalCreateChild() {
+    if (globalCreateChild == null) {
+      globalCreateChild = false;
+    }
+    return globalCreateChild;
+  }
+
+  public void setGlobalCreateChild(Boolean globalCreateChild) {
+    if (globalCreateChild == null) {
+      globalCreateChild = false;
+    }
+    this.globalCreateChild = globalCreateChild;
   }
 
   public String getCachePolicy() {
