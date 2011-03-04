@@ -9,23 +9,21 @@ import org.damour.base.client.images.BaseImageBundle;
 import org.damour.base.client.objects.File;
 import org.damour.base.client.objects.Folder;
 import org.damour.base.client.objects.PermissibleObject;
-import org.damour.base.client.service.BaseServiceAsync;
 import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.utils.StringUtils;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CaptionPanel;
-import com.google.gwt.user.client.ui.ChangeListener;
 import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
 public class GeneralPanel extends FlexTable {
 
@@ -36,6 +34,7 @@ public class GeneralPanel extends FlexTable {
   private CheckBox globalReadCheckBox = new CheckBox("Read");
   private CheckBox globalWriteCheckBox = new CheckBox("Write");
   private CheckBox globalExecuteCheckBox = new CheckBox("Execute");
+  private CheckBox globalCreateChildrenCheckBox = new CheckBox("Create Children");
 
   private boolean dirty = false;
 
@@ -47,24 +46,28 @@ public class GeneralPanel extends FlexTable {
 
   public void buildUI() {
 
-    globalReadCheckBox.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    globalReadCheckBox.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         dirty = true;
       }
     });
-    globalWriteCheckBox.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    globalWriteCheckBox.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         dirty = true;
       }
     });
-    globalExecuteCheckBox.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    globalExecuteCheckBox.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         dirty = true;
       }
     });
-
-    nameTextBox.addChangeListener(new ChangeListener() {
-      public void onChange(Widget sender) {
+    globalCreateChildrenCheckBox.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
+        dirty = true;
+      }
+    });
+    nameTextBox.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         dirty = true;
       }
     });
@@ -106,13 +109,15 @@ public class GeneralPanel extends FlexTable {
   }
 
   private void populateGlobalPermissionsPanel() {
-    globalReadCheckBox.setChecked(permissibleObject.isGlobalRead());
-    globalWriteCheckBox.setChecked(permissibleObject.isGlobalWrite());
-    globalExecuteCheckBox.setChecked(permissibleObject.isGlobalExecute());
+    globalReadCheckBox.setValue(permissibleObject.isGlobalRead());
+    globalWriteCheckBox.setValue(permissibleObject.isGlobalWrite());
+    globalExecuteCheckBox.setValue(permissibleObject.isGlobalExecute());
+    globalCreateChildrenCheckBox.setValue(permissibleObject.isGlobalCreateChild());
     globalPermissionsPanel.setHeight("100%");
     globalPermissionsPanel.add(globalReadCheckBox);
     globalPermissionsPanel.add(globalWriteCheckBox);
     globalPermissionsPanel.add(globalExecuteCheckBox);
+    globalPermissionsPanel.add(globalCreateChildrenCheckBox);
   }
 
   private String getCreationDate() {
@@ -121,7 +126,7 @@ public class GeneralPanel extends FlexTable {
     } else if (permissibleObject instanceof File) {
       return (new Date(((File) permissibleObject).getCreationDate())).toLocaleString();
     }
-    return "";
+    return (new Date(permissibleObject.getCreationDate())).toLocaleString();
   }
 
   private String getSize() {
@@ -139,7 +144,7 @@ public class GeneralPanel extends FlexTable {
     } else if (permissibleObject instanceof File) {
       return ((File) permissibleObject).getName();
     }
-    return "";
+    return permissibleObject.getName();
   }
 
   private String getType() {
@@ -205,13 +210,12 @@ public class GeneralPanel extends FlexTable {
 
   public void apply(final AsyncCallback<Void> callback) {
     if (dirty) {
-      PermissibleObject newPermissibleObject = new PermissibleObject();
-      newPermissibleObject.setId(permissibleObject.getId());
-      newPermissibleObject.setName(nameTextBox.getText());
-      newPermissibleObject.setOwner(permissibleObject.getOwner());
-      newPermissibleObject.setGlobalRead(globalReadCheckBox.isChecked());
-      newPermissibleObject.setGlobalWrite(globalWriteCheckBox.isChecked());
-      newPermissibleObject.setGlobalExecute(globalExecuteCheckBox.isChecked());
+      permissibleObject.setName(nameTextBox.getText());
+      permissibleObject.setOwner(permissibleObject.getOwner());
+      permissibleObject.setGlobalRead(globalReadCheckBox.getValue());
+      permissibleObject.setGlobalWrite(globalWriteCheckBox.getValue());
+      permissibleObject.setGlobalExecute(globalExecuteCheckBox.getValue());
+      permissibleObject.setGlobalCreateChild(globalCreateChildrenCheckBox.getValue());
       AsyncCallback<PermissibleObject> updatePermissibleObjectCallback = new AsyncCallback<PermissibleObject>() {
         public void onFailure(Throwable caught) {
           callback.onFailure(caught);
@@ -219,14 +223,11 @@ public class GeneralPanel extends FlexTable {
 
         public void onSuccess(PermissibleObject result) {
           // update our copy (cheaper than refetching or inserting back into tree)
-          permissibleObject.setName(result.getName());
-          permissibleObject.setGlobalRead(result.isGlobalRead());
-          permissibleObject.setGlobalWrite(result.isGlobalWrite());
-          permissibleObject.setGlobalExecute(result.isGlobalExecute());
+          result.mergeInto(permissibleObject);
           callback.onSuccess(null);
         }
       };
-      BaseServiceCache.getService().updatePermissibleObject(newPermissibleObject, updatePermissibleObjectCallback);
+      BaseServiceCache.getService().updatePermissibleObject(permissibleObject, updatePermissibleObjectCallback);
     }
   }
 
