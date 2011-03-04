@@ -4,7 +4,6 @@
   response.setBufferSize(65536);
   ServletOutputStream outStream = response.getOutputStream();
   try {
-    request.
     String filename = request.getParameter("filename");
     Logger.log(getClass().getSimpleName() + " received request: " + filename);
     //outStream.write(("filename: " + filename).getBytes());
