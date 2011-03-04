@@ -40,6 +40,8 @@ public interface BaseImageBundle extends ImageBundle, TreeImages {
   AbstractImagePrototype share_disabled();
   AbstractImagePrototype properties16();
   AbstractImagePrototype properties_disabled_16();
+  AbstractImagePrototype lock16();
+  AbstractImagePrototype settings16();
   AbstractImagePrototype folder32();
   AbstractImagePrototype file32();
   AbstractImagePrototype archive32();

@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.damour.base.client.objects.PermissibleObject;
 import org.damour.base.client.objects.Permission;
-import org.damour.base.client.service.BaseServiceAsync;
 import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.TabWidget;
 

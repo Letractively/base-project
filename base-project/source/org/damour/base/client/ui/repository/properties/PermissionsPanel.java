@@ -8,24 +8,24 @@ import org.damour.base.client.objects.Permission;
 import org.damour.base.client.objects.SecurityPrincipal;
 import org.damour.base.client.objects.User;
 import org.damour.base.client.objects.UserGroup;
-import org.damour.base.client.service.BaseServiceAsync;
 import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.authentication.AuthenticationHandler;
 import org.damour.base.client.ui.buttons.Button;
 import org.damour.base.client.ui.dialogs.IDialogCallback;
 import org.damour.base.client.ui.dialogs.PromptDialogBox;
 
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CaptionPanel;
-import com.google.gwt.user.client.ui.ChangeListener;
 import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
 public class PermissionsPanel extends VerticalPanel {
 
@@ -49,8 +49,9 @@ public class PermissionsPanel extends VerticalPanel {
   }
 
   public void buildUI() {
-    principalListBox.addChangeListener(new ChangeListener() {
-      public void onChange(Widget sender) {
+    principalListBox.addChangeHandler(new ChangeHandler() {
+
+      public void onChange(ChangeEvent event) {
         populatePermissionPanel();
       }
     });
@@ -59,8 +60,8 @@ public class PermissionsPanel extends VerticalPanel {
 
     VerticalPanel buttonPanel = new VerticalPanel();
     Button addButton = new Button("Add...");
-    addButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    addButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         final VerticalPanel addPermissionPanel = new VerticalPanel();
         final ListBox addPrincipalListBox = new ListBox(true);
         addPrincipalListBox.setWidth("200px");
@@ -131,8 +132,8 @@ public class PermissionsPanel extends VerticalPanel {
     });
 
     Button removeButton = new Button("Remove...");
-    removeButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    removeButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         String principalName = principalListBox.getValue(principalListBox.getSelectedIndex());
         Permission permission = null;
         for (Permission mypermission : permissions) {
@@ -200,34 +201,42 @@ public class PermissionsPanel extends VerticalPanel {
     final CheckBox readPermCheckBox = new CheckBox("Read");
     final CheckBox writePermCheckBox = new CheckBox("Write");
     final CheckBox executePermCheckBox = new CheckBox("Execute");
-    readPermCheckBox.setChecked(permission.isReadPerm());
-    writePermCheckBox.setChecked(permission.isWritePerm());
-    executePermCheckBox.setChecked(permission.isExecutePerm());
+    final CheckBox createChildrenPermCheckBox = new CheckBox("Create Children");
+    readPermCheckBox.setValue(permission.isReadPerm());
+    writePermCheckBox.setValue(permission.isWritePerm());
+    executePermCheckBox.setValue(permission.isExecutePerm());
+    createChildrenPermCheckBox.setValue(permission.isCreateChildPerm());
 
-    readPermCheckBox.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
-        permission.setReadPerm(readPermCheckBox.isChecked());
+    readPermCheckBox.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
+        permission.setReadPerm(readPermCheckBox.getValue());
         dirty = true;
       }
     });
-    writePermCheckBox.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
-        permission.setWritePerm(writePermCheckBox.isChecked());
+    writePermCheckBox.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
+        permission.setWritePerm(writePermCheckBox.getValue());
         dirty = true;
       }
     });
-    executePermCheckBox.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
-        permission.setExecutePerm(executePermCheckBox.isChecked());
+    executePermCheckBox.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
+        permission.setExecutePerm(executePermCheckBox.getValue());
         dirty = true;
       }
     });
-
+    createChildrenPermCheckBox.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
+        permission.setCreateChildPerm(createChildrenPermCheckBox.getValue());
+        dirty = true;
+      }
+    });
     CaptionPanel captionPanel = new CaptionPanel("Permissions");
     VerticalPanel checkboxPanel = new VerticalPanel();
     checkboxPanel.add(readPermCheckBox);
     checkboxPanel.add(writePermCheckBox);
     checkboxPanel.add(executePermCheckBox);
+    checkboxPanel.add(createChildrenPermCheckBox);
     captionPanel.add(checkboxPanel);
     permissionPanel.add(captionPanel);
   }
@@ -254,7 +263,7 @@ public class PermissionsPanel extends VerticalPanel {
     this.permissions = permissions;
   }
 
-  public void apply(final AsyncCallback callback) {
+  public void apply(final AsyncCallback<Void> callback) {
     if (dirty) {
       AsyncCallback<Void> setPermCallback = new AsyncCallback<Void>() {
         public void onFailure(Throwable caught) {
