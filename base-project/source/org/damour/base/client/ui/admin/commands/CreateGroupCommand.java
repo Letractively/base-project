@@ -2,6 +2,7 @@ package org.damour.base.client.ui.admin.commands;
 
 import org.damour.base.client.objects.User;
 import org.damour.base.client.objects.UserGroup;
+import org.damour.base.client.ui.IGenericCallback;
 import org.damour.base.client.ui.admin.EditGroupPanel;
 import org.damour.base.client.ui.buttons.MenuButtonCommand;
 import org.damour.base.client.ui.dialogs.IDialogCallback;
@@ -11,17 +12,20 @@ import org.damour.base.client.ui.dialogs.PromptDialogBox;
 
 public class CreateGroupCommand implements MenuButtonCommand {
 
-  User user;
+  private User user;
+  private IGenericCallback<UserGroup> callback;
 
-  public CreateGroupCommand(User user) {
+  public CreateGroupCommand(User user, IGenericCallback<UserGroup> callback) {
     this.user = user;
+    this.callback = callback;
   }
 
   public void execute() {
     popup.hide();
     final UserGroup group = new UserGroup();
     group.setOwner(user);
-    final EditGroupPanel editGroupPanel = new EditGroupPanel(null, null, null, group, false, false);
+
+    final EditGroupPanel editGroupPanel = new EditGroupPanel(null, callback, null, group, false, false);
     final PromptDialogBox editGroupDialogBox = new PromptDialogBox("Create New Group", "OK", null, "Cancel", false, true);
     editGroupDialogBox.setContent(editGroupPanel);
     editGroupDialogBox.setFocusWidget(editGroupPanel.getNameTextBox());

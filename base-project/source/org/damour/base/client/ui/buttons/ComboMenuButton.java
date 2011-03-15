@@ -4,21 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.damour.base.client.images.BaseImageBundle;
+import org.damour.base.client.utils.CursorUtils;
 
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.ClickListener;
-import com.google.gwt.user.client.ui.FlexTable;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
-import com.google.gwt.user.client.ui.MouseListener;
 import com.google.gwt.user.client.ui.PopupPanel;
-import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
 
-public class ComboMenuButton extends FlexTable implements MouseListener {
+public class ComboMenuButton extends HorizontalPanel {
 
   public static final String STYLE = "toolBarButton";
 
@@ -28,28 +26,26 @@ public class ComboMenuButton extends FlexTable implements MouseListener {
   private List<ClickListener> listeners = new ArrayList<ClickListener>();
   private Image arrowImage = new Image();
 
-  
   public ComboMenuButton(String labelText, MenuBar menuBar) {
     this.menuBar = menuBar;
 
-    setCellPadding(0);
-    setCellSpacing(0);
+    sinkEvents(Event.ONCLICK | Event.MOUSEEVENTS);
 
     Label label = new Label(labelText, true);
     label.setStyleName("toolBarButtonLabel");
-    label.addMouseListener(this);
-    setWidget(0, 0, label);
+    // label.addMouseListener(this);
+    add(label);
     // prevent double-click from selecting text
-    preventTextSelection(label.getElement());
+    CursorUtils.preventTextSelection(getElement());
+    CursorUtils.preventTextSelection(label.getElement());
 
     BaseImageBundle.images.downArrow().applyTo(arrowImage);
-    arrowImage.addMouseListener(this);
+    // arrowImage.addMouseListener(this);
     arrowImage.setStyleName("toolBarButtonImage");
-    setWidget(0, 1, arrowImage);
-    getCellFormatter().setStyleName(0, 1, "toolBarButtonImage");
+    add(arrowImage);
 
-    getCellFormatter().setVerticalAlignment(0, 0, HasVerticalAlignment.ALIGN_MIDDLE);
-    getCellFormatter().setVerticalAlignment(0, 1, HasVerticalAlignment.ALIGN_MIDDLE);
+    // getCellFormatter().setVerticalAlignment(0, 0, HasVerticalAlignment.ALIGN_MIDDLE);
+    // getCellFormatter().setVerticalAlignment(0, 1, HasVerticalAlignment.ALIGN_MIDDLE);
     setStyleName(STYLE);
   }
 
@@ -58,51 +54,45 @@ public class ComboMenuButton extends FlexTable implements MouseListener {
     this.command = command;
   }
 
-  public void onMouseDown(final Widget sender, final int x, final int y) {
-    if (enabled) {
-      addStyleDependentName("pressed");
-      removeStyleDependentName("hover");
-      final PopupPanel popup = MenuButtonCommand.popup;
-      popup.setWidget(menuBar);
-      popup.setPopupPositionAndShow(new PositionCallback() {
-        public void setPosition(int offsetWidth, int offsetHeight) {
-          popup.setPopupPosition(getAbsoluteLeft(), getAbsoluteTop() + getOffsetHeight());
-        }
-      });
-    }
-  }
-
-  public void onMouseEnter(Widget sender) {
-    if (enabled) {
-      addStyleDependentName("hover");
-    }
-  }
-
-  public void onMouseLeave(Widget sender) {
-    if (enabled) {
-      removeStyleDependentName("pressed");
-      removeStyleDependentName("hover");
-    }
-  }
-
-  public void onMouseMove(Widget sender, int x, int y) {
-  }
-
-  public void onMouseUp(final Widget sender, final int x, final int y) {
-    if (enabled) {
-      removeStyleDependentName("pressed");
-      if (command != null) {
-        try {
-          command.execute();
-        } catch (Exception e) {
-          // don't fail because some idiot you are calling fails
-        }
+  public void onBrowserEvent(Event event) {
+    super.onBrowserEvent(event);
+    if ((event.getTypeInt() & Event.ONCLICK) == Event.ONCLICK) {
+      if (enabled) {
+        addStyleDependentName("pressed");
+        removeStyleDependentName("hover");
+        final PopupPanel popup = MenuButtonCommand.popup;
+        popup.setWidget(menuBar);
+        popup.setPopupPositionAndShow(new PositionCallback() {
+          public void setPosition(int offsetWidth, int offsetHeight) {
+            popup.setPopupPosition(getAbsoluteLeft(), getAbsoluteTop() + getOffsetHeight());
+          }
+        });
       }
-      for (ClickListener listener : listeners) {
-        try {
-          listener.onClick(this);
-        } catch (Exception e) {
-          // don't fail because some idiot you are calling fails
+    } else if ((event.getTypeInt() & Event.ONMOUSEOVER) == Event.ONMOUSEOVER) {
+      if (enabled) {
+        addStyleDependentName("hover");
+      }
+    } else if ((event.getTypeInt() & Event.ONMOUSEOUT) == Event.ONMOUSEOUT) {
+      if (enabled) {
+        removeStyleDependentName("pressed");
+        removeStyleDependentName("hover");
+      }
+    } else if ((event.getTypeInt() & Event.ONMOUSEUP) == Event.ONMOUSEUP) {
+      if (enabled) {
+        removeStyleDependentName("pressed");
+        if (command != null) {
+          try {
+            command.execute();
+          } catch (Exception e) {
+            // don't fail because some idiot you are calling fails
+          }
+        }
+        for (ClickListener listener : listeners) {
+          try {
+            listener.onClick(this);
+          } catch (Exception e) {
+            // don't fail because some idiot you are calling fails
+          }
         }
       }
     }
@@ -115,11 +105,6 @@ public class ComboMenuButton extends FlexTable implements MouseListener {
   public void removeClickListener(ClickListener listener) {
     listeners.remove(listener);
   }
-
-  private static native void preventTextSelection(Element ele) /*-{
-         ele.onselectstart=function() {return false};
-         ele.ondragstart=function() {return false};
-       }-*/;
 
   public boolean isEnabled() {
     return enabled;

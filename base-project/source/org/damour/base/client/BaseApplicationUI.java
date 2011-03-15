@@ -23,19 +23,19 @@ import org.damour.base.client.utils.StringUtils;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.RunAsyncCallback;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.ResizeEvent;
-import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DeckPanel;
+import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
+import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -43,7 +43,6 @@ import com.google.gwt.user.client.ui.Widget;
 
 public class BaseApplicationUI extends BaseApplication implements IAuthenticationListener {
 
-  private VerticalPanel applicationPanel = new VerticalPanel();
   private DeckPanel applicationContentDeck = new DeckPanel();
   private ToolBar applicationToolBar = new ToolBar();
 
@@ -52,49 +51,40 @@ public class BaseApplicationUI extends BaseApplication implements IAuthenticatio
   private Widget adminPanel;
 
   public void loadModule() {
-    applicationPanel.setWidth("100%");
-    applicationPanel.setHeight("100%");
     applicationContentDeck.setHeight("100%");
+    applicationContentDeck.setWidth("100%");
     applicationContentDeck.setAnimationEnabled(true);
-
     if ("true".equals(getSettings().getString("dockToolbars"))) {
+      DockLayoutPanel applicationPanel = new DockLayoutPanel(Unit.PX);
       if ("true".equals(getSettings().getString("showApplicationToolbar"))) {
-        applicationPanel.add(buildApplicationToolBar());
+        applicationPanel.addNorth(buildApplicationToolBar(), 29);
       }
-
-      final ScrollPanel scroll = new ScrollPanel(applicationContentDeck);
-      applicationPanel.add(scroll);
-      Window.addResizeHandler(new ResizeHandler() {
-        public void onResize(ResizeEvent event) {
-          int newHeight = event.getHeight() - 90;
-          if (newHeight >= 0) {
-            scroll.setHeight(newHeight + "px");
-            applicationPanel.setCellHeight(scroll, newHeight + "px");
-          }
-        }
-      });
-      scroll.setHeight((Window.getClientHeight() - 90) + "px");
-      applicationPanel.setCellHeight(scroll, (Window.getClientHeight() - 90) + "px");
 
       if ("true".equals(getSettings().getString("showApplicationFooter"))) {
-        applicationPanel.add(buildFooterPanel());
+        applicationPanel.addSouth(buildFooterPanel(), 60);
       }
+
+      applicationPanel.add(applicationContentDeck);
+
+      RootLayoutPanel.get().clear();
+      RootLayoutPanel.get().add(applicationPanel);
     } else {
+      VerticalPanel applicationPanel = new VerticalPanel();
+      applicationPanel.setWidth("100%");
+
       if ("true".equals(getSettings().getString("showApplicationToolbar"))) {
         applicationPanel.add(buildApplicationToolBar());
       }
 
       applicationPanel.add(applicationContentDeck);
-      applicationPanel.setCellHeight(applicationContentDeck, "100%");
-      applicationContentDeck.setHeight("100%");
 
       if ("true".equals(getSettings().getString("showApplicationFooter"))) {
         applicationPanel.add(buildFooterPanel());
       }
-    }
 
-    RootPanel.get("content").clear();
-    RootPanel.get("content").add(applicationPanel);
+      RootPanel.get("content").clear();
+      RootPanel.get("content").add(applicationPanel);
+    }
 
     AuthenticationHandler.getInstance().addLoginListener(this);
     AuthenticationHandler.getInstance().handleUserAuthentication(false);
@@ -193,7 +183,7 @@ public class BaseApplicationUI extends BaseApplication implements IAuthenticatio
     manageGroupsMenuItem.setTitle("Manage groups which you administer");
     groupsMenu.addItem(manageGroupsMenuItem);
     groupsMenu.addItem("Manage Group Requests", new ManagePendingGroupJoinsCommand(getAuthenticatedUser()));
-    groupsMenu.addItem("Create New Group", new CreateGroupCommand(getAuthenticatedUser()));
+    groupsMenu.addItem("Create New Group", new CreateGroupCommand(getAuthenticatedUser(), null));
     groupsMenu.addItem("Join/Leave Groups", new JoinLeaveGroupsCommand(getAuthenticatedUser()));
 
     ComboMenuButton menuButton = new ComboMenuButton(getMessages().getString("groups", "Groups"), groupsMenu);

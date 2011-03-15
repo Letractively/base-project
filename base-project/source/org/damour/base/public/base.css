@@ -217,10 +217,8 @@
 }
 
 .toolBarButtonImage {
-  margin: 3px 2px 2px 1px;
+  margin: 3px 2px 0px 1px;
 }
-
-
 
 .commentToolBarButton {
   background-image: url(images/subtoolbar_bg.png);

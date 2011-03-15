@@ -9,6 +9,8 @@ import org.damour.base.client.objects.SecurityPrincipal;
 import org.damour.base.client.objects.User;
 import org.damour.base.client.objects.UserGroup;
 import org.damour.base.client.service.BaseServiceCache;
+import org.damour.base.client.ui.IGenericCallback;
+import org.damour.base.client.ui.admin.commands.CreateGroupCommand;
 import org.damour.base.client.ui.authentication.AuthenticationHandler;
 import org.damour.base.client.ui.buttons.Button;
 import org.damour.base.client.ui.dialogs.IDialogCallback;
@@ -161,7 +163,27 @@ public class PermissionsPanel extends VerticalPanel {
       }
     });
 
+    Button newButton = new Button("New...");
+    newButton.setCommand(new CreateGroupCommand(AuthenticationHandler.getInstance().getUser(), new IGenericCallback<UserGroup>() {
+      public void invoke(UserGroup group) {
+        dirty = true;
+        Permission newPerm = new Permission();
+        newPerm.setPermissibleObject(permissibleObject);
+        newPerm.setSecurityPrincipal(group);
+        permissions.add(newPerm);
+        fetchedGroups.put(group.getName(), group);
+        populateUI();
+        if (principalListBox.getItemCount() > 0) {
+          principalListBox.setSelectedIndex(principalListBox.getItemCount() - 1);
+        }
+        populatePermissionPanel();
+      }
+    }));
+
     buttonPanel.add(addButton);
+    if (showGroupPerms) {
+      buttonPanel.add(newButton);
+    }
     buttonPanel.add(removeButton);
 
     HorizontalPanel principalPanel = new HorizontalPanel();

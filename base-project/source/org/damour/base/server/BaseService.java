@@ -282,9 +282,17 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
 
         UserGroup userGroup = new UserGroup();
         userGroup.setName(newUser.getUsername());
+        userGroup.setVisible(true);
+        userGroup.setAutoJoin(false);
+        userGroup.setLocked(false);
         userGroup.setOwner(newUser);
 
         session.get().save(userGroup);
+
+        GroupMembership groupMembership = new GroupMembership();
+        groupMembership.setUser(newUser);
+        groupMembership.setUserGroup(userGroup);
+        session.get().save(groupMembership);
 
         tx.commit();
 

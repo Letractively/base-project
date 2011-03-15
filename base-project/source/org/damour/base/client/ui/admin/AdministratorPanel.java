@@ -59,7 +59,7 @@ public class AdministratorPanel extends VerticalPanel implements IAdminCallback 
         hibernateAdminPanel = new HibernateAdminPanel();
         adminTabPanel.add(hibernateAdminPanel, new TabWidget("Hibernate", false, adminTabPanel, hibernateAdminPanel));
         hqlPanel = new HQLPanel();
-        adminTabPanel.add(hqlPanel, new TabWidget("HQL", false, adminTabPanel, hibernateAdminPanel));
+        adminTabPanel.add(hqlPanel, new TabWidget("HQL", false, adminTabPanel, hqlPanel));
         memoryAdminPanel = new MemoryAdminPanel();
         adminTabPanel.add(memoryAdminPanel, new TabWidget("Memory", false, adminTabPanel, memoryAdminPanel));
         adminTabPanel.selectTab(0);
