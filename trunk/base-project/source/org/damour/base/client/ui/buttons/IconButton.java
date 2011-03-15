@@ -3,7 +3,8 @@ package org.damour.base.client.ui.buttons;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.gwt.dom.client.Element;
+import org.damour.base.client.utils.CursorUtils;
+
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Command;
@@ -74,7 +75,7 @@ public class IconButton extends FlexTable implements MouseListener {
         setWidget(0, 1, label);
       }
       // prevent double-click from selecting text
-      preventTextSelection(label.getElement());
+      CursorUtils.preventTextSelection(label.getElement());
 
       getCellFormatter().setVerticalAlignment(0, 0, HasVerticalAlignment.ALIGN_MIDDLE);
       getCellFormatter().setVerticalAlignment(0, 1, HasVerticalAlignment.ALIGN_MIDDLE);
@@ -117,12 +118,6 @@ public class IconButton extends FlexTable implements MouseListener {
       removeStyleDependentName("pressed");
     }
   }
-
-  private static native void preventTextSelection(Element ele)
-  /*-{
-    ele.onselectstart=function() {return false};
-    ele.ondragstart=function() {return false};
-  }-*/;
 
   public boolean isEnabled() {
     return enabled;

@@ -31,4 +31,11 @@ public class CursorUtils {
     DOM.setStyleAttribute(element, "cursor", "hand");
   }
 
+  public static native void preventTextSelection(Element ele)
+  /*-{
+    ele.onselectstart=function() {return false};
+    ele.ondragstart=function() {return false};
+    ele.onmousedown=function() {return false};
+  }-*/;
+  
 }

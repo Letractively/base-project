@@ -1,21 +1,27 @@
 package org.damour.base.client.ui.buttons;
 
+import org.damour.base.client.utils.CursorUtils;
+
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.ClickListener;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
 
-public class Button extends com.google.gwt.user.client.ui.Label {
+public class Button extends HorizontalPanel {
 
   private Command command;
-
+  private Label label = new Label();
+  
   public Button() {
     super();
     init();
     sinkEvents(Event.MOUSEEVENTS);
-    addClickHandler(new ClickHandler() {
+    label.addClickHandler(new ClickHandler() {
       public void onClick(ClickEvent event) {
         setStyleName("my-button");
         if (command != null) {
@@ -23,11 +29,14 @@ public class Button extends com.google.gwt.user.client.ui.Label {
         }
       }
     });
+    add(label);
+    CursorUtils.preventTextSelection(getElement());
+    CursorUtils.preventTextSelection(label.getElement());
   }
 
   public Button(String text) {
     this();
-    setText(text);
+    label.setText(text);
   }
 
   public Button(String text, Command cmd) {
@@ -56,6 +65,10 @@ public class Button extends com.google.gwt.user.client.ui.Label {
     setStyleName("my-button");
   }
 
+  public void setText(final String text) {
+    label.setText(text);
+  }
+  
   public static native void blur(Element e)
   /*-{
     e.blur();
@@ -87,4 +100,13 @@ public class Button extends com.google.gwt.user.client.ui.Label {
   public void setCommand(Command command) {
     this.command = command;
   }
+
+  public void addClickHandler(ClickHandler handler) {
+    label.addClickHandler(handler);
+  }
+
+  public void addClickListener(ClickListener listener) {
+    label.addClickListener(listener);
+  }
+  
 }

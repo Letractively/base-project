@@ -3,7 +3,8 @@ package org.damour.base.client.ui.buttons;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.gwt.dom.client.Element;
+import org.damour.base.client.utils.CursorUtils;
+
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -31,7 +32,8 @@ public class ToolbarButton extends FlexTable implements MouseListener {
     label.addMouseListener(this);
     setWidget(0, 0, label);
     // prevent double-click from selecting text
-    preventTextSelection(label.getElement());
+    CursorUtils.preventTextSelection(getElement());
+    CursorUtils.preventTextSelection(label.getElement());
 
     getCellFormatter().setVerticalAlignment(0, 0, HasVerticalAlignment.ALIGN_MIDDLE);
     setStyleName(STYLE);
@@ -92,12 +94,6 @@ public class ToolbarButton extends FlexTable implements MouseListener {
   public void removeClickListener(ClickListener listener) {
     listeners.remove(listener);
   }
-
-  private static native void preventTextSelection(Element ele)
-  /*-{
-    ele.onselectstart=function() {return false};
-    ele.ondragstart=function() {return false};
-  }-*/;
 
   public boolean isEnabled() {
     return enabled;
