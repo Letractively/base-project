@@ -16,6 +16,10 @@ public interface BaseImageBundle extends ImageBundle, TreeImages {
   AbstractImagePrototype player_hide_32();
   AbstractImagePrototype player_close_32();
   AbstractImagePrototype player_stop_32();
+  AbstractImagePrototype play16();
+  AbstractImagePrototype play16_disabled();
+  AbstractImagePrototype stop16();
+  AbstractImagePrototype stop16_disabled();
   
   // Tree
   AbstractImagePrototype treeOpen();
