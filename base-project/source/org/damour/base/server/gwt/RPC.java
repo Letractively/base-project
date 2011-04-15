@@ -1,3 +1,18 @@
+/*
+ * Copyright 2007 Google Inc.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package org.damour.base.server.gwt;
 
 import java.lang.reflect.InvocationTargetException;
@@ -13,6 +28,7 @@ import org.damour.base.server.Logger;
 
 import com.google.gwt.user.client.rpc.IncompatibleRemoteServiceException;
 import com.google.gwt.user.client.rpc.RemoteService;
+import com.google.gwt.user.client.rpc.RpcToken;
 import com.google.gwt.user.client.rpc.SerializationException;
 import com.google.gwt.user.client.rpc.impl.AbstractSerializationStream;
 import com.google.gwt.user.server.rpc.RPCRequest;
@@ -227,6 +243,12 @@ public final class RPC {
           classLoader, serializationPolicyProvider);
       streamReader.prepareToRead(encodedRequest);
 
+      RpcToken rpcToken = null;
+      if (streamReader.hasFlags(AbstractSerializationStream.FLAG_RPC_TOKEN_INCLUDED)) {
+        // Read the RPC token
+        rpcToken = (RpcToken) streamReader.deserializeValue(RpcToken.class);
+      }
+            
       // Read the name of the RemoteService interface
       String serviceIntfName = maybeDeobfuscate(streamReader,
           streamReader.readString());
@@ -288,8 +310,8 @@ public final class RPC {
           parameterValues[i] = streamReader.deserializeValue(parameterTypes[i]);
         }
 
-        return new RPCRequest(method, parameterValues, serializationPolicy,
-            streamReader.getFlags());
+        return new RPCRequest(method, parameterValues, rpcToken,
+            serializationPolicy, streamReader.getFlags());
 
       } catch (NoSuchMethodException e) {
         throw new IncompatibleRemoteServiceException(

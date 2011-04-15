@@ -33,7 +33,7 @@
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/mysql-connector-java-5.1.6-bin.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/pop3.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/smtp.jar"/>
-	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/colorpicker-2009-05-19.jar"/>
-	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/gwt-incubator-20100204-r1747.jar"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/gwt-incubator-20101117-r1766.jar"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/ColorPicker-GWT-2.1.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>

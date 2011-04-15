@@ -17,6 +17,7 @@
 package org.damour.base.client.ui.colorpicker;
 
 import net.auroris.ColorPicker.client.ColorPicker;
+
 import org.damour.base.client.ui.dialogs.PromptDialogBox;
 
 
