@@ -1,22 +1,15 @@
 package org.damour.base.client.ui.permalink;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.damour.base.client.images.BaseImageBundle;
 import org.damour.base.client.objects.PermissibleObject;
 import org.damour.base.client.ui.dialogs.PromptDialogBox;
 import org.damour.base.client.utils.CursorUtils;
-import org.damour.base.client.utils.ParameterParser;
-import org.damour.base.client.utils.StringUtils;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
-import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -38,40 +31,9 @@ public class PermaLinkWidget extends VerticalPanel implements ClickHandler {
   }
 
   public void onClick(ClickEvent event) {
-    // build a hashmap of pathInfo parameters, query parameters and history token parameters
-    ParameterParser pathParameters = new ParameterParser(ParameterParser.convertRESTtoQueryString(Window.Location.getPath()));
-    ParameterParser queryStringParameters = new ParameterParser(Window.Location.getQueryString());
-    ParameterParser historyParameters = new ParameterParser(History.getToken());
 
-    List<String> parameterOrder = new ArrayList<String>(historyParameters.getOrderedParameterNames());
-    for (String queryStringParam : queryStringParameters.getOrderedParameterNames()) {
-      if (!parameterOrder.contains(queryStringParam)) {
-        parameterOrder.add(queryStringParam);
-      }
-    }
-    for (String pathParam : pathParameters.getOrderedParameterNames()) {
-      if (!parameterOrder.contains(pathParam)) {
-        parameterOrder.add(pathParam);
-      }
-    }
-    String permaLinkStr = Window.Location.getProtocol() + "//" + Window.Location.getHostName()
-        + ((Window.Location.getPort().equals("80") || Window.Location.getPort().equals("")) ? "" : ":" + Window.Location.getPort());
-    for (String parameterName : parameterOrder) {
-      if ("name".equalsIgnoreCase(parameterName) && permissibleObject != null && !StringUtils.isEmpty(permissibleObject.getName())) {
-        continue;
-      }
-      if (!StringUtils.isEmpty(historyParameters.getParameter(parameterName))) {
-        permaLinkStr += "/" + parameterName + "/" + historyParameters.getParameter(parameterName);
-      } else if (!StringUtils.isEmpty(queryStringParameters.getParameter(parameterName))) {
-        permaLinkStr += "/" + parameterName + "/" + queryStringParameters.getParameter(parameterName);
-      } else if (usePathInfo && !StringUtils.isEmpty(pathParameters.getParameter(parameterName))) {
-        permaLinkStr += "/" + parameterName + "/" + pathParameters.getParameter(parameterName);
-      }
-    }
-    if (permissibleObject != null && !StringUtils.isEmpty(permissibleObject.getName())) {
-      permaLinkStr += "/name/" + StringUtils.patchURL(permissibleObject.getName()) + ".html";
-    }
-
+    String permaLinkStr = PermaLinkBuilder.getLink(permissibleObject, usePathInfo);
+    
     final TextBox textBox = new TextBox();
     textBox.setVisibleLength(100);
     textBox.setText(permaLinkStr);

@@ -23,7 +23,7 @@ import com.google.gwt.user.client.ui.TextBox;
 
 public class EmailDialog extends DialogBox {
 
-  private static String[] columnWidths = new String[] { "370px", "100px" };
+  private static String[] columnWidths = new String[] { "370px", "200px" };
   private static ScrollTable emailAddressTable;
   private static final int NUM_ADDRESSES = 5;
 
@@ -88,7 +88,6 @@ public class EmailDialog extends DialogBox {
     dialogButtonPanel.add(cancel);
     FlexTable dialogContent = new FlexTable();
     // dialogContent.setStyleName("dialogContentPanel");
-    dialogContent.setWidth("480px");
     dialogContent.getFlexCellFormatter().setVerticalAlignment(0, 0, HasVerticalAlignment.ALIGN_TOP);
     dialogContent.getFlexCellFormatter().setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_LEFT);
 
@@ -99,11 +98,9 @@ public class EmailDialog extends DialogBox {
       userInfoTable.setWidget(1, 0, new Label("Name:"));
       setFocusWidget(userTextBox);
       userInfoTable.setWidget(1, 1, userTextBox);
-      userInfoTable.getFlexCellFormatter().setWidth(1, 1, "100%");
       userInfoTable.setWidget(2, 0, new Label("Email:"));
       userEmailTextBox.setWidth("200px");
       userInfoTable.setWidget(2, 1, userEmailTextBox);
-      userInfoTable.getFlexCellFormatter().setWidth(2, 1, "100%");
       dialogContent.setWidget(0, 0, userInfoTable);
     }
 
@@ -121,11 +118,9 @@ public class EmailDialog extends DialogBox {
           firstAddressTextBox = addressTextBox;
         }
         DOM.setStyleAttribute(addressTextBox.getElement(), "border", "0px");
-        addressTextBox.setWidth("100%");
         emailAddressTable.setDataWidget(i, 0, addressTextBox, HasHorizontalAlignment.ALIGN_LEFT);
         TextBox nameTextBox = new TextBox();
         DOM.setStyleAttribute(nameTextBox.getElement(), "border", "0px");
-        nameTextBox.setWidth("100%");
         emailAddressTable.setDataWidget(i, 1, nameTextBox, HasHorizontalAlignment.ALIGN_LEFT);
       }
       if (user != null) {
