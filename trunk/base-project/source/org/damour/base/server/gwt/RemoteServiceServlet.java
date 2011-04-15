@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.gwt.user.client.rpc.IncompatibleRemoteServiceException;
+import com.google.gwt.user.client.rpc.RpcTokenException;
 import com.google.gwt.user.client.rpc.SerializationException;
 import com.google.gwt.user.server.rpc.AbstractRemoteServiceServlet;
 import com.google.gwt.user.server.rpc.RPCRequest;
@@ -219,6 +220,10 @@ public class RemoteServiceServlet extends AbstractRemoteServiceServlet
           "An IncompatibleRemoteServiceException was thrown while processing this call.",
           ex);
       return RPC.encodeResponseForFailure(null, ex);
+    } catch (RpcTokenException tokenException) {
+      log("An RpcTokenException was thrown while processing this call.",
+          tokenException);
+      return RPC.encodeResponseForFailure(null, tokenException);
     }
   }
 
