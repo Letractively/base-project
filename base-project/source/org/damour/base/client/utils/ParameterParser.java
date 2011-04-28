@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.gwt.http.client.URL;
-import com.google.gwt.user.client.Window;
 
 public class ParameterParser {
 
