@@ -19,6 +19,7 @@ import org.damour.base.client.objects.PendingGroupMembership;
 import org.damour.base.client.objects.PermissibleObject;
 import org.damour.base.client.objects.PermissibleObjectTreeNode;
 import org.damour.base.client.objects.Permission;
+import org.damour.base.client.objects.Referral;
 import org.damour.base.client.objects.RepositoryTreeNode;
 import org.damour.base.client.objects.Tag;
 import org.damour.base.client.objects.TagMembership;
@@ -87,6 +88,10 @@ public interface BaseService extends RemoteService {
   // for debug purposes: simply return what was given, proving the serialization of the desired object
   public PermissibleObject echoPermissibleObject(PermissibleObject permissibleObject) throws SimpleMessageException;
 
+  // referral/tracking api
+  public void submitReferral(Referral referral) throws SimpleMessageException;
+  public List<Referral> getReferrals(PermissibleObject subject) throws SimpleMessageException;
+  
   // paging api
   public Page<PermissibleObject> getPage(PermissibleObject parent, String pageClassType, String sortField, boolean sortDescending, int pageNumber, int pageSize) throws SimpleMessageException;
   public PageInfo getPageInfo(PermissibleObject parent, String pageClassType, int pageSize) throws SimpleMessageException;
