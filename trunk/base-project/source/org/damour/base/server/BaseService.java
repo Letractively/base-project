@@ -29,6 +29,7 @@ import org.damour.base.client.objects.PendingGroupMembership;
 import org.damour.base.client.objects.PermissibleObject;
 import org.damour.base.client.objects.PermissibleObjectTreeNode;
 import org.damour.base.client.objects.Permission;
+import org.damour.base.client.objects.Referral;
 import org.damour.base.client.objects.Permission.PERM;
 import org.damour.base.client.objects.RepositoryTreeNode;
 import org.damour.base.client.objects.Tag;
@@ -1703,6 +1704,42 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
 
   public PermissibleObject echoPermissibleObject(PermissibleObject permissibleObject) throws SimpleMessageException {
     return permissibleObject;
+  }
+
+  public void submitReferral(Referral referral) throws SimpleMessageException {
+    // Document.get().getReferrer();
+    
+    List<Referral> referrals = session.get().createQuery("from " + Referral.class.getSimpleName() + " where referralURL = '" + referral.getReferralURL() + "'").setMaxResults(1).setCacheable(true).list();
+    if (referrals.size() > 0) {
+      referral = referrals.get(0);
+      referral.counter++;
+    } else {
+      referral.counter=1L;
+    }
+    referral.recentDate = System.currentTimeMillis();
+    
+    if (StringUtils.isEmpty(referral.getReferralURL())) {
+      return;
+    }
+    
+    Transaction tx = session.get().beginTransaction();
+    try {
+      session.get().save(referral);
+      tx.commit();
+    } catch (Throwable t) {
+      Logger.log(t);
+      try {
+        tx.rollback();
+      } catch (Throwable tt) {
+      }
+      throw new SimpleMessageException(t.getMessage());
+    }
+
+  }
+
+  public List<Referral> getReferrals(PermissibleObject subject) throws SimpleMessageException {
+    List<Referral> referrals = session.get().createQuery("from " + Referral.class.getSimpleName() + " where subject.id = " + subject.getId()).setMaxResults(1).setCacheable(true).list();
+    return referrals;
   }
 
   public Page<PermissibleObject> getPage(PermissibleObject parent, String pageClassType, String sortField, boolean sortDescending, int pageNumber, int pageSize)

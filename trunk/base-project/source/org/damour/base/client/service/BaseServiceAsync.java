@@ -18,6 +18,7 @@ import org.damour.base.client.objects.PendingGroupMembership;
 import org.damour.base.client.objects.PermissibleObject;
 import org.damour.base.client.objects.PermissibleObjectTreeNode;
 import org.damour.base.client.objects.Permission;
+import org.damour.base.client.objects.Referral;
 import org.damour.base.client.objects.RepositoryTreeNode;
 import org.damour.base.client.objects.Tag;
 import org.damour.base.client.objects.TagMembership;
@@ -86,6 +87,10 @@ public interface BaseServiceAsync {
   // for debug purposes: simply return what was given, proving the serialization of the desired object
   public void echoPermissibleObject(PermissibleObject permissibleObject, AsyncCallback<PermissibleObject> callback);
 
+  // referral/tracking api
+  public void submitReferral(Referral referral, AsyncCallback<Void> callback);
+  public void getReferrals(PermissibleObject subject, AsyncCallback<List<Referral>> callback);
+  
   // page api
   public void getPage(PermissibleObject parent, String pageClassType, String sortField, boolean sortDescending, int pageNumber, int pageSize, AsyncCallback<Page<PermissibleObject>> callback);
   public void getPageInfo(PermissibleObject parent, String pageClassType, int pageSize, AsyncCallback<PageInfo> callback);
