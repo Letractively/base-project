@@ -90,4 +90,8 @@ public class PendingGroupMembership implements Serializable, IHibernateFriendly 
     return null;
   }
 
+  public int getFieldLength(String fieldName) {
+    return -1;
+  }
+  
 }

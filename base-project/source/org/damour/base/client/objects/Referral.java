@@ -35,6 +35,15 @@ public class Referral implements Serializable, IHibernateFriendly {
     return null;
   }
 
+  public int getFieldLength(String fieldName) {
+    if ("url".equalsIgnoreCase(fieldName)) {
+      return 1024;
+    } else if ("referralURL".equalsIgnoreCase(fieldName)) {
+      return 1024;
+    }
+    return -1;
+  }
+  
   public String getSqlUpdate() {
     return null;
   }

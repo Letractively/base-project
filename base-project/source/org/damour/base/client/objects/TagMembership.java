@@ -39,6 +39,10 @@ public class TagMembership implements Serializable, IHibernateFriendly {
     return null;
   }
 
+  public int getFieldLength(String fieldName) {
+    return -1;
+  }
+  
   public Tag getTag() {
     return tag;
   }

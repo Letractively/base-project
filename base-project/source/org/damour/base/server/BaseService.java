@@ -1708,20 +1708,21 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
 
   public void submitReferral(Referral referral) throws SimpleMessageException {
     // Document.get().getReferrer();
-    
-    List<Referral> referrals = session.get().createQuery("from " + Referral.class.getSimpleName() + " where referralURL = '" + referral.getReferralURL() + "'").setMaxResults(1).setCacheable(true).list();
+
+    List<Referral> referrals = session.get().createQuery("from " + Referral.class.getSimpleName() + " where referralURL = '" + referral.getReferralURL() + "'")
+        .setMaxResults(1).setCacheable(true).list();
     if (referrals.size() > 0) {
       referral = referrals.get(0);
       referral.counter++;
     } else {
-      referral.counter=1L;
+      referral.counter = 1L;
     }
     referral.recentDate = System.currentTimeMillis();
-    
+
     if (StringUtils.isEmpty(referral.getReferralURL())) {
       return;
     }
-    
+
     Transaction tx = session.get().beginTransaction();
     try {
       session.get().save(referral);
@@ -1738,7 +1739,12 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
   }
 
   public List<Referral> getReferrals(PermissibleObject subject) throws SimpleMessageException {
-    List<Referral> referrals = session.get().createQuery("from " + Referral.class.getSimpleName() + " where subject.id = " + subject.getId()).setMaxResults(1).setCacheable(true).list();
+    List<Referral> referrals = null;
+    if (subject == null) {
+      referrals = session.get().createQuery("from " + Referral.class.getSimpleName()).setCacheable(true).list();
+    } else {
+      referrals = session.get().createQuery("from " + Referral.class.getSimpleName() + " where subject.id = " + subject.getId()).setCacheable(true).list();
+    }
     return referrals;
   }
 
