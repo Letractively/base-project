@@ -406,4 +406,8 @@ public class PermissibleObject implements Serializable, IHibernateFriendly, Comp
     return toString;
   }
 
+  public int getFieldLength(String fieldName) {
+    return -1;
+  }
+  
 }

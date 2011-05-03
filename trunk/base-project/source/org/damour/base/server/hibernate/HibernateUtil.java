@@ -126,8 +126,8 @@ public class HibernateUtil {
               System.gc();
               long total = Runtime.getRuntime().totalMemory();
               long free = Runtime.getRuntime().freeMemory();
-              Logger.log(DecimalFormat.getNumberInstance().format(total) + " allocated " + DecimalFormat.getNumberInstance().format(total - free)
-                  + " used " + DecimalFormat.getNumberInstance().format(free) + " free");
+              Logger.log(DecimalFormat.getNumberInstance().format(total) + " allocated " + DecimalFormat.getNumberInstance().format(total - free) + " used "
+                  + DecimalFormat.getNumberInstance().format(free) + " free");
               try {
                 Thread.sleep(30000);
               } catch (Exception e) {
@@ -393,14 +393,17 @@ public class HibernateUtil {
         Boolean isKey = Boolean.FALSE;
         Boolean isUnique = Boolean.FALSE;
         String typeOverride = null;
+        int fieldLength = -1;
         if (IHibernateFriendly.class.isAssignableFrom(clazz)) {
           try {
             Method isKeyMethod = clazz.getMethod("isFieldKey", String.class);
             Method isUniqueMethod = clazz.getMethod("isFieldUnique", String.class);
             Method getFieldTypeMethod = clazz.getMethod("getFieldType", String.class);
+            Method getFieldLengthMethod = clazz.getMethod("getFieldLength", String.class);
             isKey = (Boolean) isKeyMethod.invoke(clazz.newInstance(), name);
             isUnique = (Boolean) isUniqueMethod.invoke(clazz.newInstance(), name);
             typeOverride = (String) getFieldTypeMethod.invoke(clazz.newInstance(), name);
+            fieldLength = (Integer) getFieldLengthMethod.invoke(clazz.newInstance(), name);
           } catch (Exception e) {
           }
         }
@@ -435,6 +438,9 @@ public class HibernateUtil {
               propertyElement.addAttribute("type", typeOverride);
             } else {
               propertyElement.addAttribute("type", type);
+            }
+            if (fieldLength > 0) {
+              propertyElement.addAttribute("length", "" + fieldLength);
             }
             propertyElement.addAttribute("column", name);
             if (isUnique) {

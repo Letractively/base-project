@@ -88,4 +88,8 @@ public class GroupMembership implements Serializable, IHibernateFriendly {
     return null;
   }
 
+  public int getFieldLength(String fieldName) {
+    return -1;
+  }
+
 }

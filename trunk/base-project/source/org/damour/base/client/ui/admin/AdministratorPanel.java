@@ -19,6 +19,7 @@ public class AdministratorPanel extends VerticalPanel implements IAdminCallback 
   EditGroupsForUsersPanel editGroupsForUsersPanel;
   HibernateAdminPanel hibernateAdminPanel;
   HQLPanel hqlPanel;
+  ReferralPanel referralPanel;
   MemoryAdminPanel memoryAdminPanel;
 
   List<UserGroup> groups;
@@ -56,6 +57,8 @@ public class AdministratorPanel extends VerticalPanel implements IAdminCallback 
         adminTabPanel.add(editGroupsMembersPanel, new TabWidget("Groups -> Users", false, adminTabPanel, editGroupsMembersPanel));
         editGroupsForUsersPanel = new EditGroupsForUsersPanel(AdministratorPanel.this, groups, users, user);
         adminTabPanel.add(editGroupsForUsersPanel, new TabWidget("Users -> Groups", false, adminTabPanel, editGroupsForUsersPanel));
+        referralPanel = new ReferralPanel();
+        adminTabPanel.add(referralPanel, new TabWidget("Referrals", false, adminTabPanel, referralPanel));
         hibernateAdminPanel = new HibernateAdminPanel();
         adminTabPanel.add(hibernateAdminPanel, new TabWidget("Hibernate", false, adminTabPanel, hibernateAdminPanel));
         hqlPanel = new HQLPanel();

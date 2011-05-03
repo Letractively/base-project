@@ -8,4 +8,5 @@ public interface IHibernateFriendly {
   public boolean isLazy();
   public boolean isFieldMapped(String fieldName);
   public String getFieldType(String fieldName);
+  public int getFieldLength(String fieldName);
 }

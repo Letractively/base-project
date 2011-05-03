@@ -48,6 +48,10 @@ public class UserThumb implements Serializable, IHibernateFriendly {
     return null;
   }
 
+  public int getFieldLength(String fieldName) {
+    return -1;
+  }
+  
   public User getVoter() {
     return voter;
   }
