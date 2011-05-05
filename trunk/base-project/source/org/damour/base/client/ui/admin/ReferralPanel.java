@@ -52,8 +52,8 @@ public class ReferralPanel extends VerticalPanel {
 
       public void onSuccess(List<Referral> referrals) {
         int row = 0;
-        int col = 0;
         for (Referral referral : referrals) {
+          int col = 0;
           table.setDataWidget(row, col++, new Label(referral.getUrl()), HasHorizontalAlignment.ALIGN_LEFT);
           table.setDataWidget(row, col++, new Label(referral.getReferralURL()), HasHorizontalAlignment.ALIGN_LEFT);
           table.setDataWidget(row, col++, new Label(referral.getCounter() + ""), HasHorizontalAlignment.ALIGN_RIGHT);
