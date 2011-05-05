@@ -87,7 +87,7 @@ public class AuthenticationHandler {
     dateBox.setValue(possibleBirthday);
 
     usernameTextBox.setVisibleLength(30);
-    passwordTextBox.setVisibleLength(20);
+    passwordTextBox.setVisibleLength(30);
     passwordTextBox.addFocusHandler(new FocusHandler() {
       public void onFocus(FocusEvent event) {
         passwordTextBox.selectAll();
