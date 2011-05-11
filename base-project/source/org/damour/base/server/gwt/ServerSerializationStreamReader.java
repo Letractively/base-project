@@ -31,6 +31,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.gwt.user.client.rpc.CustomFieldSerializer;
 import com.google.gwt.user.client.rpc.IncompatibleRemoteServiceException;
 import com.google.gwt.user.client.rpc.SerializationException;
 import com.google.gwt.user.client.rpc.impl.AbstractSerializationStreamReader;
@@ -706,8 +707,16 @@ public final class ServerSerializationStreamReader extends
       InvocationTargetException, SerializationException, ClassNotFoundException {
 
     if (customSerializer != null) {
-      deserializeWithCustomFieldDeserializer(customSerializer, instanceClass,
-          instance);
+      @SuppressWarnings("unchecked")
+      CustomFieldSerializer<Object> customFieldSerializer =
+          (CustomFieldSerializer<Object>)
+              SerializabilityUtil.loadCustomFieldSerializer(customSerializer);
+      if (customFieldSerializer == null) {
+        deserializeWithCustomFieldDeserializer(customSerializer, instanceClass,
+            instance);
+      } else {
+        customFieldSerializer.deserializeInstance(this, instance);
+      }
     } else if (instanceClass.isArray()) {
       instance = deserializeArray(instanceClass, instance);
     } else if (instanceClass.isEnum()) {
@@ -877,12 +886,18 @@ public final class ServerSerializationStreamReader extends
       IllegalArgumentException, InvocationTargetException,
       NoSuchMethodException, SerializationException {
     if (customSerializer != null) {
-      for (Method method : customSerializer.getMethods()) {
-        if ("instantiate".equals(method.getName())) {
-          return method.invoke(null, this);
+      CustomFieldSerializer customFieldSerializer =
+          SerializabilityUtil.loadCustomFieldSerializer(customSerializer);
+      if (customFieldSerializer == null) {
+        for (Method method : customSerializer.getMethods()) {
+          if ("instantiate".equals(method.getName())) {
+            return method.invoke(null, this);
+          }
         }
+        // Ok to not have one.
+      } else if (customFieldSerializer.hasCustomInstantiateInstance()) {
+        return customFieldSerializer.instantiateInstance(this);
       }
-      // Ok to not have one.
     }
 
     if (instanceClass.isArray()) {

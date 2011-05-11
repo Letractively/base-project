@@ -38,6 +38,7 @@ import com.google.gwt.user.server.rpc.SerializationPolicy;
 import com.google.gwt.user.server.rpc.SerializationPolicyProvider;
 import com.google.gwt.user.server.rpc.UnexpectedException;
 import com.google.gwt.user.server.rpc.impl.LegacySerializationPolicy;
+import com.google.gwt.user.server.rpc.impl.ServerSerializationStreamWriter;
 import com.google.gwt.user.server.rpc.impl.TypeNameObfuscator;
 
 /**
