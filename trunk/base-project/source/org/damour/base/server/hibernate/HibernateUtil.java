@@ -253,14 +253,14 @@ public class HibernateUtil {
     return q.list();
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("rawtypes")
   public List executeQuery(Session session, String query, boolean cacheResults) {
     Logger.log(query);
     Query q = session.createQuery(query).setCacheable(cacheResults);
     return q.list();
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({ "rawtypes" })
   public List executeQuery(Session session, String query) {
     return executeQuery(session, query, true);
   }

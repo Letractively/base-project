@@ -28,8 +28,7 @@ public class SearchWidget extends HorizontalPanel {
         }
       }
     });
-    Image searchIcon = new Image();
-    BaseImageBundle.images.find16x16().applyTo(searchIcon);
+    Image searchIcon = new Image(BaseImageBundle.images.find16x16().getURL());
     searchIcon.addClickHandler(new ClickHandler() {
 
       public void onClick(ClickEvent event) {

@@ -122,6 +122,10 @@ public class EmailDialog extends DialogBox {
         TextBox nameTextBox = new TextBox();
         DOM.setStyleAttribute(nameTextBox.getElement(), "border", "0px");
         emailAddressTable.setDataWidget(i, 1, nameTextBox, HasHorizontalAlignment.ALIGN_LEFT);
+        
+        addressTextBox.setWidth("360px");
+        nameTextBox.setWidth("190px");        
+        
       }
       if (user != null) {
         setFocusWidget(firstAddressTextBox);

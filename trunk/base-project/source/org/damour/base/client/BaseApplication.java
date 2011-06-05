@@ -36,17 +36,19 @@ public class BaseApplication implements EntryPoint, StartupListener {
   private static ResourceBundle settings = null;
   private static ResourceBundle messages = null;
 
+  private static Referral referral = null;
+
   public static native void setApplicationInitialized()
   /*-{
-    $wnd.applicationInitialized = true;
+    window.top.applicationInitialized = true;
   }-*/;
 
   public static native boolean isApplicationInitialized()
   /*-{
-    if ($wnd.applicationInitialized == undefined) {
+    if (window.top.applicationInitialized == undefined) {
       return false;
     }
-    return $wnd.applicationInitialized;
+    return window.top.applicationInitialized;
   }-*/;
 
   /**
@@ -61,8 +63,19 @@ public class BaseApplication implements EntryPoint, StartupListener {
 
   public void onModuleLoad() {
 
+    if (Window.Navigator.getUserAgent().toLowerCase().indexOf("msie") != -1) {
+      RootPanel.getBodyElement().addClassName("IE");
+    }
+    
     if (!attemptToLoadModule()) {
       return;
+    }
+
+    RootPanel adContent = RootPanel.get("adContent");
+    if (adContent != null) {
+      adContent.removeFromParent();
+      adContent.setVisible(false);
+      adContent.setHeight("0px");
     }
 
     setApplicationInitialized();
@@ -70,27 +83,31 @@ public class BaseApplication implements EntryPoint, StartupListener {
     addStartupListener(this);
     // set default base service path
     ((ServiceDefTarget) BaseServiceCache.getServiceUnsafe()).setServiceEntryPoint(BASE_SERVICE_PATH);
-    
+
     GWT.runAsync(new RunAsyncCallback() {
-      
+
       public void onSuccess() {
         Referral referral = new Referral();
         referral.referralURL = Document.get().getReferrer();
+        if (StringUtils.isEmpty(referral.referralURL)) {
+          referral.referralURL = Window.Location.getHref();
+        }
         referral.url = Window.Location.getHref();
-        BaseServiceCache.getServiceUnsafe().submitReferral(referral, new AsyncCallback<Void>() {
-          
-          public void onSuccess(Void result) {
+        BaseServiceCache.getServiceUnsafe().submitReferral(referral, new AsyncCallback<Referral>() {
+
+          public void onSuccess(Referral result) {
+            BaseApplication.referral = result;
           }
-          
+
           public void onFailure(Throwable caught) {
           }
         });
       }
-      
+
       public void onFailure(Throwable reason) {
       }
     });
-    
+
     if (!loading) {
       loading = true;
 
@@ -205,6 +222,10 @@ public class BaseApplication implements EntryPoint, StartupListener {
 
   public static ResourceBundle getMessages() {
     return messages;
+  }
+
+  public static Referral getReferral() {
+    return referral;
   }
 
   // override this

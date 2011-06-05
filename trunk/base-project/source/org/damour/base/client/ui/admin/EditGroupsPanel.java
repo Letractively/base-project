@@ -12,19 +12,20 @@ import org.damour.base.client.ui.dialogs.IDialogCallback;
 import org.damour.base.client.ui.dialogs.MessageDialogBox;
 import org.damour.base.client.ui.dialogs.PromptDialogBox;
 
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CaptionPanel;
-import com.google.gwt.user.client.ui.ChangeListener;
-import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
-public class EditGroupsPanel extends FlexTable implements IAdminPanel, ChangeListener, IGenericCallback<UserGroup> {
+public class EditGroupsPanel extends FlexTable implements IAdminPanel, ChangeHandler, IGenericCallback<UserGroup> {
   EditGroupPanel editGroupPanel;
   EditGroupMembersPanel editGroupMembersPanel;
   ListBox groupsList = new ListBox();
@@ -81,7 +82,7 @@ public class EditGroupsPanel extends FlexTable implements IAdminPanel, ChangeLis
 
   private void buildUI() {
     groupsList.setVisibleItemCount(15);
-    groupsList.addChangeListener(this);
+    groupsList.addChangeHandler(this);
     groupsList.addItem("Loading...");
     setHeight("100%");
     setWidth("100%");
@@ -90,8 +91,8 @@ public class EditGroupsPanel extends FlexTable implements IAdminPanel, ChangeLis
 
     Button newGroupButton = new Button("New...");
     newGroupButton.setTitle("Create a New Group");
-    newGroupButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    newGroupButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         final UserGroup group = new UserGroup();
         group.setOwner(user);
         editGroupPanel = new EditGroupPanel(callback, EditGroupsPanel.this, users, group, false, true);
@@ -118,8 +119,8 @@ public class EditGroupsPanel extends FlexTable implements IAdminPanel, ChangeLis
 
     deleteGroupButton.setTitle("Delete Group");
     deleteGroupButton.setEnabled(false);
-    deleteGroupButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    deleteGroupButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
 
         if (groupsList.getSelectedIndex() < 0) {
           return;
@@ -158,8 +159,8 @@ public class EditGroupsPanel extends FlexTable implements IAdminPanel, ChangeLis
     });
     editGroupButton.setTitle("Edit Group Settings");
     editGroupButton.setEnabled(false);
-    editGroupButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    editGroupButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         if (groupsList.getSelectedIndex() < 0) {
           return;
         }
@@ -189,8 +190,8 @@ public class EditGroupsPanel extends FlexTable implements IAdminPanel, ChangeLis
     buttonPanel.add(deleteGroupButton);
 
     Button refreshButton = new Button("Refresh");
-    refreshButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    refreshButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         groupsList.clear();
         groupsList.addItem("Loading...");
         setWidget(0, 1, new Label());
@@ -224,7 +225,11 @@ public class EditGroupsPanel extends FlexTable implements IAdminPanel, ChangeLis
       }
       groupMap.put(group.getName(), group);
     }
-    onChange(groupsList);
+    onChange(new com.google.gwt.event.dom.client.ChangeEvent() {
+      public Object getSource() {
+        return groupsList;
+      }
+    });
   }
 
   private void fetchGroups() {
@@ -243,7 +248,7 @@ public class EditGroupsPanel extends FlexTable implements IAdminPanel, ChangeLis
     BaseServiceCache.getService().getOwnedGroups(user, getGroupsCallback);
   }
 
-  public void onChange(Widget sender) {
+  public void onChange(ChangeEvent event) {
     if (groupsList.getSelectedIndex() >= 0) {
       deleteGroupButton.setEnabled(true);
       editGroupButton.setEnabled(true);
@@ -280,13 +285,21 @@ public class EditGroupsPanel extends FlexTable implements IAdminPanel, ChangeLis
         groups.add(group);
         groupsList.addItem(group.getName());
         groupsList.setSelectedIndex(groupsList.getItemCount() - 1);
-        onChange(groupsList);
+        onChange(new com.google.gwt.event.dom.client.ChangeEvent() {
+          public Object getSource() {
+            return groupsList;
+          }
+        });
       }
     } else {
       groups.add(group);
       groupsList.addItem(group.getName());
       groupsList.setSelectedIndex(groupsList.getItemCount() - 1);
-      onChange(groupsList);
+      onChange(new com.google.gwt.event.dom.client.ChangeEvent() {
+        public Object getSource() {
+          return groupsList;
+        }
+      });
     }
 
     // replace

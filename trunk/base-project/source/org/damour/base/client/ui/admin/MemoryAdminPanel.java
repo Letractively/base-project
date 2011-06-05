@@ -4,16 +4,16 @@ import org.damour.base.client.objects.MemoryStats;
 import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.buttons.Button;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
 public class MemoryAdminPanel extends VerticalPanel {
 
@@ -32,15 +32,15 @@ public class MemoryAdminPanel extends VerticalPanel {
     statsTable.setCellSpacing(5);
     add(statsTable);
     Button refreshButton = new Button("Refresh");
-    refreshButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    refreshButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         fetchMemoryStats();
       }
     });
     Button gcButton = new Button("Request GC");
     gcButton.setTitle("Request Garbage Collection");
-    gcButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    gcButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         requestGarbageCollection();
       }
     });

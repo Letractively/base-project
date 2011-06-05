@@ -14,7 +14,7 @@ import com.google.gwt.user.client.ui.RootPanel;
 
 public class DialogBox extends com.google.gwt.user.client.ui.DialogBox implements CloseHandler<com.google.gwt.user.client.ui.PopupPanel> {
 
-  private FocusPanel pageBackground = null;
+  private FocusPanel glassPanel = null;
   private int clickCount = 0;
   private FocusWidget focusWidget = null;
   boolean autoHide = false;
@@ -24,14 +24,16 @@ public class DialogBox extends com.google.gwt.user.client.ui.DialogBox implement
 
   public DialogBox(boolean autoHide, boolean modal) {
     super(autoHide, modal);
-    setAnimationEnabled(true);
+    //setAnimationEnabled(true);
+    getElement().addClassName("base-rounded-panel");
+    getElement().setAttribute("clip", "");
     this.autoHide = autoHide;
     this.modal = modal;
     addCloseHandler(this);
     Window.addResizeHandler(new ResizeHandler() {
       public void onResize(ResizeEvent event) {
-        if (pageBackground != null) {
-          pageBackground.setSize("100%", Window.getClientHeight() + Window.getScrollTop() + "px"); //$NON-NLS-1$
+        if (glassPanel != null) {
+          glassPanel.setSize("100%", Window.getClientHeight() + Window.getScrollTop() + "px"); //$NON-NLS-1$
         }
         if (isVisible() && isShowing()) {
           center();
@@ -56,25 +58,26 @@ public class DialogBox extends com.google.gwt.user.client.ui.DialogBox implement
   public void center() {
     // IE6 has problems with 100% height so is better a huge size
     // pageBackground.setSize("100%", "100%");
-    if (pageBackground == null) {
-      pageBackground = new FocusPanel();
-      pageBackground.setStyleName("modalDialogPageBackground"); //$NON-NLS-1$
-      pageBackground.addClickHandler(new ClickHandler() {
+    if (glassPanel == null) {
+      glassPanel = new FocusPanel();
+      glassPanel.setStyleName("base-glass-panel"); //$NON-NLS-1$
+      glassPanel.addClickHandler(new ClickHandler() {
 
         public void onClick(ClickEvent event) {
           clickCount++;
           if (clickCount > 2) {
             clickCount = 0;
-            pageBackground.setVisible(false);
+            glassPanel.setVisible(false);
           }
         }
       });
     }
     super.center();
+    getElement().setAttribute("clip", "");
     if (modal && !centerCalled) {
-      RootPanel.get().add(pageBackground, 0, 0);
-      pageBackground.setSize("100%", Window.getClientHeight() + Window.getScrollTop() + "px"); //$NON-NLS-1$
-      pageBackground.setVisible(true);
+      RootPanel.get().add(glassPanel, 0, 0);
+      glassPanel.setSize("100%", Window.getClientHeight() + Window.getScrollTop() + "px"); //$NON-NLS-1$
+      glassPanel.setVisible(true);
       centerCalled = true;
     }
     if (focusWidget != null) {
@@ -84,6 +87,7 @@ public class DialogBox extends com.google.gwt.user.client.ui.DialogBox implement
 
   public void show() {
     super.show();
+    getElement().setAttribute("clip", "");
     if (focusWidget != null) {
       focusWidget.setFocus(true);
     }
@@ -99,8 +103,8 @@ public class DialogBox extends com.google.gwt.user.client.ui.DialogBox implement
   public void onClose(CloseEvent<com.google.gwt.user.client.ui.PopupPanel> event) {
     if (modal) {
       centerCalled = false;
-      pageBackground.setVisible(false);
-      RootPanel.get().remove(pageBackground);
+      glassPanel.setVisible(false);
+      RootPanel.get().remove(glassPanel);
     }
   }
 

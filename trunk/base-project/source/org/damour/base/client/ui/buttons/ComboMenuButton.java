@@ -6,9 +6,9 @@ import java.util.List;
 import org.damour.base.client.images.BaseImageBundle;
 import org.damour.base.client.utils.CursorUtils;
 
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
@@ -23,7 +23,7 @@ public class ComboMenuButton extends HorizontalPanel {
   private MenuBar menuBar;
   private Command command;
   private boolean enabled = true;
-  private List<ClickListener> listeners = new ArrayList<ClickListener>();
+  private List<ClickHandler> clickHandlers = new ArrayList<ClickHandler>();
   private Image arrowImage = new Image();
 
   public ComboMenuButton(String labelText, MenuBar menuBar) {
@@ -39,7 +39,8 @@ public class ComboMenuButton extends HorizontalPanel {
     CursorUtils.preventTextSelection(getElement());
     CursorUtils.preventTextSelection(label.getElement());
 
-    BaseImageBundle.images.downArrow().applyTo(arrowImage);
+    arrowImage.setUrl(BaseImageBundle.images.downArrow().getURL());
+
     // arrowImage.addMouseListener(this);
     arrowImage.setStyleName("toolBarButtonImage");
     add(arrowImage);
@@ -87,9 +88,13 @@ public class ComboMenuButton extends HorizontalPanel {
             // don't fail because some idiot you are calling fails
           }
         }
-        for (ClickListener listener : listeners) {
+        for (ClickHandler clickHandler : clickHandlers) {
           try {
-            listener.onClick(this);
+            clickHandler.onClick(new com.google.gwt.event.dom.client.ClickEvent() {
+              public Object getSource() {
+                return this;
+              }
+            });
           } catch (Exception e) {
             // don't fail because some idiot you are calling fails
           }
@@ -98,12 +103,12 @@ public class ComboMenuButton extends HorizontalPanel {
     }
   }
 
-  public void addClickListener(ClickListener listener) {
-    listeners.add(listener);
+  public void addClickListener(ClickHandler handler) {
+    clickHandlers.add(handler);
   }
 
-  public void removeClickListener(ClickListener listener) {
-    listeners.remove(listener);
+  public void removeClickListener(ClickHandler handler) {
+    clickHandlers.remove(handler);
   }
 
   public boolean isEnabled() {
@@ -113,10 +118,10 @@ public class ComboMenuButton extends HorizontalPanel {
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
     if (enabled) {
-      BaseImageBundle.images.downArrow().applyTo(arrowImage);
+      arrowImage.setUrl(BaseImageBundle.images.downArrow().getURL());
       removeStyleDependentName("disabled");
     } else {
-      BaseImageBundle.images.downArrowDisabled().applyTo(arrowImage);
+      arrowImage.setUrl(BaseImageBundle.images.downArrowDisabled().getURL());
       addStyleDependentName("disabled");
     }
   }

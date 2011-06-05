@@ -29,8 +29,8 @@ import org.damour.base.client.objects.PendingGroupMembership;
 import org.damour.base.client.objects.PermissibleObject;
 import org.damour.base.client.objects.PermissibleObjectTreeNode;
 import org.damour.base.client.objects.Permission;
-import org.damour.base.client.objects.Referral;
 import org.damour.base.client.objects.Permission.PERM;
+import org.damour.base.client.objects.Referral;
 import org.damour.base.client.objects.RepositoryTreeNode;
 import org.damour.base.client.objects.Tag;
 import org.damour.base.client.objects.TagMembership;
@@ -1706,8 +1706,10 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     return permissibleObject;
   }
 
-  public void submitReferral(Referral referral) throws SimpleMessageException {
-    // Document.get().getReferrer();
+  public Referral submitReferral(Referral referral) throws SimpleMessageException {
+    if (referral == null) {
+      throw new SimpleMessageException("Referral provided is null");
+    }
 
     List<Referral> referrals = session.get().createQuery("from " + Referral.class.getSimpleName() + " where referralURL = '" + referral.getReferralURL() + "'")
         .setMaxResults(1).setCacheable(true).list();
@@ -1720,13 +1722,14 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     referral.recentDate = System.currentTimeMillis();
 
     if (StringUtils.isEmpty(referral.getReferralURL())) {
-      return;
+      throw new SimpleMessageException("Referral does not contain referral url");
     }
 
     Transaction tx = session.get().beginTransaction();
     try {
       session.get().save(referral);
       tx.commit();
+      return referral;
     } catch (Throwable t) {
       Logger.log(t);
       try {
@@ -1984,7 +1987,6 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     }
     if (user != null) {
       fromName = user.getFirstname();
-      fromAddress = user.getEmail();
     }
     StringTokenizer st = new StringTokenizer(toAddresses, ";");
     while (st.hasMoreTokens()) {
@@ -2001,7 +2003,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       tmpMessage = tmpMessage.replace("{toAddress}", toAddress); //$NON-NLS-1$ 
       tmpMessage = tmpMessage.replace("{toName}", toName); //$NON-NLS-1$ 
 
-      BaseSystem.getEmailService().sendMessage(BaseSystem.getSmtpHost(), fromAddress, fromName, toAddress, tmpSubject, tmpMessage);
+      BaseSystem.getEmailService().sendMessage(BaseSystem.getSmtpHost(), BaseSystem.getAdminEmailAddress(), fromName, toAddress, tmpSubject, tmpMessage);
     }
   }
 

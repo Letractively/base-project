@@ -51,7 +51,7 @@ public class ParameterParser {
           String[] kv = kvPair.split("=", 2);
           orderedParameterNames.add(kv[0]);
           if (kv.length > 1) {
-            paramMap.put(kv[0], URL.decodeComponent(kv[1]));
+            paramMap.put(kv[0], URL.decodeQueryString(kv[1]));
           } else {
             paramMap.put(kv[0], "");
           }
@@ -82,7 +82,7 @@ public class ParameterParser {
           values = new ArrayList<String>();
           out.put(kv[0], values);
         }
-        values.add(kv.length > 1 ? URL.decodeComponent(kv[1]) : "");
+        values.add(kv.length > 1 ? URL.decodeQueryString(kv[1]) : "");
       }
     }
 

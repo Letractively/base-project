@@ -6,10 +6,9 @@ import java.util.List;
 import org.damour.base.client.objects.PermissibleObject;
 import org.damour.base.client.objects.Permission;
 import org.damour.base.client.service.BaseServiceCache;
-import org.damour.base.client.ui.TabWidget;
+import org.damour.base.client.ui.tabs.BaseTabPanel;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class PropertiesPanel extends VerticalPanel {
@@ -24,7 +23,7 @@ public class PropertiesPanel extends VerticalPanel {
   GeneralPanel generalPanel = null;
   PermissionsPanel userPermissionsPanel = null;
   PermissionsPanel groupPermissionsPanel = null;
-  TabPanel tabPanel = new TabPanel();
+  BaseTabPanel tabPanel = new BaseTabPanel();
   VIEW defaultView = VIEW.GENERAL;
 
   public PropertiesPanel(PermissibleObject permissibleObject, List<Permission> permissions, VIEW view) {
@@ -52,9 +51,9 @@ public class PropertiesPanel extends VerticalPanel {
 
   private void populateUI() {
     tabPanel.clear();
-    tabPanel.add(generalPanel, new TabWidget("General", false, tabPanel, generalPanel));
-    tabPanel.add(userPermissionsPanel, new TabWidget("User Permissions", false, tabPanel, userPermissionsPanel));
-    tabPanel.add(groupPermissionsPanel, new TabWidget("Groups Permissions", false, tabPanel, groupPermissionsPanel));
+    tabPanel.addTab("General", "General", false, generalPanel);
+    tabPanel.addTab("User Permissions", "User Permissions", false, userPermissionsPanel); 
+    tabPanel.addTab("Groups Permissions", "Groups Permissions", false, groupPermissionsPanel);
     if (defaultView.equals(VIEW.GENERAL)) {
       tabPanel.selectTab(0);
     } else if (defaultView.equals(VIEW.USERPERMS)) {
@@ -70,7 +69,7 @@ public class PropertiesPanel extends VerticalPanel {
 
   private void handleFetchFailure() {
     tabPanel.clear();
-    tabPanel.add(generalPanel, new TabWidget("General", false, tabPanel, generalPanel));
+    tabPanel.addTab("General", "General", false, generalPanel);
     tabPanel.selectTab(0);
   }
 

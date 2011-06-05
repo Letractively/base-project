@@ -88,7 +88,7 @@ public interface BaseServiceAsync {
   public void echoPermissibleObject(PermissibleObject permissibleObject, AsyncCallback<PermissibleObject> callback);
 
   // referral/tracking api
-  public void submitReferral(Referral referral, AsyncCallback<Void> callback);
+  public void submitReferral(Referral referral, AsyncCallback<Referral> callback);
   public void getReferrals(PermissibleObject subject, AsyncCallback<List<Referral>> callback);
   
   // page api

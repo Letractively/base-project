@@ -89,7 +89,7 @@ public interface BaseService extends RemoteService {
   public PermissibleObject echoPermissibleObject(PermissibleObject permissibleObject) throws SimpleMessageException;
 
   // referral/tracking api
-  public void submitReferral(Referral referral) throws SimpleMessageException;
+  public Referral submitReferral(Referral referral) throws SimpleMessageException;
   public List<Referral> getReferrals(PermissibleObject subject) throws SimpleMessageException;
   
   // paging api

@@ -1,15 +1,11 @@
 package org.damour.base.client.ui.buttons;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.damour.base.client.utils.CursorUtils;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.ui.AbstractImagePrototype;
-import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Image;
@@ -24,18 +20,17 @@ public class IconButton extends FlexTable implements MouseListener {
   private Command command;
   private boolean enabled = true;
   private Object userObject;
-  private List<ClickListener> listeners = new ArrayList<ClickListener>();
 
   private Label label = new Label();
 
   private Image image = new Image();
-  private AbstractImagePrototype defaultImage;
-  private AbstractImagePrototype hoverImage;
-  private AbstractImagePrototype disabledImage;
-  private AbstractImagePrototype pressedImage;
+  private ImageResource defaultImage;
+  private ImageResource hoverImage;
+  private ImageResource disabledImage;
+  private ImageResource pressedImage;
 
-  public IconButton(String labelText, boolean labelOnLeft, AbstractImagePrototype defaultImage, AbstractImagePrototype hoverImage,
-      AbstractImagePrototype pressedImage, AbstractImagePrototype disabledImage) {
+  public IconButton(String labelText, boolean labelOnLeft, ImageResource defaultImage, ImageResource hoverImage,
+      ImageResource pressedImage, ImageResource disabledImage) {
     this.defaultImage = defaultImage;
     this.hoverImage = hoverImage;
     this.pressedImage = pressedImage;
@@ -62,7 +57,7 @@ public class IconButton extends FlexTable implements MouseListener {
     label.setStyleName(STYLE + "Label");
     label.addMouseListener(this);
 
-    defaultImage.applyTo(image);
+    image.setUrl(defaultImage.getURL());
     image.setStyleName(STYLE + "Image");
     image.addMouseListener(this);
 
@@ -91,14 +86,14 @@ public class IconButton extends FlexTable implements MouseListener {
     if (enabled) {
       addStyleDependentName("pressed");
       removeStyleDependentName("hover");
-      pressedImage.applyTo(image);
+      image.setUrl(pressedImage.getURL());
     }
   }
 
   public void onMouseEnter(Widget sender) {
     if (enabled) {
       addStyleDependentName("hover");
-      hoverImage.applyTo(image);
+      image.setUrl(hoverImage.getURL());
     }
   }
 
@@ -106,7 +101,7 @@ public class IconButton extends FlexTable implements MouseListener {
     if (enabled) {
       removeStyleDependentName("pressed");
       removeStyleDependentName("hover");
-      defaultImage.applyTo(image);
+      image.setUrl(defaultImage.getURL());
     }
   }
 
@@ -127,10 +122,10 @@ public class IconButton extends FlexTable implements MouseListener {
     this.enabled = enabled;
     if (enabled) {
       removeStyleDependentName("disabled");
-      defaultImage.applyTo(image);
+      image.setUrl(defaultImage.getURL());
     } else {
       addStyleDependentName("disabled");
-      disabledImage.applyTo(image);
+      image.setUrl(disabledImage.getURL());
     }
   }
 

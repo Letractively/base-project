@@ -120,6 +120,7 @@ public class GeneralPanel extends FlexTable {
     globalPermissionsPanel.add(globalCreateChildrenCheckBox);
   }
 
+  @SuppressWarnings("deprecation")
   private String getCreationDate() {
     if (permissibleObject instanceof Folder) {
       return (new Date(((Folder) permissibleObject).getCreationDate())).toLocaleString();
@@ -176,33 +177,33 @@ public class GeneralPanel extends FlexTable {
 
   private Image getFileTypeIcon() {
     Image fileTypeIcon = new Image();
-    BaseImageBundle.images.file32().applyTo(fileTypeIcon);
+    fileTypeIcon.setUrl(BaseImageBundle.images.file32().getURL());
     if (permissibleObject instanceof Folder) {
-      BaseImageBundle.images.folder32().applyTo(fileTypeIcon);
+      fileTypeIcon.setUrl(BaseImageBundle.images.folder32().getURL());
     } else if (permissibleObject instanceof File) {
       File file = (File) permissibleObject;
       if (StringUtils.isEmpty(file.getContentType())) {
-        BaseImageBundle.images.file32().applyTo(fileTypeIcon);
+        fileTypeIcon.setUrl(BaseImageBundle.images.file32().getURL());
       } else if (file.getContentType().contains("image/x-png")) {
-        BaseImageBundle.images.png32().applyTo(fileTypeIcon);
+        fileTypeIcon.setUrl(BaseImageBundle.images.png32().getURL());
       } else if (file.getContentType().contains("image/jpeg")) {
-        BaseImageBundle.images.jpg32().applyTo(fileTypeIcon);
+        fileTypeIcon.setUrl(BaseImageBundle.images.jpg32().getURL());
       } else if (file.getContentType().contains("image/pjpeg")) {
-        BaseImageBundle.images.jpg32().applyTo(fileTypeIcon);
+        fileTypeIcon.setUrl(BaseImageBundle.images.jpg32().getURL());
       } else if (file.getContentType().contains("image")) {
-        BaseImageBundle.images.png32().applyTo(fileTypeIcon);
+        fileTypeIcon.setUrl(BaseImageBundle.images.png32().getURL());
       } else if (file.getContentType().contains("video")) {
-        BaseImageBundle.images.movie32().applyTo(fileTypeIcon);
+        fileTypeIcon.setUrl(BaseImageBundle.images.movie32().getURL());
       } else if (file.getContentType().contains("audio")) {
-        BaseImageBundle.images.audio32().applyTo(fileTypeIcon);
+        fileTypeIcon.setUrl(BaseImageBundle.images.audio32().getURL());
       } else if (file.getContentType().contains("text/plain")) {
-        BaseImageBundle.images.text32().applyTo(fileTypeIcon);
+        fileTypeIcon.setUrl(BaseImageBundle.images.text32().getURL());
       } else if (file.getContentType().contains("text/html")) {
-        BaseImageBundle.images.html32().applyTo(fileTypeIcon);
+        fileTypeIcon.setUrl(BaseImageBundle.images.html32().getURL());
       } else if (file.getContentType().contains("application/x-java-archive")) {
-        BaseImageBundle.images.jar32().applyTo(fileTypeIcon);
+        fileTypeIcon.setUrl(BaseImageBundle.images.jar32().getURL());
       } else if (file.getContentType().contains("application/x-zip-compressed")) {
-        BaseImageBundle.images.archive32().applyTo(fileTypeIcon);
+        fileTypeIcon.setUrl(BaseImageBundle.images.archive32().getURL());
       }
     }
     return fileTypeIcon;

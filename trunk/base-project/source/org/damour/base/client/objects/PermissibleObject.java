@@ -2,6 +2,7 @@ package org.damour.base.client.objects;
 
 import java.io.Serializable;
 
+@SuppressWarnings({ "serial", "rawtypes" })
 public class PermissibleObject implements Serializable, IHibernateFriendly, Comparable {
 
   public Long id;

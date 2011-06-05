@@ -9,18 +9,19 @@ import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.IGenericCallback;
 import org.damour.base.client.ui.buttons.Button;
 
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CaptionPanel;
-import com.google.gwt.user.client.ui.ChangeListener;
-import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.Widget;
 
-public class EditGroupsForUsersPanel extends FlexTable implements IAdminPanel, ChangeListener, IGenericCallback<User> {
+public class EditGroupsForUsersPanel extends FlexTable implements IAdminPanel, ChangeHandler, IGenericCallback<User> {
 
   EditGroupsForUserPanel editUserPanel;
   ListBox usersList = new ListBox();
@@ -49,14 +50,14 @@ public class EditGroupsForUsersPanel extends FlexTable implements IAdminPanel, C
 
   private void buildUI() {
     usersList.setVisibleItemCount(15);
-    usersList.addChangeListener(this);
+    usersList.addChangeHandler(this);
     usersList.addItem("Loading...");
     setHeight("100%");
     setWidth("100%");
 
     Button refreshButton = new Button("Refresh");
-    refreshButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    refreshButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         usersList.clear();
         usersList.addItem("Loading...");
         setWidget(0, 1, new Label());
@@ -94,7 +95,11 @@ public class EditGroupsForUsersPanel extends FlexTable implements IAdminPanel, C
       }
       userMap.put(user.getUsername(), user);
     }
-    onChange(usersList);
+    onChange(new com.google.gwt.event.dom.client.ChangeEvent() {
+      public Object getSource() {
+        return usersList;
+      }
+    });
   }
 
   private void fetchUsers() {
@@ -130,7 +135,7 @@ public class EditGroupsForUsersPanel extends FlexTable implements IAdminPanel, C
     BaseServiceCache.getService().getGroups(getGroupsCallback);
   }
 
-  public void onChange(Widget sender) {
+  public void onChange(ChangeEvent event) {
     if (usersList.getSelectedIndex() >= 0) {
       setWidget(0, 1, new Label("Loading..."));
       User user = userMap.get(usersList.getItemText(usersList.getSelectedIndex()));

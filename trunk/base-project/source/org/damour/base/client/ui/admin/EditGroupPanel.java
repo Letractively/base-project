@@ -9,14 +9,14 @@ import org.damour.base.client.ui.IGenericCallback;
 import org.damour.base.client.ui.buttons.Button;
 import org.damour.base.client.ui.dialogs.MessageDialogBox;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.Widget;
 
 public class EditGroupPanel extends FlexTable {
 
@@ -67,13 +67,14 @@ public class EditGroupPanel extends FlexTable {
         }
       }
     }
-    autoJoinCheckBox.setChecked(group.isAutoJoin());
-    lockGroupCheckBox.setChecked(group.isLocked());
-    visibleCheckBox.setChecked(group.isVisible());
+    autoJoinCheckBox.setValue(group.isAutoJoin());
+    lockGroupCheckBox.setValue(group.isLocked());
+    visibleCheckBox.setValue(group.isVisible());
 
     Button applyButton = new Button("Apply");
-    applyButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    applyButton.addClickHandler(new ClickHandler() {
+      
+      public void onClick(ClickEvent event) {
         apply();
       }
     });
@@ -135,9 +136,9 @@ public class EditGroupPanel extends FlexTable {
         }
       }
     }
-    group.setAutoJoin(autoJoinCheckBox.isChecked());
-    group.setLocked(lockGroupCheckBox.isChecked());
-    group.setVisible(visibleCheckBox.isChecked());
+    group.setAutoJoin(autoJoinCheckBox.getValue());
+    group.setLocked(lockGroupCheckBox.getValue());
+    group.setVisible(visibleCheckBox.getValue());
 
     final AsyncCallback<UserGroup> updateGroupCallback = new AsyncCallback<UserGroup>() {
       public void onFailure(Throwable caught) {

@@ -1,123 +1,123 @@
 package org.damour.base.client.images;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.ui.AbstractImagePrototype;
-import com.google.gwt.user.client.ui.ImageBundle;
-import com.google.gwt.user.client.ui.TreeImages;
+import com.google.gwt.resources.client.ClientBundle;
+import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.user.client.ui.Tree.Resources;
 
-public interface BaseImageBundle extends ImageBundle, TreeImages {
+public interface BaseImageBundle extends ClientBundle, Resources {
   public static final BaseImageBundle images = (BaseImageBundle) GWT.create(BaseImageBundle.class);
 
   // media player
-  AbstractImagePrototype player_play_32();
-  AbstractImagePrototype player_pause_32();
-  AbstractImagePrototype player_next_32();
-  AbstractImagePrototype player_prev_32();
-  AbstractImagePrototype player_hide_32();
-  AbstractImagePrototype player_close_32();
-  AbstractImagePrototype player_stop_32();
-  AbstractImagePrototype play16();
-  AbstractImagePrototype play16_disabled();
-  AbstractImagePrototype stop16();
-  AbstractImagePrototype stop16_disabled();
+  ImageResource player_play_32();
+  ImageResource player_pause_32();
+  ImageResource player_next_32();
+  ImageResource player_prev_32();
+  ImageResource player_hide_32();
+  ImageResource player_close_32();
+  ImageResource player_stop_32();
+  ImageResource play16();
+  ImageResource play16_disabled();
+  ImageResource stop16();
+  ImageResource stop16_disabled();
   
   // Tree
-  AbstractImagePrototype treeOpen();
-  AbstractImagePrototype treeClosed();
-  AbstractImagePrototype treeLeaf();
+  ImageResource treeOpen();
+  ImageResource treeClosed();
+  ImageResource treeLeaf();
 
   // file manager
-  AbstractImagePrototype file16x16();
-  AbstractImagePrototype open_32();
-  AbstractImagePrototype open_disabled_32();
-  AbstractImagePrototype save_16();
-  AbstractImagePrototype save_disabled_16();
-  AbstractImagePrototype upload();
-  AbstractImagePrototype upload_disabled();
-  AbstractImagePrototype download();
-  AbstractImagePrototype download_disabled();
-  AbstractImagePrototype newFolder();
-  AbstractImagePrototype newFolder_disabled();
-  AbstractImagePrototype rename();
-  AbstractImagePrototype rename_disabled();
-  AbstractImagePrototype share();
-  AbstractImagePrototype share_disabled();
-  AbstractImagePrototype properties16();
-  AbstractImagePrototype properties_disabled_16();
-  AbstractImagePrototype lock16();
-  AbstractImagePrototype settings16();
-  AbstractImagePrototype folder32();
-  AbstractImagePrototype file32();
-  AbstractImagePrototype archive32();
-  AbstractImagePrototype png32();
-  AbstractImagePrototype gif32();
-  AbstractImagePrototype jpg32();
-  AbstractImagePrototype bmp32();
-  AbstractImagePrototype image16();
-  AbstractImagePrototype movie32();
-  AbstractImagePrototype audio32();
-  AbstractImagePrototype text32();
-  AbstractImagePrototype html32();
-  AbstractImagePrototype jar32();
-  AbstractImagePrototype location_16();
-  AbstractImagePrototype location_disabled_16();
-  AbstractImagePrototype showHide16();
-  AbstractImagePrototype find16x16();
-  AbstractImagePrototype edit16();
-  AbstractImagePrototype editPencil16();
+  ImageResource file16x16();
+  ImageResource open_32();
+  ImageResource open_disabled_32();
+  ImageResource save_16();
+  ImageResource save_disabled_16();
+  ImageResource upload();
+  ImageResource upload_disabled();
+  ImageResource download();
+  ImageResource download_disabled();
+  ImageResource newFolder();
+  ImageResource newFolder_disabled();
+  ImageResource rename();
+  ImageResource rename_disabled();
+  ImageResource share();
+  ImageResource share_disabled();
+  ImageResource properties16();
+  ImageResource properties_disabled_16();
+  ImageResource lock16();
+  ImageResource settings16();
+  ImageResource folder32();
+  ImageResource file32();
+  ImageResource archive32();
+  ImageResource png32();
+  ImageResource gif32();
+  ImageResource jpg32();
+  ImageResource bmp32();
+  ImageResource image16();
+  ImageResource movie32();
+  ImageResource audio32();
+  ImageResource text32();
+  ImageResource html32();
+  ImageResource jar32();
+  ImageResource location_16();
+  ImageResource location_disabled_16();
+  ImageResource showHide16();
+  ImageResource find16x16();
+  ImageResource edit16();
+  ImageResource editPencil16();
   
   // comment widget
-  AbstractImagePrototype next();
-  AbstractImagePrototype previous();
-  AbstractImagePrototype first();
-  AbstractImagePrototype last();
-  AbstractImagePrototype hierarchy();
-  AbstractImagePrototype flatten();
-  AbstractImagePrototype sort();
-  AbstractImagePrototype refresh_16();
-  AbstractImagePrototype refresh_disabled_16();
-  AbstractImagePrototype reply();
-  AbstractImagePrototype add();
-  AbstractImagePrototype delete();
-  AbstractImagePrototype delete_disabled();
-  AbstractImagePrototype approve();
-  AbstractImagePrototype empty16x16();
-  AbstractImagePrototype empty8x8();
+  ImageResource next();
+  ImageResource previous();
+  ImageResource first();
+  ImageResource last();
+  ImageResource hierarchy();
+  ImageResource flatten();
+  ImageResource sort();
+  ImageResource refresh_16();
+  ImageResource refresh_disabled_16();
+  ImageResource reply();
+  ImageResource add();
+  ImageResource delete();
+  ImageResource delete_disabled();
+  ImageResource approve();
+  ImageResource empty16x16();
+  ImageResource empty8x8();
   
   // combo menu button icons
-  AbstractImagePrototype downArrow();
-  AbstractImagePrototype downArrowDisabled();
+  ImageResource downArrow();
+  ImageResource downArrowDisabled();
 
   // tab close icons
-  AbstractImagePrototype closeTab();
-  AbstractImagePrototype closeTabHover();
+  ImageResource closeTab();
+  ImageResource closeTabHover();
 
   // star rating widget
-  AbstractImagePrototype starNoVotes();
-  AbstractImagePrototype starFull();
-  AbstractImagePrototype starHalf();
-  AbstractImagePrototype starEmpty();
-  AbstractImagePrototype starHover();
+  ImageResource starNoVotes();
+  ImageResource starFull();
+  ImageResource starHalf();
+  ImageResource starEmpty();
+  ImageResource starHover();
   
   // content advisory widget
-  AbstractImagePrototype advisoryNR();
-  AbstractImagePrototype advisoryG();
-  AbstractImagePrototype advisoryPG();
-  AbstractImagePrototype advisoryPG13();
-  AbstractImagePrototype advisoryR();
-  AbstractImagePrototype advisoryNC17();
+  ImageResource advisoryNR();
+  ImageResource advisoryG();
+  ImageResource advisoryPG();
+  ImageResource advisoryPG13();
+  ImageResource advisoryR();
+  ImageResource advisoryNC17();
   
   // thumb widget
-  AbstractImagePrototype thumbUp();
-  AbstractImagePrototype thumbDown();
+  ImageResource thumbUp();
+  ImageResource thumbDown();
   
   // email widget
-  AbstractImagePrototype email16x16();
+  ImageResource email16x16();
   
   // permalink widget
-  AbstractImagePrototype permalink();
+  ImageResource permalink();
   
   // disclosure icons
-  AbstractImagePrototype disclosureOpen();
-  AbstractImagePrototype disclosureClose();
+  ImageResource disclosureOpen();
+  ImageResource disclosureClose();
 }
