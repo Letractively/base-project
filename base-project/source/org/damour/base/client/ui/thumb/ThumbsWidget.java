@@ -32,8 +32,8 @@ public class ThumbsWidget extends HorizontalPanel {
   private boolean showDislikesLabel = true;
   private boolean showLabelsOnLeft = true;
 
-  private Image thumbUp = new Image();
-  private Image thumbDown = new Image();
+  private Image thumbUp = new Image(BaseImageBundle.images.thumbUp().getURL());
+  private Image thumbDown = new Image(BaseImageBundle.images.thumbDown());
 
   private PermissibleObject permissibleObject;
   private UserThumb userThumb;
@@ -74,8 +74,6 @@ public class ThumbsWidget extends HorizontalPanel {
 
     setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
     setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-    BaseImageBundle.images.thumbUp().applyTo(thumbUp);
-    BaseImageBundle.images.thumbDown().applyTo(thumbDown);
 
     thumbUp.addClickHandler(new ClickHandler() {
 

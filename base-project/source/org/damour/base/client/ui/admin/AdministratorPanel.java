@@ -5,10 +5,9 @@ import java.util.List;
 import org.damour.base.client.objects.User;
 import org.damour.base.client.objects.UserGroup;
 import org.damour.base.client.service.BaseServiceCache;
-import org.damour.base.client.ui.TabWidget;
+import org.damour.base.client.ui.tabs.BaseTabPanel;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class AdministratorPanel extends VerticalPanel implements IAdminCallback {
@@ -44,27 +43,26 @@ public class AdministratorPanel extends VerticalPanel implements IAdminCallback 
 
       public void onSuccess(final List<UserGroup> newgroups) {
         AdministratorPanel.this.groups = newgroups;
-        final TabPanel adminTabPanel = new TabPanel();
-        adminTabPanel.setAnimationEnabled(false);
+        final BaseTabPanel adminTabPanel = new BaseTabPanel();
         adminTabPanel.setWidth("100%");
         adminTabPanel.setHeight("100%");
         add(adminTabPanel);
         editUsersPanel = new EditAccountsPanel(AdministratorPanel.this, groups, users, user);
-        adminTabPanel.add(editUsersPanel, new TabWidget("Accounts", false, adminTabPanel, editUsersPanel));
+        adminTabPanel.addTab("Accounts", "Accounts", false, editUsersPanel);
         editGroupsPanel = new EditGroupsPanel(AdministratorPanel.this, groups, users, user, true, false);
-        adminTabPanel.add(editGroupsPanel, new TabWidget("Groups", false, adminTabPanel, editGroupsPanel));
+        adminTabPanel.addTab("Groups", "Groups", false, editGroupsPanel);
         editGroupsMembersPanel = new EditGroupsPanel(AdministratorPanel.this, groups, users, user, false, true);
-        adminTabPanel.add(editGroupsMembersPanel, new TabWidget("Groups -> Users", false, adminTabPanel, editGroupsMembersPanel));
+        adminTabPanel.addTab("Groups -> Users", "Groups -> Users", false, editGroupsMembersPanel);
         editGroupsForUsersPanel = new EditGroupsForUsersPanel(AdministratorPanel.this, groups, users, user);
-        adminTabPanel.add(editGroupsForUsersPanel, new TabWidget("Users -> Groups", false, adminTabPanel, editGroupsForUsersPanel));
+        adminTabPanel.addTab("Users -> Groups", "Users -> Groups", false, editGroupsForUsersPanel);
         referralPanel = new ReferralPanel();
-        adminTabPanel.add(referralPanel, new TabWidget("Referrals", false, adminTabPanel, referralPanel));
+        adminTabPanel.addTab("Referrals", "Referrals", false, referralPanel);
         hibernateAdminPanel = new HibernateAdminPanel();
-        adminTabPanel.add(hibernateAdminPanel, new TabWidget("Hibernate", false, adminTabPanel, hibernateAdminPanel));
+        adminTabPanel.addTab("Hibernate", "Hibernate", false, hibernateAdminPanel);
         hqlPanel = new HQLPanel();
-        adminTabPanel.add(hqlPanel, new TabWidget("HQL", false, adminTabPanel, hqlPanel));
+        adminTabPanel.addTab("HQL", "HQL", false, hqlPanel);
         memoryAdminPanel = new MemoryAdminPanel();
-        adminTabPanel.add(memoryAdminPanel, new TabWidget("Memory", false, adminTabPanel, memoryAdminPanel));
+        adminTabPanel.addTab("Memory", "Memory", false, memoryAdminPanel);
         adminTabPanel.selectTab(0);
       };
     };

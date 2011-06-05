@@ -27,6 +27,7 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.ui.DeckPanel;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -195,24 +196,29 @@ public class BaseApplicationUI extends BaseApplication implements IAuthenticatio
     final ToolbarButton adminLink = new ToolbarButton(getMessages().getString("administration", "Administration"));
     adminLink.addClickHandler(new ClickHandler() {
       public void onClick(final ClickEvent event) {
-        GWT.runAsync(new RunAsyncCallback() {
-          public void onFailure(Throwable reason) {
-          }
-
-          public void onSuccess() {
-            if (adminPanel == null) {
-              adminPanel = new AdministratorPanel(getAuthenticatedUser());
-              applicationContentDeck.add(adminPanel);
-              adminLink.setText(getMessages().getString("administration", "Administration"));
-              adminLink.setTitle(getMessages().getString("toggleAdministration", "Toggle Administration"));
-            }
-            ((AdministratorPanel) adminPanel).activate();
-            applicationContentDeck.showWidget(applicationContentDeck.getWidgetIndex(adminPanel));
-          }
-        });
+        loadAdmin(true);
       }
     });
     return adminLink;
+  }
+
+  public void loadAdmin(final boolean addHistoryItem) {
+    if (addHistoryItem) {
+      History.newItem("view=admin", false);
+    }
+    GWT.runAsync(new RunAsyncCallback() {
+      public void onFailure(Throwable reason) {
+      }
+
+      public void onSuccess() {
+        if (adminPanel == null) {
+          adminPanel = new AdministratorPanel(getAuthenticatedUser());
+          applicationContentDeck.add(adminPanel);
+        }
+        ((AdministratorPanel) adminPanel).activate();
+        applicationContentDeck.showWidget(applicationContentDeck.getWidgetIndex(adminPanel));
+      }
+    });
   }
 
   public Widget buildFooterPanel() {

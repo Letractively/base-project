@@ -11,16 +11,17 @@ import org.damour.base.client.ui.IGenericCallback;
 import org.damour.base.client.ui.buttons.Button;
 import org.damour.base.client.ui.dialogs.MessageDialogBox;
 
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.ChangeListener;
-import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
-public class EditGroupMembersPanel extends FlexTable implements ChangeListener {
+public class EditGroupMembersPanel extends FlexTable implements ChangeHandler {
 
   final ListBox allUsersListBox = new ListBox();
   final ListBox membersListBox = new ListBox();
@@ -45,11 +46,11 @@ public class EditGroupMembersPanel extends FlexTable implements ChangeListener {
     membersListBox.addItem("Loading...");
     allUsersListBox.setVisibleItemCount(15);
     membersListBox.setVisibleItemCount(15);
-    allUsersListBox.addChangeListener(this);
-    membersListBox.addChangeListener(this);
+    allUsersListBox.addChangeHandler(this);
+    membersListBox.addChangeHandler(this);
 
-    removeButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    removeButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         final int index = membersListBox.getSelectedIndex();
         final String username = membersListBox.getItemText(index);
         final User user = userMap.get(username);
@@ -70,7 +71,11 @@ public class EditGroupMembersPanel extends FlexTable implements ChangeListener {
               }
             } catch (Exception e) {
             }
-            onChange(membersListBox);
+            onChange(new com.google.gwt.event.dom.client.ChangeEvent() {
+              public Object getSource() {
+                return membersListBox;
+              }
+            });
           };
         };
         BaseServiceCache.getService().deleteUser(user, group, deleteUserCallback);
@@ -81,8 +86,8 @@ public class EditGroupMembersPanel extends FlexTable implements ChangeListener {
 
     addButton.setText(" > ");
     addButton.setTitle("Add Member");
-    addButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    addButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         final int index = allUsersListBox.getSelectedIndex();
         final String username = allUsersListBox.getItemText(index);
         final User user = userMap.get(username);
@@ -103,7 +108,11 @@ public class EditGroupMembersPanel extends FlexTable implements ChangeListener {
               }
             } catch (Exception e) {
             }
-            onChange(allUsersListBox);
+            onChange(new com.google.gwt.event.dom.client.ChangeEvent() {
+              public Object getSource() {
+                return allUsersListBox;
+              }
+            });
           };
         };
         BaseServiceCache.getService().addUserToGroup(user, group, addUserCallback);
@@ -191,7 +200,7 @@ public class EditGroupMembersPanel extends FlexTable implements ChangeListener {
     BaseServiceCache.getService().getUsers(getUsersCallback);
   }
 
-  public void onChange(Widget sender) {
+  public void onChange(ChangeEvent event) {
     if (allUsersListBox.getSelectedIndex() != -1) {
       addButton.setEnabled(true);
     } else {

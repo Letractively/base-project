@@ -11,7 +11,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
@@ -39,7 +38,7 @@ public class MP3Player {
 
   private MP3Player() {
     // initialize ui/popuppanel
-    BaseImageBundle.images.player_play_32().applyTo(pauseButton);
+    pauseButton.setUrl(BaseImageBundle.images.player_play_32().getURL());
     pauseButton.setStyleName("mp3playerButton");
     pauseButton.setTitle("Play");
     pauseButton.addClickHandler(new ClickHandler() {
@@ -48,7 +47,7 @@ public class MP3Player {
       }
     });
     Image stopButton = new Image();
-    BaseImageBundle.images.player_stop_32().applyTo(stopButton);
+    stopButton.setUrl(BaseImageBundle.images.player_stop_32().getURL());
     stopButton.setStyleName("mp3playerButton");
     stopButton.setTitle("Stop");
     stopButton.addClickHandler(new ClickHandler() {
@@ -57,7 +56,7 @@ public class MP3Player {
       }
     });
     Image nextButton = new Image();
-    BaseImageBundle.images.player_next_32().applyTo(nextButton);
+    nextButton.setUrl(BaseImageBundle.images.player_next_32().getURL());
     nextButton.setStyleName("mp3playerButton");
     nextButton.setTitle("Next");
     nextButton.addClickHandler(new ClickHandler() {
@@ -66,7 +65,7 @@ public class MP3Player {
       }
     });
     Image prevButton = new Image();
-    BaseImageBundle.images.player_prev_32().applyTo(prevButton);
+    prevButton.setUrl(BaseImageBundle.images.player_prev_32().getURL());
     prevButton.setStyleName("mp3playerButton");
     prevButton.setTitle("Previous");
     prevButton.addClickHandler(new ClickHandler() {
@@ -75,7 +74,7 @@ public class MP3Player {
       }
     });
     Image hideButton = new Image();
-    BaseImageBundle.images.player_hide_32().applyTo(hideButton);
+    hideButton.setUrl(BaseImageBundle.images.player_hide_32().getURL());
     hideButton.setStyleName("mp3playerButton");
     hideButton.setTitle("Hide");
     hideButton.addClickHandler(new ClickHandler() {
@@ -84,7 +83,7 @@ public class MP3Player {
       }
     });
     Image closeButton = new Image();
-    BaseImageBundle.images.player_close_32().applyTo(closeButton);
+    closeButton.setUrl(BaseImageBundle.images.player_close_32().getURL());
     closeButton.setStyleName("mp3playerButton");
     closeButton.setTitle("Close");
     closeButton.addClickHandler(new ClickHandler() {
@@ -198,7 +197,7 @@ public class MP3Player {
         songLabel.setText("");
         artistLabel.setText("");
         artistLabelLabel.setText("");
-        BaseImageBundle.images.player_play_32().applyTo(pauseButton);
+        pauseButton.setUrl(BaseImageBundle.images.player_play_32().getURL());
         pauseButton.setTitle("Play");
         nativeStop();
       }
@@ -213,10 +212,10 @@ public class MP3Player {
         if (playlistIndex >= 0 && playlistIndex < playlist.size()) {
           paused = !paused;
           if (paused) {
-            BaseImageBundle.images.player_play_32().applyTo(pauseButton);
+            pauseButton.setUrl(BaseImageBundle.images.player_play_32().getURL());
             pauseButton.setTitle("Play");
           } else {
-            BaseImageBundle.images.player_pause_32().applyTo(pauseButton);
+            pauseButton.setUrl(BaseImageBundle.images.player_pause_32().getURL());
             pauseButton.setTitle("Pause");
           }
           String soundName = playlist.get(playlistIndex);
@@ -245,7 +244,7 @@ public class MP3Player {
         songLabel.setText(soundName);
         nativePlaySound(this, soundName);
         setID3Info(soundName);
-        BaseImageBundle.images.player_pause_32().applyTo(pauseButton);
+        pauseButton.setUrl(BaseImageBundle.images.player_pause_32().getURL());
         pauseButton.setTitle("Pause");
       }
     } catch (Exception e) {

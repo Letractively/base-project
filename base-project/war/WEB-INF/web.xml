@@ -23,15 +23,6 @@
 	<description>Base Project</description>
 
 	<servlet>
-		<servlet-name>loginService</servlet-name>
-		<servlet-class>org.damour.base.server.LoginService</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>loginService</servlet-name>
-		<url-pattern>/servlet/org.damour.base.server.LoginService</url-pattern>
-	</servlet-mapping>
-
-	<servlet>
 		<servlet-name>baseService</servlet-name>
 		<servlet-class>org.damour.base.server.BaseService</servlet-class>
 	</servlet>

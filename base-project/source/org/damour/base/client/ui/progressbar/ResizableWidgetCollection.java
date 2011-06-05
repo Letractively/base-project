@@ -16,13 +16,14 @@ package org.damour.base.client.ui.progressbar;
  * the License.
  */
 
+import java.util.HashMap;
+import java.util.Map;
+
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.WindowResizeListener;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * A collection of {@link ResizableWidget} that periodically checks the outer
@@ -35,7 +36,7 @@ import java.util.Map;
  * Widgets do not need to be added to a {@link ResizableWidgetCollection} as
  * they cannot be resized.
  */
-public class ResizableWidgetCollection implements WindowResizeListener {
+public class ResizableWidgetCollection implements ResizeHandler {
   /**
    * Information about a widgets size.
    */
@@ -182,7 +183,7 @@ public class ResizableWidgetCollection implements WindowResizeListener {
    */
   protected ResizableWidgetCollection(int resizeCheckDelay,
       boolean resizeCheckingEnabled) {
-    Window.addWindowResizeListener(this);
+    Window.addResizeHandler(this);
     setResizeCheckDelay(resizeCheckDelay);
     if (resizeCheckingEnabled) {
       resizeCheckTimer.schedule(resizeCheckDelay);
@@ -240,13 +241,14 @@ public class ResizableWidgetCollection implements WindowResizeListener {
     return resizeCheckingEnabled;
   }
 
+  
   /**
    * Called when the browser window is resized.
    * 
    * @param width the width of the window's client area.
    * @param height the height of the window's client area.
    */
-  public void onWindowResized(int width, int height) {
+  public void onResize(ResizeEvent event) {
     checkWidgetSize();
   }
 

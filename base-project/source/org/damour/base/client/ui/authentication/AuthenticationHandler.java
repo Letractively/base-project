@@ -7,6 +7,7 @@ import java.util.List;
 import org.damour.base.client.BaseApplication;
 import org.damour.base.client.objects.User;
 import org.damour.base.client.service.BaseServiceCache;
+import org.damour.base.client.ui.GlassPanel;
 import org.damour.base.client.ui.buttons.Button;
 import org.damour.base.client.ui.datepicker.MyDatePicker;
 import org.damour.base.client.ui.dialogs.IDialogCallback;
@@ -282,7 +283,7 @@ public class AuthenticationHandler {
     passwordPanel.add(passwordTextBox);
     passwordPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
     passwordPanel.add(new SecurePasswordVerification(true, passwordTextBox, passwordConfirm));
-    
+
     contentPanel.setWidget(row, 0, passwordLabel);
     contentPanel.setWidget(row, 1, passwordPanel);
     contentPanel.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_LEFT);
@@ -380,8 +381,7 @@ public class AuthenticationHandler {
           validationMessage += BaseApplication.getMessages().getString("captchaValidationFailed", "You must enter validation text.") + "<BR>";
           validationFailed = true;
         }
-        
-        
+
         if (!disclaimerCheckBox.getValue()) {
           validationMessage += BaseApplication.getMessages().getString("mustReadDisclaimer",
               "You must read and agree with the disclaimer statement to continue.")
@@ -674,12 +674,16 @@ public class AuthenticationHandler {
   }
 
   public void logout() {
+    GlassPanel.setVisible(true);
+
     final AsyncCallback<Void> loginCallback = new AsyncCallback<Void>() {
       public void onFailure(Throwable caught) {
+        GlassPanel.setVisible(false);
         Window.open("/", "_top", "");
       }
 
       public void onSuccess(Void nothing) {
+        GlassPanel.setVisible(false);
         AuthenticationHandler.this.user = null;
         fireLoggedOut();
       };

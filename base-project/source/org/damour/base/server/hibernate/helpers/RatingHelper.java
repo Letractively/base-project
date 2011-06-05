@@ -14,6 +14,7 @@ public class RatingHelper {
       return null;
     }
     if (voter != null) {
+      @SuppressWarnings("unchecked")
       List<UserRating> ratings = session
           .createQuery("from " + UserRating.class.getSimpleName() + " where permissibleObject.id = " + permissibleObject.id + " and voter.id = " + voter.id)
           .setCacheable(true).list();
@@ -22,6 +23,7 @@ public class RatingHelper {
       }
       return null;
     }
+    @SuppressWarnings("unchecked")
     List<UserRating> ratings = session
         .createQuery(
             "from " + UserRating.class.getSimpleName() + " where permissibleObject.id = " + permissibleObject.id + " and voterGUID = '" + voterGUID + "'")
@@ -34,14 +36,16 @@ public class RatingHelper {
   }
 
   public static List<UserRating> getUserRatings(Session session, PermissibleObject permissibleObject) {
+    @SuppressWarnings("unchecked")
     List<UserRating> ratings = session.createQuery("from " + UserRating.class.getSimpleName() + " where permissibleObject.id = " + permissibleObject.id)
         .setCacheable(true).list();
     return ratings;
   }
 
+  @SuppressWarnings("unchecked")
   public static PermissibleObject getNextUnratedPermissibleObject(Session session, String objectType, User voter, String voterGUID) {
     List<PermissibleObject> objects = null;
-    Class clazz = PermissibleObject.class;
+    Class<?> clazz = PermissibleObject.class;
     try {
       clazz = Class.forName(objectType);
     } catch (Throwable t) {

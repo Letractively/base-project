@@ -11,10 +11,11 @@ import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.buttons.Button;
 import org.damour.base.client.ui.dialogs.MessageDialogBox;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -23,7 +24,6 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
 public class ManagePendingGroupMembershipsPanel extends VerticalPanel {
 
@@ -54,14 +54,14 @@ public class ManagePendingGroupMembershipsPanel extends VerticalPanel {
     headerTable.setCellSpacing(0);
 
     final CheckBox selectAllCheckBox = new CheckBox();
-    selectAllCheckBox.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    selectAllCheckBox.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         for (int row = 0; row < pendingGroupMembersTable.getRowCount(); row++) {
-          ((CheckBox)pendingGroupMembersTable.getWidget(row, 0)).setChecked(selectAllCheckBox.isChecked());
-          if (selectAllCheckBox.isChecked()) {
-            selectedPGMSet.add(tableRowToPGM.get(row));            
+          ((CheckBox) pendingGroupMembersTable.getWidget(row, 0)).setValue(selectAllCheckBox.getValue());
+          if (selectAllCheckBox.getValue()) {
+            selectedPGMSet.add(tableRowToPGM.get(row));
           } else {
-            selectedPGMSet.remove(tableRowToPGM.get(row));  
+            selectedPGMSet.remove(tableRowToPGM.get(row));
           }
         }
       }
@@ -92,9 +92,9 @@ public class ManagePendingGroupMembershipsPanel extends VerticalPanel {
         tableRowToPGM.put(++row, membership);
 
         final CheckBox check = new CheckBox();
-        check.addClickListener(new ClickListener() {
-          public void onClick(Widget sender) {
-            selectedPGMSet.add(membership);            
+        check.addClickHandler(new ClickHandler() {
+          public void onClick(ClickEvent event) {
+            selectedPGMSet.add(membership);
           }
         });
         DOM.setStyleAttribute(check.getElement(), "paddingLeft", "5px");
@@ -136,8 +136,8 @@ public class ManagePendingGroupMembershipsPanel extends VerticalPanel {
     whatToDoPanel.add(choiceCombo);
 
     Button submitButton = new Button("Submit");
-    submitButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    submitButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         if (choiceCombo.getItemText(choiceCombo.getSelectedIndex()).equalsIgnoreCase("Approve")) {
           submitPendingGroupMembershipApproval(selectedPGMSet, true);
         } else {

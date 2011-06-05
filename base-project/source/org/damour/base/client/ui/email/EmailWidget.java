@@ -13,12 +13,12 @@ import com.google.gwt.user.client.ui.Label;
 
 public class EmailWidget extends HorizontalPanel {
 
-  private Image mailIcon = new Image();
-  
+  private Image mailIcon = new Image(BaseImageBundle.images.email16x16().getURL());
+
   private PermissibleObject permissibleObject;
   private String message;
   private String subject;
-  
+
   private ClickHandler clickHandler = new ClickHandler() {
     public void onClick(ClickEvent event) {
       EmailDialog emailDialog = new EmailDialog(permissibleObject, subject, message);
@@ -30,9 +30,8 @@ public class EmailWidget extends HorizontalPanel {
     this.permissibleObject = permissibleObject;
     this.message = message;
     this.subject = subject;
-    
+
     setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-    BaseImageBundle.images.email16x16().applyTo(mailIcon);
     Label emailLabel = new Label("Email");
     if (showLabel && labelOnLeft) {
       DOM.setStyleAttribute(mailIcon.getElement(), "marginLeft", "3px");

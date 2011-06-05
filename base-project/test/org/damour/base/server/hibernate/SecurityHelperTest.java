@@ -1,14 +1,13 @@
 package org.damour.base.server.hibernate;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.List;
 
 import org.damour.base.client.objects.Folder;
 import org.damour.base.client.objects.GroupMembership;
-import org.damour.base.client.objects.Permission;
 import org.damour.base.client.objects.User;
 import org.damour.base.client.objects.UserGroup;
 import org.damour.base.server.hibernate.helpers.SecurityHelper;
@@ -16,8 +15,6 @@ import org.damour.base.server.hibernate.helpers.UserHelper;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.exception.ConstraintViolationException;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import com.twmacinta.util.MD5;

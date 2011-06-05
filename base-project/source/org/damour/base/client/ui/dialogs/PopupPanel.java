@@ -14,7 +14,7 @@ import com.google.gwt.user.client.ui.RootPanel;
 
 public class PopupPanel extends com.google.gwt.user.client.ui.PopupPanel implements CloseHandler<com.google.gwt.user.client.ui.PopupPanel> {
 
-  private FocusPanel pageBackground = null;
+  private FocusPanel glassPanel = null;
   private int clickCount = 0;
   private FocusWidget focusWidget = null;
   boolean autoHide = false;
@@ -28,8 +28,8 @@ public class PopupPanel extends com.google.gwt.user.client.ui.PopupPanel impleme
     addCloseHandler(this);
     Window.addResizeHandler(new ResizeHandler() {
       public void onResize(ResizeEvent event) {
-        if (pageBackground != null) {
-          pageBackground.setSize("100%", Window.getClientHeight() + Window.getScrollTop() + "px"); //$NON-NLS-1$
+        if (glassPanel != null) {
+          glassPanel.setSize("100%", Window.getClientHeight() + Window.getScrollTop() + "px"); //$NON-NLS-1$
         }
       }
     });
@@ -49,25 +49,25 @@ public class PopupPanel extends com.google.gwt.user.client.ui.PopupPanel impleme
   public void center() {
     // IE6 has problems with 100% height so is better a huge size
     // pageBackground.setSize("100%", "100%");
-    if (pageBackground == null) {
-      pageBackground = new FocusPanel();
-      pageBackground.setStyleName("modalDialogPageBackground"); //$NON-NLS-1$
-      pageBackground.addClickHandler(new ClickHandler() {
+    if (glassPanel == null) {
+      glassPanel = new FocusPanel();
+      glassPanel.setStyleName("base-glass-panel"); //$NON-NLS-1$
+      glassPanel.addClickHandler(new ClickHandler() {
 
         public void onClick(ClickEvent event) {
           clickCount++;
           if (clickCount > 2) {
             clickCount = 0;
-            pageBackground.setVisible(false);
+            glassPanel.setVisible(false);
           }
         }
       });
-      RootPanel.get().add(pageBackground, 0, 0);
+      RootPanel.get().add(glassPanel, 0, 0);
     }
     super.center();
     if (modal && !centerCalled) {
-      pageBackground.setSize("100%", Window.getClientHeight() + Window.getScrollTop() + "px"); //$NON-NLS-1$
-      pageBackground.setVisible(true);
+      glassPanel.setSize("100%", Window.getClientHeight() + Window.getScrollTop() + "px"); //$NON-NLS-1$
+      glassPanel.setVisible(true);
       centerCalled = true;
     }
     if (focusWidget != null) {
@@ -92,7 +92,7 @@ public class PopupPanel extends com.google.gwt.user.client.ui.PopupPanel impleme
   public void onClose(CloseEvent<com.google.gwt.user.client.ui.PopupPanel> event) {
     if (modal) {
       centerCalled = false;
-      pageBackground.setVisible(false);
+      glassPanel.setVisible(false);
     }
   }
 }

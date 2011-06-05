@@ -127,39 +127,39 @@ public class RatingWidget extends VerticalPanel {
 
   public void starMoused(Widget sender) {
     if (sender == star1) {
-      BaseImageBundle.images.starHover().applyTo(star1);
+      star1.setUrl(BaseImageBundle.images.starHover().getURL());
       star1.setTitle(BaseApplication.getMessages().getString("ratingAwful", "Awful"));
-      BaseImageBundle.images.starEmpty().applyTo(star2);
-      BaseImageBundle.images.starEmpty().applyTo(star3);
-      BaseImageBundle.images.starEmpty().applyTo(star4);
-      BaseImageBundle.images.starEmpty().applyTo(star5);
+      star2.setUrl(BaseImageBundle.images.starEmpty().getURL());
+      star3.setUrl(BaseImageBundle.images.starEmpty().getURL());
+      star4.setUrl(BaseImageBundle.images.starEmpty().getURL());
+      star5.setUrl(BaseImageBundle.images.starEmpty().getURL());
     } else if (sender == star2) {
-      BaseImageBundle.images.starHover().applyTo(star1);
-      BaseImageBundle.images.starHover().applyTo(star2);
+      star1.setUrl(BaseImageBundle.images.starHover().getURL());
+      star2.setUrl(BaseImageBundle.images.starHover().getURL());
       star2.setTitle(BaseApplication.getMessages().getString("ratingPoor", "Poor"));
-      BaseImageBundle.images.starEmpty().applyTo(star3);
-      BaseImageBundle.images.starEmpty().applyTo(star4);
-      BaseImageBundle.images.starEmpty().applyTo(star5);
+      star3.setUrl(BaseImageBundle.images.starEmpty().getURL());
+      star4.setUrl(BaseImageBundle.images.starEmpty().getURL());
+      star5.setUrl(BaseImageBundle.images.starEmpty().getURL());
     } else if (sender == star3) {
-      BaseImageBundle.images.starHover().applyTo(star1);
-      BaseImageBundle.images.starHover().applyTo(star2);
-      BaseImageBundle.images.starHover().applyTo(star3);
+      star1.setUrl(BaseImageBundle.images.starHover().getURL());
+      star2.setUrl(BaseImageBundle.images.starHover().getURL());
+      star3.setUrl(BaseImageBundle.images.starHover().getURL());
       star3.setTitle(BaseApplication.getMessages().getString("ratingNotBad", "Not Bad"));
-      BaseImageBundle.images.starEmpty().applyTo(star4);
-      BaseImageBundle.images.starEmpty().applyTo(star5);
+      star4.setUrl(BaseImageBundle.images.starEmpty().getURL());
+      star5.setUrl(BaseImageBundle.images.starEmpty().getURL());
     } else if (sender == star4) {
-      BaseImageBundle.images.starHover().applyTo(star1);
-      BaseImageBundle.images.starHover().applyTo(star2);
-      BaseImageBundle.images.starHover().applyTo(star3);
-      BaseImageBundle.images.starHover().applyTo(star4);
+      star1.setUrl(BaseImageBundle.images.starHover().getURL());
+      star2.setUrl(BaseImageBundle.images.starHover().getURL());
+      star3.setUrl(BaseImageBundle.images.starHover().getURL());
+      star4.setUrl(BaseImageBundle.images.starHover().getURL());
       star4.setTitle(BaseApplication.getMessages().getString("ratingGood", "Good"));
-      BaseImageBundle.images.starEmpty().applyTo(star5);
+      star5.setUrl(BaseImageBundle.images.starEmpty().getURL());
     } else if (sender == star5) {
-      BaseImageBundle.images.starHover().applyTo(star1);
-      BaseImageBundle.images.starHover().applyTo(star2);
-      BaseImageBundle.images.starHover().applyTo(star3);
-      BaseImageBundle.images.starHover().applyTo(star4);
-      BaseImageBundle.images.starHover().applyTo(star5);
+      star1.setUrl(BaseImageBundle.images.starHover().getURL());
+      star2.setUrl(BaseImageBundle.images.starHover().getURL());
+      star3.setUrl(BaseImageBundle.images.starHover().getURL());
+      star4.setUrl(BaseImageBundle.images.starHover().getURL());
+      star5.setUrl(BaseImageBundle.images.starHover().getURL());
       star5.setTitle(BaseApplication.getMessages().getString("ratingGreat", "Great"));
     }
   }
@@ -181,90 +181,90 @@ public class RatingWidget extends VerticalPanel {
         NumberFormat.getFormat("0.0").format(permissibleObject.getAverageRating()), "" + permissibleObject.getNumRatingVotes());
     statsLabel.setText(statText);
     if (permissibleObject.getNumRatingVotes() == 0) {
-      BaseImageBundle.images.starNoVotes().applyTo(star1);
-      BaseImageBundle.images.starNoVotes().applyTo(star2);
-      BaseImageBundle.images.starNoVotes().applyTo(star3);
-      BaseImageBundle.images.starNoVotes().applyTo(star4);
-      BaseImageBundle.images.starNoVotes().applyTo(star5);
+      star1.setUrl(BaseImageBundle.images.starNoVotes().getURL());
+      star2.setUrl(BaseImageBundle.images.starNoVotes().getURL());
+      star3.setUrl(BaseImageBundle.images.starNoVotes().getURL());
+      star4.setUrl(BaseImageBundle.images.starNoVotes().getURL());
+      star5.setUrl(BaseImageBundle.images.starNoVotes().getURL());
     } else {
       float rating = permissibleObject.getAverageRating();
       if (rating < .25) {
         // 0
-        BaseImageBundle.images.starEmpty().applyTo(star1);
-        BaseImageBundle.images.starEmpty().applyTo(star2);
-        BaseImageBundle.images.starEmpty().applyTo(star3);
-        BaseImageBundle.images.starEmpty().applyTo(star4);
-        BaseImageBundle.images.starEmpty().applyTo(star5);
+        star1.setUrl(BaseImageBundle.images.starNoVotes().getURL());
+        star2.setUrl(BaseImageBundle.images.starNoVotes().getURL());
+        star3.setUrl(BaseImageBundle.images.starNoVotes().getURL());
+        star4.setUrl(BaseImageBundle.images.starNoVotes().getURL());
+        star5.setUrl(BaseImageBundle.images.starNoVotes().getURL());
       } else if (rating >= .25 && rating < .75) {
         // .5
-        BaseImageBundle.images.starHalf().applyTo(star1);
-        BaseImageBundle.images.starEmpty().applyTo(star2);
-        BaseImageBundle.images.starEmpty().applyTo(star3);
-        BaseImageBundle.images.starEmpty().applyTo(star4);
-        BaseImageBundle.images.starEmpty().applyTo(star5);
+        star1.setUrl(BaseImageBundle.images.starHalf().getURL());
+        star2.setUrl(BaseImageBundle.images.starNoVotes().getURL());
+        star3.setUrl(BaseImageBundle.images.starNoVotes().getURL());
+        star4.setUrl(BaseImageBundle.images.starNoVotes().getURL());
+        star5.setUrl(BaseImageBundle.images.starNoVotes().getURL());
       } else if (rating >= .75 && rating < 1.25) {
         // 1.0
-        BaseImageBundle.images.starFull().applyTo(star1);
-        BaseImageBundle.images.starEmpty().applyTo(star2);
-        BaseImageBundle.images.starEmpty().applyTo(star3);
-        BaseImageBundle.images.starEmpty().applyTo(star4);
-        BaseImageBundle.images.starEmpty().applyTo(star5);
+        star1.setUrl(BaseImageBundle.images.starFull().getURL());
+        star2.setUrl(BaseImageBundle.images.starNoVotes().getURL());
+        star3.setUrl(BaseImageBundle.images.starNoVotes().getURL());
+        star4.setUrl(BaseImageBundle.images.starNoVotes().getURL());
+        star5.setUrl(BaseImageBundle.images.starNoVotes().getURL());
       } else if (rating >= 1.25 && rating < 1.75) {
         // 1.5
-        BaseImageBundle.images.starFull().applyTo(star1);
-        BaseImageBundle.images.starHalf().applyTo(star2);
-        BaseImageBundle.images.starEmpty().applyTo(star3);
-        BaseImageBundle.images.starEmpty().applyTo(star4);
-        BaseImageBundle.images.starEmpty().applyTo(star5);
+        star1.setUrl(BaseImageBundle.images.starFull().getURL());
+        star2.setUrl(BaseImageBundle.images.starHalf().getURL());
+        star3.setUrl(BaseImageBundle.images.starNoVotes().getURL());
+        star4.setUrl(BaseImageBundle.images.starNoVotes().getURL());
+        star5.setUrl(BaseImageBundle.images.starNoVotes().getURL());
       } else if (rating >= 1.75 && rating < 2.25) {
         // 2.0
-        BaseImageBundle.images.starFull().applyTo(star1);
-        BaseImageBundle.images.starFull().applyTo(star2);
-        BaseImageBundle.images.starEmpty().applyTo(star3);
-        BaseImageBundle.images.starEmpty().applyTo(star4);
-        BaseImageBundle.images.starEmpty().applyTo(star5);
+        star1.setUrl(BaseImageBundle.images.starFull().getURL());
+        star2.setUrl(BaseImageBundle.images.starFull().getURL());
+        star3.setUrl(BaseImageBundle.images.starNoVotes().getURL());
+        star4.setUrl(BaseImageBundle.images.starNoVotes().getURL());
+        star5.setUrl(BaseImageBundle.images.starNoVotes().getURL());
       } else if (rating >= 2.25 && rating < 2.75) {
         // 2.5
-        BaseImageBundle.images.starFull().applyTo(star1);
-        BaseImageBundle.images.starFull().applyTo(star2);
-        BaseImageBundle.images.starHalf().applyTo(star3);
-        BaseImageBundle.images.starEmpty().applyTo(star4);
-        BaseImageBundle.images.starEmpty().applyTo(star5);
+        star1.setUrl(BaseImageBundle.images.starFull().getURL());
+        star2.setUrl(BaseImageBundle.images.starFull().getURL());
+        star3.setUrl(BaseImageBundle.images.starHalf().getURL());
+        star4.setUrl(BaseImageBundle.images.starNoVotes().getURL());
+        star5.setUrl(BaseImageBundle.images.starNoVotes().getURL());
       } else if (rating >= 2.75 && rating < 3.25) {
         // 3.0
-        BaseImageBundle.images.starFull().applyTo(star1);
-        BaseImageBundle.images.starFull().applyTo(star2);
-        BaseImageBundle.images.starFull().applyTo(star3);
-        BaseImageBundle.images.starEmpty().applyTo(star4);
-        BaseImageBundle.images.starEmpty().applyTo(star5);
+        star1.setUrl(BaseImageBundle.images.starFull().getURL());
+        star2.setUrl(BaseImageBundle.images.starFull().getURL());
+        star3.setUrl(BaseImageBundle.images.starFull().getURL());
+        star4.setUrl(BaseImageBundle.images.starNoVotes().getURL());
+        star5.setUrl(BaseImageBundle.images.starNoVotes().getURL());
       } else if (rating >= 3.25 && rating < 3.75) {
         // 3.5
-        BaseImageBundle.images.starFull().applyTo(star1);
-        BaseImageBundle.images.starFull().applyTo(star2);
-        BaseImageBundle.images.starFull().applyTo(star3);
-        BaseImageBundle.images.starHalf().applyTo(star4);
-        BaseImageBundle.images.starEmpty().applyTo(star5);
+        star1.setUrl(BaseImageBundle.images.starFull().getURL());
+        star2.setUrl(BaseImageBundle.images.starFull().getURL());
+        star3.setUrl(BaseImageBundle.images.starFull().getURL());
+        star4.setUrl(BaseImageBundle.images.starHalf().getURL());
+        star5.setUrl(BaseImageBundle.images.starNoVotes().getURL());
       } else if (rating >= 3.75 && rating < 4.25) {
         // 4.0
-        BaseImageBundle.images.starFull().applyTo(star1);
-        BaseImageBundle.images.starFull().applyTo(star2);
-        BaseImageBundle.images.starFull().applyTo(star3);
-        BaseImageBundle.images.starFull().applyTo(star4);
-        BaseImageBundle.images.starEmpty().applyTo(star5);
+        star1.setUrl(BaseImageBundle.images.starFull().getURL());
+        star2.setUrl(BaseImageBundle.images.starFull().getURL());
+        star3.setUrl(BaseImageBundle.images.starFull().getURL());
+        star4.setUrl(BaseImageBundle.images.starFull().getURL());
+        star5.setUrl(BaseImageBundle.images.starNoVotes().getURL());
       } else if (rating >= 4.25 && rating < 4.75) {
         // 4.5
-        BaseImageBundle.images.starFull().applyTo(star1);
-        BaseImageBundle.images.starFull().applyTo(star2);
-        BaseImageBundle.images.starFull().applyTo(star3);
-        BaseImageBundle.images.starFull().applyTo(star4);
-        BaseImageBundle.images.starHalf().applyTo(star5);
+        star1.setUrl(BaseImageBundle.images.starFull().getURL());
+        star2.setUrl(BaseImageBundle.images.starFull().getURL());
+        star3.setUrl(BaseImageBundle.images.starFull().getURL());
+        star4.setUrl(BaseImageBundle.images.starFull().getURL());
+        star5.setUrl(BaseImageBundle.images.starHalf().getURL());
       } else if (rating >= 4.75) {
         // 5
-        BaseImageBundle.images.starFull().applyTo(star1);
-        BaseImageBundle.images.starFull().applyTo(star2);
-        BaseImageBundle.images.starFull().applyTo(star3);
-        BaseImageBundle.images.starFull().applyTo(star4);
-        BaseImageBundle.images.starFull().applyTo(star5);
+        star1.setUrl(BaseImageBundle.images.starFull().getURL());
+        star2.setUrl(BaseImageBundle.images.starFull().getURL());
+        star3.setUrl(BaseImageBundle.images.starFull().getURL());
+        star4.setUrl(BaseImageBundle.images.starFull().getURL());
+        star5.setUrl(BaseImageBundle.images.starFull().getURL());
       }
     }
 

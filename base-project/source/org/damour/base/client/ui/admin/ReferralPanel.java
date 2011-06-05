@@ -6,9 +6,11 @@ import org.damour.base.client.objects.Referral;
 import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.buttons.Button;
 import org.damour.base.client.ui.scrolltable.ScrollTable;
+import org.damour.base.client.utils.ParameterParser;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Label;
@@ -35,8 +37,8 @@ public class ReferralPanel extends VerticalPanel {
     });
     add(refreshButton);
 
-    table.setHeaderWidget(0, new Label("Local URL"), HasHorizontalAlignment.ALIGN_LEFT);
-    table.setHeaderWidget(1, new Label("Referrer"), HasHorizontalAlignment.ALIGN_LEFT);
+    table.setHeaderWidget(0, new Label("Referrer"), HasHorizontalAlignment.ALIGN_LEFT);
+    table.setHeaderWidget(1, new Label("Search Term"), HasHorizontalAlignment.ALIGN_LEFT);
     table.setHeaderWidget(2, new Label("Count"), HasHorizontalAlignment.ALIGN_RIGHT);
 
     // DateTimeFormat dateFormat = DateTimeFormat.getFormat(LocaleInfo.getCurrentLocale().getDateTimeFormatInfo().dateFormatShort());
@@ -51,12 +53,33 @@ public class ReferralPanel extends VerticalPanel {
       }
 
       public void onSuccess(List<Referral> referrals) {
+        table.removeAllRows();
         int row = 0;
         for (Referral referral : referrals) {
           int col = 0;
-          table.setDataWidget(row, col++, new Label(referral.getUrl()), HasHorizontalAlignment.ALIGN_LEFT);
-          table.setDataWidget(row, col++, new Label(referral.getReferralURL()), HasHorizontalAlignment.ALIGN_LEFT);
-          table.setDataWidget(row, col++, new Label(referral.getCounter() + ""), HasHorizontalAlignment.ALIGN_RIGHT);
+
+          String query = "";
+          try {
+            ParameterParser parser = new ParameterParser(referral.getReferralURL().substring(referral.getReferralURL().indexOf("?")));
+            query = URL.decodeQueryString(parser.getParameter("q"));
+          } catch (Throwable t) {
+          }
+
+          
+          String referralUrl = referral.getReferralURL();
+          if (referralUrl.length() > 100) {
+            referralUrl = referralUrl.substring(0, 100);
+          }
+          Label referrerLabel = new Label(referralUrl);
+          referrerLabel.setTitle(referral.getReferralURL());
+          
+          Label counterLabel = new Label(referral.getCounter() + "");
+          counterLabel.setTitle(referral.getUrl());
+          
+          table.setDataWidget(row, col++, referrerLabel, HasHorizontalAlignment.ALIGN_LEFT);
+          table.setDataWidget(row, col++, new Label(query), HasHorizontalAlignment.ALIGN_LEFT);
+          table.setDataWidget(row, col++, counterLabel, HasHorizontalAlignment.ALIGN_RIGHT);
+
           row++;
         }
       }

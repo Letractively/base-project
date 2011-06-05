@@ -11,16 +11,17 @@ import org.damour.base.client.ui.IGenericCallback;
 import org.damour.base.client.ui.buttons.Button;
 import org.damour.base.client.ui.dialogs.MessageDialogBox;
 
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.ChangeListener;
-import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
-public class EditGroupsForUserPanel extends FlexTable implements ChangeListener {
+public class EditGroupsForUserPanel extends FlexTable implements ChangeHandler {
 
   final ListBox allGroupsListBox = new ListBox();
   final ListBox groupsForUserListBox = new ListBox();
@@ -52,21 +53,22 @@ public class EditGroupsForUserPanel extends FlexTable implements ChangeListener 
     removeButton.setTitle("Remove Group Membership");
     addButton.setText(" > ");
     addButton.setTitle("Add Group Membership");
-    addButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    addButton.addClickHandler(new ClickHandler() {
+      
+      public void onClick(ClickEvent event) {
         addGroupMembership();
       }
     });
-    removeButton.addClickListener(new ClickListener() {
-      public void onClick(Widget sender) {
+    removeButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
         removeGroupMembership();
       }
     });
     buttonPanel.add(addButton);
     buttonPanel.add(removeButton);
 
-    allGroupsListBox.addChangeListener(this);
-    groupsForUserListBox.addChangeListener(this);
+    allGroupsListBox.addChangeHandler(this);
+    groupsForUserListBox.addChangeHandler(this);
     allGroupsListBox.setVisibleItemCount(10);
     groupsForUserListBox.setVisibleItemCount(10);
 
@@ -191,7 +193,7 @@ public class EditGroupsForUserPanel extends FlexTable implements ChangeListener 
     BaseServiceCache.getService().getGroups(user, getGroupsForUserCallback);
   }
 
-  public void onChange(Widget sender) {
+  public void onChange(ChangeEvent event) {
     if (allGroupsListBox.getSelectedIndex() != -1) {
       addButton.setEnabled(true);
     } else {
