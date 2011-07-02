@@ -22,7 +22,7 @@ public class PermaLinkWidget extends VerticalPanel implements ClickHandler {
   public PermaLinkWidget(final PermissibleObject permissibleObject, final boolean usePathInfo) {
     this.permissibleObject = permissibleObject;
     this.usePathInfo = usePathInfo;
-    Image permaLinkImage = new Image(BaseImageBundle.images.permalink().getURL());
+    Image permaLinkImage = new Image(BaseImageBundle.images.permalink());
     permaLinkImage.setTitle("Create a permanent link to this page");
     permaLinkImage.addClickHandler(this);
     add(permaLinkImage);

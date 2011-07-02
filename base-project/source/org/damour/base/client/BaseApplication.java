@@ -63,7 +63,9 @@ public class BaseApplication implements EntryPoint, StartupListener {
 
   public void onModuleLoad() {
 
-    if (Window.Navigator.getUserAgent().toLowerCase().indexOf("msie") != -1) {
+    if (Window.Navigator.getUserAgent().toLowerCase().indexOf("msie 9") != -1) {
+      RootPanel.getBodyElement().addClassName("IE9");
+    } else if (Window.Navigator.getUserAgent().toLowerCase().indexOf("msie") != -1) {
       RootPanel.getBodyElement().addClassName("IE");
     }
     

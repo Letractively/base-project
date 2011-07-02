@@ -32,7 +32,7 @@ public class ThumbsWidget extends HorizontalPanel {
   private boolean showDislikesLabel = true;
   private boolean showLabelsOnLeft = true;
 
-  private Image thumbUp = new Image(BaseImageBundle.images.thumbUp().getURL());
+  private Image thumbUp = new Image(BaseImageBundle.images.thumbUp());
   private Image thumbDown = new Image(BaseImageBundle.images.thumbDown());
 
   private PermissibleObject permissibleObject;

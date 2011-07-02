@@ -39,8 +39,7 @@ public class ComboMenuButton extends HorizontalPanel {
     CursorUtils.preventTextSelection(getElement());
     CursorUtils.preventTextSelection(label.getElement());
 
-    arrowImage.setUrl(BaseImageBundle.images.downArrow().getURL());
-
+    arrowImage.setResource(BaseImageBundle.images.downArrow());
     // arrowImage.addMouseListener(this);
     arrowImage.setStyleName("toolBarButtonImage");
     add(arrowImage);
@@ -118,10 +117,10 @@ public class ComboMenuButton extends HorizontalPanel {
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
     if (enabled) {
-      arrowImage.setUrl(BaseImageBundle.images.downArrow().getURL());
+      arrowImage.setResource(BaseImageBundle.images.downArrow());
       removeStyleDependentName("disabled");
     } else {
-      arrowImage.setUrl(BaseImageBundle.images.downArrowDisabled().getURL());
+      arrowImage.setResource(BaseImageBundle.images.downArrowDisabled());
       addStyleDependentName("disabled");
     }
   }

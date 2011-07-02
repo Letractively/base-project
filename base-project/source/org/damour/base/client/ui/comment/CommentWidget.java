@@ -295,7 +295,7 @@ public class CommentWidget extends VerticalPanel {
           }
 
           Image replyCommentImage = new Image();
-          replyCommentImage.setUrl(BaseImageBundle.images.reply().getURL());
+          replyCommentImage.setResource(BaseImageBundle.images.reply());
           replyCommentImage.setStyleName("commentActionButton");
           replyCommentImage.setTitle("Reply to this comment");
           replyCommentImage.addClickHandler(new ClickHandler() {
@@ -328,7 +328,7 @@ public class CommentWidget extends VerticalPanel {
           if (userCanManage || userIsAuthorOfComment) {
             if (userCanManage && !comment.isApproved()) {
               final Image approveCommentImage = new Image();
-              approveCommentImage.setUrl(BaseImageBundle.images.approve().getURL());
+              approveCommentImage.setResource(BaseImageBundle.images.approve());
               approveCommentImage.setStyleName("commentActionButton");
               approveCommentImage.setTitle("Approve comment");
               approveCommentImage.addClickHandler(new ClickHandler() {
@@ -344,14 +344,14 @@ public class CommentWidget extends VerticalPanel {
             } else {
               // put 16x16 spacer here for alignment
               final Image approveSpacerImage = new Image();
-              approveSpacerImage.setUrl(BaseImageBundle.images.empty16x16().getURL());
+              approveSpacerImage.setResource(BaseImageBundle.images.empty16x16());
               approveSpacerImage.setStyleName("commentActionButton");
               commentHeaderPanel.setWidget(0, columnIndex, approveSpacerImage);
               commentHeaderPanel.getFlexCellFormatter().setHorizontalAlignment(0, columnIndex, HasHorizontalAlignment.ALIGN_RIGHT);
               columnIndex++;
             }
             Image deleteCommentImage = new Image();
-            deleteCommentImage.setUrl(BaseImageBundle.images.delete().getURL());
+            deleteCommentImage.setResource(BaseImageBundle.images.delete());
             deleteCommentImage.setStyleName("commentActionButton");
             deleteCommentImage.setTitle("Remove comment");
             deleteCommentImage.addClickHandler(new ClickHandler() {

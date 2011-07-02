@@ -9,9 +9,9 @@ import org.damour.base.client.service.BaseServiceCache;
 import org.damour.base.client.ui.tabs.BaseTabPanel;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.SimplePanel;
 
-public class PropertiesPanel extends VerticalPanel {
+public class PropertiesPanel extends SimplePanel {
 
   public static enum VIEW {
     GENERAL, USERPERMS, GROUPPERMS
@@ -45,12 +45,11 @@ public class PropertiesPanel extends VerticalPanel {
 
     tabPanel.setWidth("100%");
     tabPanel.setHeight("300px");
-    add(tabPanel);
-    setWidth("250px");
+    setWidget(tabPanel);
   }
 
   private void populateUI() {
-    tabPanel.clear();
+    tabPanel.closeAllTabs();
     tabPanel.addTab("General", "General", false, generalPanel);
     tabPanel.addTab("User Permissions", "User Permissions", false, userPermissionsPanel); 
     tabPanel.addTab("Groups Permissions", "Groups Permissions", false, groupPermissionsPanel);
@@ -68,7 +67,7 @@ public class PropertiesPanel extends VerticalPanel {
   }
 
   private void handleFetchFailure() {
-    tabPanel.clear();
+    tabPanel.closeAllTabs();
     tabPanel.addTab("General", "General", false, generalPanel);
     tabPanel.selectTab(0);
   }

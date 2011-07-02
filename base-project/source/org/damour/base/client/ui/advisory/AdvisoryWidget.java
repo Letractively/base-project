@@ -86,11 +86,11 @@ public class AdvisoryWidget extends VerticalPanel {
   }
 
   private void buildAdvisoryPopupPanel() {
-    G.setUrl(BaseImageBundle.images.advisoryG().getURL());
-    PG.setUrl(BaseImageBundle.images.advisoryPG().getURL());
-    PG13.setUrl(BaseImageBundle.images.advisoryPG13().getURL());
-    R.setUrl(BaseImageBundle.images.advisoryR().getURL());
-    NC17.setUrl(BaseImageBundle.images.advisoryNC17().getURL());
+    G.setResource(BaseImageBundle.images.advisoryG());
+    PG.setResource(BaseImageBundle.images.advisoryPG());
+    PG13.setResource(BaseImageBundle.images.advisoryPG13());
+    R.setResource(BaseImageBundle.images.advisoryR());
+    NC17.setResource(BaseImageBundle.images.advisoryNC17());
 
     ratingPanel.setCellPadding(0);
     ratingPanel.setCellSpacing(0);
@@ -124,21 +124,21 @@ public class AdvisoryWidget extends VerticalPanel {
     DOM.setStyleAttribute(statsLabel.getElement(), "fontSize", "8pt");
 
     if (permissibleObject == null || permissibleObject.getAverageAdvisory() == 0) {
-      advisoryImage.setUrl(BaseImageBundle.images.advisoryNR().getURL());
+      advisoryImage.setResource(BaseImageBundle.images.advisoryNR());
       statsLabel.setText(BaseApplication.getMessages().getString("notRated", "Not Rated"));
     } else if (permissibleObject != null) {
       statsLabel.setText(BaseApplication.getMessages().getString("advisoryStatsLabel", "Rating based on {0} votes",
           "" + permissibleObject.getNumAdvisoryVotes()));
       if (permissibleObject.getAverageAdvisory() > 0 && permissibleObject.getAverageAdvisory() <= 1) {
-        advisoryImage.setUrl(BaseImageBundle.images.advisoryG().getURL());
+        advisoryImage.setResource(BaseImageBundle.images.advisoryG());
       } else if (permissibleObject.getAverageAdvisory() > 1 && permissibleObject.getAverageAdvisory() <= 2) {
-        advisoryImage.setUrl(BaseImageBundle.images.advisoryPG().getURL());
+        advisoryImage.setResource(BaseImageBundle.images.advisoryPG());
       } else if (permissibleObject.getAverageAdvisory() > 2 && permissibleObject.getAverageAdvisory() <= 3) {
-        advisoryImage.setUrl(BaseImageBundle.images.advisoryPG13().getURL());
+        advisoryImage.setResource(BaseImageBundle.images.advisoryPG13());
       } else if (permissibleObject.getAverageAdvisory() > 3 && permissibleObject.getAverageAdvisory() <= 4) {
-        advisoryImage.setUrl(BaseImageBundle.images.advisoryR().getURL());
+        advisoryImage.setResource(BaseImageBundle.images.advisoryR());
       } else if (permissibleObject.getAverageAdvisory() > 4 && permissibleObject.getAverageAdvisory() <= 5) {
-        advisoryImage.setUrl(BaseImageBundle.images.advisoryNC17().getURL());
+        advisoryImage.setResource(BaseImageBundle.images.advisoryNC17());
       }
     }
 

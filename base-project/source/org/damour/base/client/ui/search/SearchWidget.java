@@ -8,6 +8,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.TextBox;
@@ -28,7 +29,7 @@ public class SearchWidget extends HorizontalPanel {
         }
       }
     });
-    Image searchIcon = new Image(BaseImageBundle.images.find16x16().getURL());
+    Image searchIcon = new Image(BaseImageBundle.images.find16x16());
     searchIcon.addClickHandler(new ClickHandler() {
 
       public void onClick(ClickEvent event) {
@@ -38,6 +39,7 @@ public class SearchWidget extends HorizontalPanel {
     searchIcon.setTitle("Search");
     searchIcon.setStyleName("hasHandCursor");
     add(searchTextBox);
+    setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
     add(searchIcon);
   }
 

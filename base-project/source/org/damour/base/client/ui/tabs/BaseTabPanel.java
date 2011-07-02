@@ -84,6 +84,10 @@ public class BaseTabPanel extends VerticalPanel {
     }
   }
 
+  public void clear() {
+    closeAllTabs();
+  }
+  
   public void selectTab(BaseTab selectedTab) {
     this.selectedTab = selectedTab;
     for (int i = 0; i < tabBar.getWidgetCount(); i++) {
