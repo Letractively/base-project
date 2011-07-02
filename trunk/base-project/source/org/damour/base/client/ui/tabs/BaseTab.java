@@ -48,7 +48,7 @@ public class BaseTab extends SimplePanel {
     sinkEvents(Event.ONDBLCLICK | Event.ONMOUSEUP);
 
     if (closeable) {
-      final Image closeTabImage = new Image(BaseImageBundle.images.closeTab().getURL());
+      final Image closeTabImage = new Image(BaseImageBundle.images.closeTab());
 
       closeTabImage.setStyleName("base-tabWidget-close");
       closeTabImage.addClickHandler(new ClickHandler() {
@@ -59,13 +59,13 @@ public class BaseTab extends SimplePanel {
       });
       closeTabImage.addMouseOverHandler(new MouseOverHandler() {
         public void onMouseOver(MouseOverEvent event) {
-          closeTabImage.setUrl(BaseImageBundle.images.closeTabHover().getURL());
+          closeTabImage.setResource(BaseImageBundle.images.closeTabHover());
         }
       });
       closeTabImage.addMouseOutHandler(new MouseOutHandler() {
 
         public void onMouseOut(MouseOutEvent event) {
-          closeTabImage.setUrl(BaseImageBundle.images.closeTab().getURL());
+          closeTabImage.setResource(BaseImageBundle.images.closeTab());
         }
       });
 

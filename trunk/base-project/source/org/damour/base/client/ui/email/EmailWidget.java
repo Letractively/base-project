@@ -13,7 +13,7 @@ import com.google.gwt.user.client.ui.Label;
 
 public class EmailWidget extends HorizontalPanel {
 
-  private Image mailIcon = new Image(BaseImageBundle.images.email16x16().getURL());
+  private Image mailIcon = new Image(BaseImageBundle.images.email16x16());
 
   private PermissibleObject permissibleObject;
   private String message;
