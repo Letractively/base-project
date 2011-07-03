@@ -72,6 +72,7 @@ public interface BaseService extends RemoteService {
   public List<PermissibleObject> savePermissibleObjects(List<PermissibleObject> permissibleObjects) throws SimpleMessageException;
   public void deletePermissibleObject(PermissibleObject permissibleObject) throws SimpleMessageException;
   public void deletePermissibleObjects(Set<PermissibleObject> permissibleObjects) throws SimpleMessageException;
+  public void deleteAndSavePermissibleObjects(Set<PermissibleObject> toBeDeleted, Set<PermissibleObject> toBeSaved) throws SimpleMessageException;
   public List<PermissibleObject> getPermissibleObjects(PermissibleObject parent, String objectType) throws SimpleMessageException;
   public List<PermissibleObject> getMyPermissibleObjects(PermissibleObject parent, String objectType) throws SimpleMessageException;
   public Folder createNewFolder(Folder newFolder) throws SimpleMessageException;

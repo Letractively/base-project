@@ -1373,6 +1373,11 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     }
   }
 
+  public void deleteAndSavePermissibleObjects(Set<PermissibleObject> toBeDeleted, Set<PermissibleObject> toBeSaved) throws SimpleMessageException {
+    deletePermissibleObjects(toBeDeleted);
+    savePermissibleObjects(new ArrayList<PermissibleObject>(toBeSaved));
+  }
+
   public List<PermissibleObject> getMyPermissibleObjects(PermissibleObject parent, String objectType) throws SimpleMessageException {
     User authUser = getAuthenticatedUser(session.get());
     if (authUser == null) {
