@@ -71,6 +71,7 @@ public interface BaseServiceAsync {
   public void savePermissibleObjects(List<PermissibleObject> permissibleObjects, AsyncCallback<List<PermissibleObject>> callback);
   public void deletePermissibleObject(PermissibleObject permissibleObject, AsyncCallback<Void> callback);
   public void deletePermissibleObjects(Set<PermissibleObject> permissibleObjects, AsyncCallback<Void> callback);
+  public void deleteAndSavePermissibleObjects(Set<PermissibleObject> toBeDeleted, Set<PermissibleObject> toBeSaved, AsyncCallback<Void> callback);
   public void getPermissibleObjects(PermissibleObject parent, String objectType, AsyncCallback<List<PermissibleObject>> callback);
   public void getMyPermissibleObjects(PermissibleObject parent, String objectType, AsyncCallback<List<PermissibleObject>> callback);
   public void createNewFolder(Folder newFolder, AsyncCallback<Folder> callback);
