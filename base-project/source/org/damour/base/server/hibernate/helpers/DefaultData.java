@@ -4,13 +4,14 @@ import org.damour.base.client.objects.File;
 import org.damour.base.client.objects.GroupMembership;
 import org.damour.base.client.objects.User;
 import org.damour.base.client.objects.UserGroup;
+import org.damour.base.server.hibernate.IDefaultData;
 import org.hibernate.Session;
 
 import com.twmacinta.util.MD5;
 
-public class DefaultData {
+public class DefaultData implements IDefaultData {
 
-  public static void create(Session session) {
+  public void create(Session session) {
     User admin = UserHelper.getUser(session, "admin");
     if (admin == null) {
       admin = new User();

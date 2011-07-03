@@ -68,7 +68,14 @@ public class HibernateUtil {
       org.hibernate.Session session = HibernateUtil.getInstance().getSession();
       Transaction tx = session.beginTransaction();
       try {
-        DefaultData.create(session);
+        IDefaultData defaultData = null;
+        if (BaseSystem.getSettings().get("DefaultDataOverride") != null) {
+          defaultData = (IDefaultData)Class.forName(BaseSystem.getSettings().getProperty("DefaultDataOverride")).newInstance();
+        }
+        if (defaultData == null) {
+          defaultData = new DefaultData();
+        }
+        defaultData.create(session);
         tx.commit();
       } catch (HibernateException he) {
         tx.rollback();
