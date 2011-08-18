@@ -654,6 +654,11 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
   public List<HibernateStat> getHibernateStats() throws SimpleMessageException {
     List<HibernateStat> statsList = new ArrayList<HibernateStat>();
 
+    User authUser = getAuthenticatedUser(session.get());
+    if (authUser == null || !authUser.isAdministrator()) {
+      return statsList;
+    }
+    
     Statistics stats = HibernateUtil.getInstance().getSessionFactory().getStatistics();
 
     String regionNames[] = stats.getSecondLevelCacheRegionNames();
