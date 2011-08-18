@@ -142,4 +142,15 @@ public class ParameterParser {
     this.orderedParameterNames = orderedParameterNames;
   }
 
+  public static native String getMetaTag(String name)
+  /*-{
+    var m = $doc.getElementsByTagName('meta'); 
+    for(var i in m) { 
+      if(m[i].name == name) {
+        return m[i].content;
+      } 
+    }
+    return null;
+  }-*/;
+  
 }

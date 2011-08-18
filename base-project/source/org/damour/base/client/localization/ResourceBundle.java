@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.damour.base.client.utils.ParameterParser;
 import org.damour.base.client.utils.StringTokenizer;
 import org.damour.base.client.utils.StringUtils;
 
@@ -78,7 +79,13 @@ public class ResourceBundle {
   }
 
   public ResourceBundle() {
-    this.localeName = StringUtils.defaultIfEmpty(Window.Location.getParameter("locale"), getLanguagePreference());
+    String locale = ParameterParser.getMetaTag("gwt:property");
+
+    if(locale.indexOf("locale=") != -1) { 
+      locale = locale.substring(locale.indexOf('=')+1); 
+    }
+    
+    this.localeName = StringUtils.defaultIfEmpty(Window.Location.getParameter("locale"), locale);
   }
 
   /**
@@ -133,7 +140,7 @@ public class ResourceBundle {
           ResourceBundle.this.supportedLanguages = supportedLanguagesBundle.getMap();
         }        
         // always fetch the base first
-        currentAttemptUrl = ResourceBundle.this.path + bundleName + PROPERTIES_EXTENSION;
+        currentAttemptUrl = ResourceBundle.this.path + bundleName + PROPERTIES_EXTENSION + "?rand=" + System.currentTimeMillis();
         if (bundleCache.containsKey(currentAttemptUrl)) {
           baseCallback.onResponseReceived(null, new FakeResponse(bundleCache.get(currentAttemptUrl)));
         } else {
@@ -200,7 +207,7 @@ public class ResourceBundle {
             String lang = st.tokenAt(0);
             // 2. fetch bundleName_lang.properties
             // 3. fetch bundleName_lang_country.properties
-            currentAttemptUrl = path + bundleName + "_" + lang + PROPERTIES_EXTENSION;
+            currentAttemptUrl = path + bundleName + "_" + lang + PROPERTIES_EXTENSION + "?rand=" + System.currentTimeMillis();
 
             // IE caches the file and causes an issue with the request
 
@@ -251,7 +258,7 @@ public class ResourceBundle {
         StringTokenizer st = new StringTokenizer(localeName, '_');
         if (st.countTokens() == 2) {
           // 3. fetch bundleName_lang_country.properties
-          currentAttemptUrl = path + bundleName + "_" + localeName + PROPERTIES_EXTENSION;
+          currentAttemptUrl = path + bundleName + "_" + localeName + PROPERTIES_EXTENSION + "?rand=" + System.currentTimeMillis();
           if (!isSupportedLanguage(localeName) || bundleCache.containsKey(currentAttemptUrl)) {
             langCountryCallback.onResponseReceived(null, new FakeResponse(bundleCache.get(currentAttemptUrl)));
           } else {
@@ -404,16 +411,5 @@ public class ResourceBundle {
   public void setSupportedLanguages(Map<String, String> supportedLanguages) {
     this.supportedLanguages = supportedLanguages;
   }
-
-  private static native String getLanguagePreference()
-  /*-{
-    var m = $doc.getElementsByTagName('meta'); 
-    for(var i in m) { 
-      if(m[i].name == 'gwt:property' && m[i].content.indexOf('locale=') != -1) { 
-        return m[i].content.substring(m[i].content.indexOf('=')+1); 
-      } 
-    }
-    return "default";
-  }-*/;
 
 }

@@ -203,6 +203,9 @@ public class BaseApplicationUI extends BaseApplication implements IAuthenticatio
   }
 
   public void loadAdmin(final boolean addHistoryItem) {
+    if (getAuthenticatedUser() == null || !getAuthenticatedUser().isAdministrator()) {
+      return;
+    }
     if (addHistoryItem) {
       History.newItem("view=admin", false);
     }
