@@ -120,6 +120,8 @@ public class AdvisoryWidget extends VerticalPanel {
   private void buildAdvisoryImagePanel() {
     clear();
 
+    advisoryImage = new Image();
+    
     Label statsLabel = new Label();
     DOM.setStyleAttribute(statsLabel.getElement(), "fontSize", "8pt");
 

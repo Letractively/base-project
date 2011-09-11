@@ -1996,7 +1996,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     } catch (Throwable t) {
     }
     if (user != null) {
-      fromName = user.getFirstname();
+      fromName = user.getFirstname() + " " + user.getLastname();
     }
     StringTokenizer st = new StringTokenizer(toAddresses, ";");
     while (st.hasMoreTokens()) {

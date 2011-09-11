@@ -17,11 +17,9 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 public class PermaLinkWidget extends VerticalPanel implements ClickHandler {
 
   private PermissibleObject permissibleObject;
-  private boolean usePathInfo = false;
 
   public PermaLinkWidget(final PermissibleObject permissibleObject, final boolean usePathInfo) {
     this.permissibleObject = permissibleObject;
-    this.usePathInfo = usePathInfo;
     Image permaLinkImage = new Image(BaseImageBundle.images.permalink());
     permaLinkImage.setTitle("Create a permanent link to this page");
     permaLinkImage.addClickHandler(this);
@@ -31,8 +29,8 @@ public class PermaLinkWidget extends VerticalPanel implements ClickHandler {
 
   public void onClick(ClickEvent event) {
 
-    String permaLinkStr = PermaLinkBuilder.getLink(permissibleObject, usePathInfo);
-    
+    String permaLinkStr = PermaLinkBuilder.getLink(permissibleObject);
+
     final TextBox textBox = new TextBox();
     textBox.setVisibleLength(100);
     textBox.setText(permaLinkStr);
@@ -43,7 +41,7 @@ public class PermaLinkWidget extends VerticalPanel implements ClickHandler {
       }
     });
     textBox.addClickHandler(new ClickHandler() {
-      
+
       public void onClick(ClickEvent event) {
         textBox.selectAll();
       }
