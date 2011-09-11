@@ -12,21 +12,23 @@ import com.google.gwt.user.client.Window;
 
 public class PermaLinkBuilder {
 
-  public static String getLink(PermissibleObject permissibleObject, boolean usePathInfo) {
+  public static String getLink(PermissibleObject permissibleObject) {
     // build a hashmap of pathInfo parameters, query parameters and history token parameters
     ParameterParser pathParameters = new ParameterParser(ParameterParser.convertRESTtoQueryString(Window.Location.getPath()));
     ParameterParser queryStringParameters = new ParameterParser(Window.Location.getQueryString());
     ParameterParser historyParameters = new ParameterParser(History.getToken());
 
     List<String> parameterOrder = new ArrayList<String>(historyParameters.getOrderedParameterNames());
-    for (String queryStringParam : queryStringParameters.getOrderedParameterNames()) {
-      if (!parameterOrder.contains(queryStringParam)) {
-        parameterOrder.add(queryStringParam);
+    if (StringUtils.isEmpty(History.getToken())) {
+      for (String queryStringParam : queryStringParameters.getOrderedParameterNames()) {
+        if (!parameterOrder.contains(queryStringParam)) {
+          parameterOrder.add(queryStringParam);
+        }
       }
-    }
-    for (String pathParam : pathParameters.getOrderedParameterNames()) {
-      if (!parameterOrder.contains(pathParam)) {
-        parameterOrder.add(pathParam);
+      for (String pathParam : pathParameters.getOrderedParameterNames()) {
+        if (!parameterOrder.contains(pathParam)) {
+          parameterOrder.add(pathParam);
+        }
       }
     }
     String permaLinkStr = Window.Location.getProtocol() + "//" + Window.Location.getHostName()
@@ -39,7 +41,7 @@ public class PermaLinkBuilder {
         permaLinkStr += "/" + parameterName + "/" + historyParameters.getParameter(parameterName);
       } else if (!StringUtils.isEmpty(queryStringParameters.getParameter(parameterName))) {
         permaLinkStr += "/" + parameterName + "/" + queryStringParameters.getParameter(parameterName);
-      } else if (usePathInfo && !StringUtils.isEmpty(pathParameters.getParameter(parameterName))) {
+      } else if (!StringUtils.isEmpty(pathParameters.getParameter(parameterName))) {
         permaLinkStr += "/" + parameterName + "/" + pathParameters.getParameter(parameterName);
       }
     }
@@ -48,5 +50,5 @@ public class PermaLinkBuilder {
     }
     return permaLinkStr;
   }
-  
+
 }
