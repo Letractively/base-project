@@ -1,5 +1,7 @@
 package org.damour.base.client.ui.permalink;
 
+import java.util.List;
+
 import org.damour.base.client.images.BaseImageBundle;
 import org.damour.base.client.objects.PermissibleObject;
 import org.damour.base.client.ui.dialogs.PromptDialogBox;
@@ -17,9 +19,11 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 public class PermaLinkWidget extends VerticalPanel implements ClickHandler {
 
   private PermissibleObject permissibleObject;
+  private List<String> ignoredParameters;
 
-  public PermaLinkWidget(final PermissibleObject permissibleObject, final boolean usePathInfo) {
+  public PermaLinkWidget(final PermissibleObject permissibleObject, final List<String> ignoredParameters, final boolean usePathInfo) {
     this.permissibleObject = permissibleObject;
+    this.ignoredParameters = ignoredParameters;
     Image permaLinkImage = new Image(BaseImageBundle.images.permalink());
     permaLinkImage.setTitle("Create a permanent link to this page");
     permaLinkImage.addClickHandler(this);
@@ -29,7 +33,7 @@ public class PermaLinkWidget extends VerticalPanel implements ClickHandler {
 
   public void onClick(ClickEvent event) {
 
-    String permaLinkStr = PermaLinkBuilder.getLink(permissibleObject);
+    String permaLinkStr = PermaLinkBuilder.getLink(permissibleObject, ignoredParameters);
 
     final TextBox textBox = new TextBox();
     textBox.setVisibleLength(100);

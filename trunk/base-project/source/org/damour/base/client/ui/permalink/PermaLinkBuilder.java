@@ -12,7 +12,7 @@ import com.google.gwt.user.client.Window;
 
 public class PermaLinkBuilder {
 
-  public static String getLink(PermissibleObject permissibleObject) {
+  public static String getLink(PermissibleObject permissibleObject, List<String> ignoredParameters) {
     // build a hashmap of pathInfo parameters, query parameters and history token parameters
     ParameterParser pathParameters = new ParameterParser(ParameterParser.convertRESTtoQueryString(Window.Location.getPath()));
     ParameterParser queryStringParameters = new ParameterParser(Window.Location.getQueryString());
@@ -34,7 +34,12 @@ public class PermaLinkBuilder {
     String permaLinkStr = Window.Location.getProtocol() + "//" + Window.Location.getHostName()
         + ((Window.Location.getPort().equals("80") || Window.Location.getPort().equals("")) ? "" : ":" + Window.Location.getPort());
     for (String parameterName : parameterOrder) {
+      if (ignoredParameters != null && ignoredParameters.contains(parameterName)) {
+        // skip ignored parameters
+        continue;
+      }
       if ("name".equalsIgnoreCase(parameterName) && permissibleObject != null && !StringUtils.isEmpty(permissibleObject.getName())) {
+        // skip the name parameter until later
         continue;
       }
       if (!StringUtils.isEmpty(historyParameters.getParameter(parameterName))) {
