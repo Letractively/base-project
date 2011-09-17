@@ -1,5 +1,7 @@
 package org.damour.base.client.ui.share;
 
+import java.util.List;
+
 import org.damour.base.client.objects.PermissibleObject;
 import org.damour.base.client.ui.permalink.PermaLinkBuilder;
 
@@ -10,12 +12,12 @@ import com.google.gwt.user.client.ui.SimplePanel;
 
 public class TwitterWidget extends SimplePanel {
 
-  public TwitterWidget(PermissibleObject permissibleObject) {
+  public TwitterWidget(PermissibleObject permissibleObject, List<String> ignoredParameters) {
     Frame frame = new Frame();
-    
+
     @SuppressWarnings("deprecation")
-    String url = URL.encodeComponent(PermaLinkBuilder.getLink(permissibleObject));
-    
+    String url = URL.encodeComponent(PermaLinkBuilder.getLink(permissibleObject, ignoredParameters));
+
     frame.setUrl("http://platform.twitter.com/widgets/tweet_button.html?count=horizontal&url=" + url);
     DOM.setElementAttribute(frame.getElement(), "frameBorder", "0");
     DOM.setElementAttribute(frame.getElement(), "allowTransparency", "true");
@@ -23,6 +25,6 @@ public class TwitterWidget extends SimplePanel {
     DOM.setStyleAttribute(frame.getElement(), "height", "20px");
     DOM.setStyleAttribute(frame.getElement(), "width", "130px");
     // DOM.setStyleAttribute(frame.getElement(), "backgroundColor", "#e3e3e3");
-    setWidget(frame);    
-  }  
+    setWidget(frame);
+  }
 }
