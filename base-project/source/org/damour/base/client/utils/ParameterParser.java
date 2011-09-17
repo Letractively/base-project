@@ -69,7 +69,10 @@ public class ParameterParser {
     Map<String, List<String>> out = new HashMap<String, List<String>>();
 
     if (queryString != null && queryString.length() > 1) {
-      String qs = queryString.substring(1);
+      String qs = queryString;
+      if (queryString.startsWith("&") || queryString.startsWith("?") || queryString.startsWith("#")) {
+        qs = queryString.substring(1);
+      }
 
       for (String kvPair : qs.split("&")) {
         String[] kv = kvPair.split("=", 2);
