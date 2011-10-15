@@ -177,9 +177,9 @@ public class HibernateUtil {
       cfg = new Configuration().configure(new DOMWriter().write(configurationDocument));
       sessionFactory = cfg.buildSessionFactory();
     } catch (HibernateException e) {
-      e.printStackTrace();
+      Logger.log(e);
     } catch (DocumentException e) {
-      e.printStackTrace();
+      Logger.log(e);
     }
     return sessionFactory;
   }
@@ -227,7 +227,7 @@ public class HibernateUtil {
         cfg.addDocument(new DOMWriter().write(mappingDocument));
         sessionFactory = cfg.buildSessionFactory();
       } catch (Exception e) {
-        e.printStackTrace();
+        Logger.log(e);
       }
     }
     return sessionFactory;
