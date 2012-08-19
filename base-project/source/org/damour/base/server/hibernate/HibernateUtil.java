@@ -44,7 +44,11 @@ public class HibernateUtil {
   private Element mappingRoot = null;
   private String tablePrefix = "";
   private boolean showSQL = true;
+  private boolean useGeneratedKeys = true;
+  private boolean useReflectionOptimizer = true;
   private String hbm2ddlMode = "update";
+  private String dialect = "org.hibernate.dialect.MySQL5InnoDBDialect";
+  private boolean generateStatistics = true;
 
   private HibernateUtil(HashMap<String, String> overrides) {
     Logger.log("creating new HibernateUtil()");
@@ -57,7 +61,11 @@ public class HibernateUtil {
     setConnectString(rb.getProperty("connectString"));
     setTablePrefix(rb.getProperty("tablePrefix"));
     setHbm2ddlMode(getResource(rb, "hbm2ddlMode", "" + hbm2ddlMode));
+    setDialect(getResource(rb, "dialect", "" + dialect));
     setShowSQL("true".equalsIgnoreCase(getResource(rb, "showSQL", "" + showSQL)));
+    setUseGeneratedKeys("true".equalsIgnoreCase(getResource(rb, "useGeneratedKeys", "" + useGeneratedKeys)));
+    setUseReflectionOptimizer("true".equalsIgnoreCase(getResource(rb, "useReflectionOptimizer", "" + useReflectionOptimizer)));
+    setGenerateStatistics("true".equalsIgnoreCase(getResource(rb, "generateStatistics", "" + generateStatistics)));
 
     // add these mappings last because the settings above may affect them
     generateHibernateMappings(rb);
@@ -70,7 +78,7 @@ public class HibernateUtil {
       try {
         IDefaultData defaultData = null;
         if (BaseSystem.getSettings().get("DefaultDataOverride") != null) {
-          defaultData = (IDefaultData)Class.forName(BaseSystem.getSettings().getProperty("DefaultDataOverride")).newInstance();
+          defaultData = (IDefaultData) Class.forName(BaseSystem.getSettings().getProperty("DefaultDataOverride")).newInstance();
         }
         if (defaultData == null) {
           defaultData = new DefaultData();
@@ -129,16 +137,25 @@ public class HibernateUtil {
       if (Logger.DEBUG) {
         Runnable r = new Runnable() {
           public void run() {
+            int counter = 0;
             while (true) {
+              try {
+                // every minute
+                Thread.sleep(60000);
+              } catch (Exception e) {
+              }              
+              
+              counter++;
+              if (counter % 240 == 0) {
+                // reset the hibernate cache every 4 hours
+                HibernateUtil.resetHibernate();
+              }
+              
               System.gc();
               long total = Runtime.getRuntime().totalMemory();
               long free = Runtime.getRuntime().freeMemory();
               Logger.log(DecimalFormat.getNumberInstance().format(total) + " allocated " + DecimalFormat.getNumberInstance().format(total - free) + " used "
                   + DecimalFormat.getNumberInstance().format(free) + " free");
-              try {
-                Thread.sleep(30000);
-              } catch (Exception e) {
-              }
             }
           }
         };
@@ -195,11 +212,12 @@ public class HibernateUtil {
         sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.connection.password").setText(getPassword());
         sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.connection.url").setText(getConnectString());
         // this property prevents a performance enhancement, but on godaddy.com they do not allow reflection created methods, as this would end up creating
-        sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.jdbc.use_get_generated_keys").setText("false");
+        sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.jdbc.use_get_generated_keys").setText("" + getUseGeneratedKeys());
+        sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.bytecode.use_reflection_optimizer")
+            .setText("" + getUseReflectionOptimizer());
         sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.jdbc.batch_size").setText("25");
-        sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.dialect").setText("org.hibernate.dialect.MySQLInnoDBDialect");
-        sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.bytecode.use_reflection_optimizer").setText("false");
-        sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.generate_statistics").setText("true");
+        sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.dialect").setText(getDialect());
+        sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.generate_statistics").setText("" + isGenerateStatistics());
         sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.cache.use_structured_entries").setText("true");
         sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.cache.use_query_cache").setText("true");
         sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.show_sql").setText("" + isShowSQL());
@@ -207,17 +225,20 @@ public class HibernateUtil {
         sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.jdbc.use_streams_for_binary").setText("true");
 
         // setup out provider for ehcache
-        sessionFactoryElement.addElement("property").addAttribute("name", "cache.provider_class").setText(CacheProvider.class.getName());
-
+        sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.cache.provider_class").setText("net.sf.ehcache.hibernate.SingletonEhCacheProvider");
+        sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.cache.region.factory_class").setText("net.sf.ehcache.hibernate.SingletonEhCacheRegionFactory");
+        
         // add c3p0 configuration
-        sessionFactoryElement.addElement("property").addAttribute("name", "c3p0.acquire_increment").setText("1");
-        sessionFactoryElement.addElement("property").addAttribute("name", "c3p0.idle_test_period").setText("10");
-        sessionFactoryElement.addElement("property").addAttribute("name", "c3p0.timeout").setText("5000");
-        sessionFactoryElement.addElement("property").addAttribute("name", "c3p0.min_size").setText("1");
-        sessionFactoryElement.addElement("property").addAttribute("name", "c3p0.max_size").setText("5");
-        sessionFactoryElement.addElement("property").addAttribute("name", "c3p0.max_statements").setText("0");
-        // sessionFactoryElement.addElement("property").addAttribute("name", "c3p0.validate").setText("true");
-        sessionFactoryElement.addElement("property").addAttribute("name", "c3p0.preferredTestQuery").setText("select 1+1");
+        sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.connection.provider_class").setText("org.hibernate.connection.C3P0ConnectionProvider");
+        sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.c3p0.idle_test_period").setText("3600");
+        sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.c3p0.timeout").setText("7200");
+        sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.c3p0.min_size").setText("1");
+        sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.c3p0.max_size").setText("10");
+        sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.c3p0.max_statements").setText("0");
+        sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.c3p0.acquire_increment").setText("1");
+        sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.c3p0.preferredTestQuery").setText("select 1+1");
+        //sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.c3p0.testConnectionOnCheckout").setText("true");
+        
         // generate ddl and update database (if configured)
         sessionFactoryElement.addElement("property").addAttribute("name", "hibernate.hbm2ddl.auto").setText(hbm2ddlMode);
         // setup config
@@ -522,6 +543,46 @@ public class HibernateUtil {
     this.hbm2ddlMode = hbm2ddlMode;
   }
 
+  public boolean isShowSQL() {
+    return showSQL;
+  }
+
+  private void setShowSQL(boolean showSQL) {
+    this.showSQL = showSQL;
+  }
+
+  public String getDialect() {
+    return dialect;
+  }
+
+  public void setDialect(String dialect) {
+    this.dialect = dialect;
+  }
+
+  public boolean getUseGeneratedKeys() {
+    return useGeneratedKeys;
+  }
+
+  public void setUseGeneratedKeys(boolean useGeneratedKeys) {
+    this.useGeneratedKeys = useGeneratedKeys;
+  }
+
+  public boolean getUseReflectionOptimizer() {
+    return useReflectionOptimizer;
+  }
+
+  public void setUseReflectionOptimizer(boolean useReflectionOptimizer) {
+    this.useReflectionOptimizer = useReflectionOptimizer;
+  }
+
+  public boolean isGenerateStatistics() {
+    return generateStatistics;
+  }
+
+  public void setGenerateStatistics(boolean generateStatistics) {
+    this.generateStatistics = generateStatistics;
+  }
+
   public void printStatistics() {
     Session session = HibernateUtil.getInstance().getSession();
     // org.hibernate.Session session = HibernateUtil.getInstance().getSession();
@@ -530,14 +591,6 @@ public class HibernateUtil {
     System.out.println("2nd Level Cache: p" + session.getSessionFactory().getStatistics().getSecondLevelCachePutCount() + " h"
         + session.getSessionFactory().getStatistics().getSecondLevelCacheHitCount() + " m"
         + session.getSessionFactory().getStatistics().getSecondLevelCacheMissCount());
-  }
-
-  public boolean isShowSQL() {
-    return showSQL;
-  }
-
-  private void setShowSQL(boolean showSQL) {
-    this.showSQL = showSQL;
   }
 
 }

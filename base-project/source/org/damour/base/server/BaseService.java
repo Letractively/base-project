@@ -40,7 +40,6 @@ import org.damour.base.client.objects.UserGroup;
 import org.damour.base.client.objects.UserRating;
 import org.damour.base.client.objects.UserThumb;
 import org.damour.base.client.utils.StringUtils;
-import org.damour.base.server.gwt.RemoteServiceServlet;
 import org.damour.base.server.hibernate.HibernateUtil;
 import org.damour.base.server.hibernate.ReflectionCache;
 import org.damour.base.server.hibernate.helpers.AdvisoryHelper;
@@ -61,6 +60,7 @@ import org.hibernate.stat.SecondLevelCacheStatistics;
 import org.hibernate.stat.Statistics;
 
 import com.andrewtimberlake.captcha.Captcha;
+import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.twmacinta.util.MD5;
 
 public class BaseService extends RemoteServiceServlet implements org.damour.base.client.service.BaseService {
@@ -89,12 +89,20 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       session.get().close();
     } catch (Throwable t) {
     }
+    try {
+      session.set(null);    
+    } catch (Throwable t) {
+    }
     Logger.log(serializedResponse);
   }
 
   protected void doUnexpectedFailure(Throwable e) {
     try {
       session.get().close();
+    } catch (Throwable t) {
+    }
+    try {
+      session.set(null);    
     } catch (Throwable t) {
     }
     Logger.log(e);
@@ -671,7 +679,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
       newstat.setCacheHits(regionStat.getHitCount());
       newstat.setCacheMisses(regionStat.getMissCount());
       newstat.setMemoryUsed(regionStat.getSizeInMemory());
-      newstat.setNumObjectsInCache(regionStat.getElementCountInMemory());
+      newstat.setNumObjectsInMemory(regionStat.getElementCountInMemory());
       newstat.setNumObjectsOnDisk(regionStat.getElementCountOnDisk());
       statsList.add(newstat);
     }
@@ -690,8 +698,7 @@ public class BaseService extends RemoteServiceServlet implements org.damour.base
     User authUser = getAuthenticatedUser(session.get());
     if (authUser != null && authUser.isAdministrator()) {
       try {
-        Class<?> clazz = Class.forName(className);
-        HibernateUtil.getInstance().getSessionFactory().evict(clazz);
+        HibernateUtil.getInstance().getSessionFactory().getCache().evictEntityRegion(className);
         Logger.log("Evicted: " + className);
       } catch (Throwable t) {
         Logger.log(t);

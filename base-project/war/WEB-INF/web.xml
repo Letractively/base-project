@@ -39,6 +39,10 @@
 		<servlet-name>GetFileService</servlet-name>
 		<url-pattern>/files/*</url-pattern>
 	</servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>GetFileService</servlet-name>
+        <url-pattern>/servlet/org.damour.base.server.GetFileService</url-pattern>
+    </servlet-mapping>
 
 	<servlet>
 		<servlet-name>CaptchaService</servlet-name>

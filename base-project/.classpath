@@ -4,14 +4,11 @@
 	<classpathentry kind="src" path="test"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/gwt/gwt-user.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/activation.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/antlr-2.7.6.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/asm-attrs.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/asm.jar"/>
-	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/c3p0-0.9.1.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/captcha-at.jar"/>
-	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/cglib.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/commons-codec-1.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/commons-collections-3.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/commons-fileupload-1.2.1.jar"/>
@@ -19,23 +16,29 @@
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/commons-io-1.3.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/commons-logging.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/dom4j-1.6.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/ehcache-1.3.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/fastmd5.jar"/>
-	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/hibernate3.jar"/>
+	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/hibernate3.jar" sourcepath="C:/Users/Michael D&apos;Amour/Downloads/hibernate-distribution-3.6.9.Final/project/hibernate-core/src/main/java"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/imap.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/jaxen-1.1.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/jhlabs-filters.jar"/>
-	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/jta.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/jug-lgpl-2.0.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/log4j-1.2.8.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/mail.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/mailapi.jar"/>
-	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/mysql-connector-java-5.1.6-bin.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/pop3.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/smtp.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/gwt-incubator-20101117-r1766.jar"/>
 	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/ColorPicker-GWT-2.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/gwt/validation-api-1.0.0.GA-sources.jar"/>
-	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/gwt/validation-api-1.0.0.GA.jar"/>
+	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/c3p0-0.9.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/hibernate-jpa-2.0-api-1.0.1.Final.jar"/>
+	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/javassist-3.12.0.GA.jar"/>
+	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/jta-1.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/mysql-connector-java-5.1.18-bin.jar"/>
+	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/slf4j-api-1.6.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/log4j-1.2.16.jar"/>
+	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/gwt/gwt-servlet.jar"/>
+	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/gwt/gwt-user.jar"/>
+	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/slf4j-log4j12-1.6.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/cglib-2.2.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/ehcache-core-2.5.0.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>

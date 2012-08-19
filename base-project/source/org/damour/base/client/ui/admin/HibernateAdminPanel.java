@@ -62,9 +62,10 @@ public class HibernateAdminPanel extends VerticalPanel {
     statsTable.setWidget(row, 2, new Label("Cache Hits"));
     statsTable.setWidget(row, 3, new Label("Cache Misses"));
     statsTable.setWidget(row, 4, new Label("Cache Hit %"));
-    statsTable.setWidget(row, 5, new Label("Objects Cached"));
+    statsTable.setWidget(row, 5, new Label("Objects in Memory"));
     statsTable.setWidget(row, 6, new Label("Memory Used"));
-    statsTable.setWidget(row, 7, new Label("Evict Cache"));
+    statsTable.setWidget(row, 7, new Label("Objects on Disk"));
+    statsTable.setWidget(row, 8, new Label("Evict Cache"));
     statsTable.getCellFormatter().setHorizontalAlignment(row, 0, HasHorizontalAlignment.ALIGN_RIGHT);
     statsTable.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_RIGHT);
     statsTable.getCellFormatter().setHorizontalAlignment(row, 2, HasHorizontalAlignment.ALIGN_RIGHT);
@@ -73,6 +74,7 @@ public class HibernateAdminPanel extends VerticalPanel {
     statsTable.getCellFormatter().setHorizontalAlignment(row, 5, HasHorizontalAlignment.ALIGN_RIGHT);
     statsTable.getCellFormatter().setHorizontalAlignment(row, 6, HasHorizontalAlignment.ALIGN_RIGHT);
     statsTable.getCellFormatter().setHorizontalAlignment(row, 7, HasHorizontalAlignment.ALIGN_RIGHT);
+    statsTable.getCellFormatter().setHorizontalAlignment(row, 8, HasHorizontalAlignment.ALIGN_RIGHT);
 
     row++;
     for (final HibernateStat stat : stats) {
@@ -92,9 +94,10 @@ public class HibernateAdminPanel extends VerticalPanel {
       } else {
         statsTable.setWidget(row, 4, new Label(pf.format(((float) stat.getCacheHits()) / ((float) (stat.getCacheHits() + stat.getCachePuts())))));
       }
-      statsTable.setWidget(row, 5, new Label(nf.format(stat.getNumObjectsInCache())));
+      statsTable.setWidget(row, 5, new Label(nf.format(stat.getNumObjectsInMemory())));
       statsTable.setWidget(row, 6, new Label(nf.format(stat.getMemoryUsed())));
-      statsTable.setWidget(row, 7, evictButton);
+      statsTable.setWidget(row, 7, new Label(nf.format(stat.getNumObjectsOnDisk())));
+      statsTable.setWidget(row, 8, evictButton);
       statsTable.getCellFormatter().setHorizontalAlignment(row, 0, HasHorizontalAlignment.ALIGN_RIGHT);
       statsTable.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_RIGHT);
       statsTable.getCellFormatter().setHorizontalAlignment(row, 2, HasHorizontalAlignment.ALIGN_RIGHT);
@@ -102,7 +105,8 @@ public class HibernateAdminPanel extends VerticalPanel {
       statsTable.getCellFormatter().setHorizontalAlignment(row, 4, HasHorizontalAlignment.ALIGN_RIGHT);
       statsTable.getCellFormatter().setHorizontalAlignment(row, 5, HasHorizontalAlignment.ALIGN_RIGHT);
       statsTable.getCellFormatter().setHorizontalAlignment(row, 6, HasHorizontalAlignment.ALIGN_RIGHT);
-      statsTable.getCellFormatter().setHorizontalAlignment(row, 7, HasHorizontalAlignment.ALIGN_CENTER);
+      statsTable.getCellFormatter().setHorizontalAlignment(row, 7, HasHorizontalAlignment.ALIGN_RIGHT);
+      statsTable.getCellFormatter().setHorizontalAlignment(row, 8, HasHorizontalAlignment.ALIGN_CENTER);
       row++;
     }
   }
@@ -128,6 +132,7 @@ public class HibernateAdminPanel extends VerticalPanel {
       statsTable.setWidget(row, 4, new Label("."));
       statsTable.setWidget(row, 5, new Label("."));
       statsTable.setWidget(row, 6, new Label("."));
+      statsTable.setWidget(row, 7, new Label("."));
     }
     final AsyncCallback<List<HibernateStat>> callback = new AsyncCallback<List<HibernateStat>>() {
       public void onFailure(Throwable caught) {
