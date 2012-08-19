@@ -8,7 +8,7 @@ public class HibernateStat implements Serializable {
   public long cachePuts;
   public long cacheHits;
   public long cacheMisses;
-  public long numObjectsInCache;
+  public long numObjectsInMemory;
   public long memoryUsed;
   public long numObjectsOnDisk;
 
@@ -47,12 +47,12 @@ public class HibernateStat implements Serializable {
     this.cacheMisses = cacheMisses;
   }
 
-  public long getNumObjectsInCache() {
-    return numObjectsInCache;
+  public long getNumObjectsInMemory() {
+    return numObjectsInMemory;
   }
 
-  public void setNumObjectsInCache(long numObjectsInCache) {
-    this.numObjectsInCache = numObjectsInCache;
+  public void setNumObjectsInMemory(long numObjectsInMemory) {
+    this.numObjectsInMemory = numObjectsInMemory;
   }
 
   public long getMemoryUsed() {
