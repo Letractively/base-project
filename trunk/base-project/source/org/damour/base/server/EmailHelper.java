@@ -26,6 +26,12 @@ public class EmailHelper implements IEmailService {
     String message = "<BR/>" + text + "<BR/>";
     sendMessage(BaseSystem.getSmtpHost(), from, from, to, subject, message);
   }
+  
+  public boolean sendMessage(String to, String subject, String message) {
+    String from = BaseSystem.getAdminEmailAddress();
+    message = "<BR/>" + message + "<BR/>";
+    return sendMessage(BaseSystem.getSmtpHost(), from, from, to, subject, message);
+  }  
 
   public boolean sendMessage(String smtpHost, String fromAddress, String fromName, String to, String subject, String text) {
     try {

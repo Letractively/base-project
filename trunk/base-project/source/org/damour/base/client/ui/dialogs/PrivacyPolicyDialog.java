@@ -51,7 +51,7 @@ public class PrivacyPolicyDialog extends PromptDialogBox {
         }
 
         public void onResponseReceived(Request request, Response response) {
-          policyString = response.getText().replaceAll("\\{companyName\\}", BaseApplication.getMessages().getString("companyName", "Base-Project"));
+          policyString = response.getText().replaceAll("\\{companyName\\}", BaseApplication.getSettings().getString("companyName", "Base-Project"));
           if (callback != null) {
             callback.invoke(policyString);
           }
